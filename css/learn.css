@@ -1,0 +1,351 @@
+/* ═══════════════════════════════════════════
+   learn.css — 爆款拆解学习器面板样式
+   基于 Hit Story Dissection 高保真设计图极致还原与体验重构
+   ═══════════════════════════════════════════ */
+
+/* ── 面板整体布局：加入高雅的网格线背景 ── */
+#panelLearn {
+  padding: 30px !important;
+  background-color: #faf8f5 !important;
+  background-image: 
+    linear-gradient(rgba(140, 137, 128, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(140, 137, 128, 0.05) 1px, transparent 1px) !important;
+  background-size: 20px 20px !important;
+  min-height: 100vh;
+}
+
+/* 分栏布局：左(输入) + 右(结果)，1:1 */
+.learn-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 左/右两侧卡片：极致白净纸张质感 */
+.learn-input-card,
+.learn-result-card {
+  padding: 28px !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(46, 42, 34, 0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(47, 40, 28, 0.03) !important;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 600px;
+}
+
+/* 小标题 (Eyebrow) */
+.eyebrow {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #8c8980 !important;
+  margin: 0 0 -4px 0 !important;
+  font-family: "Microsoft YaHei", sans-serif !important;
+}
+
+/* 卡片主标题 */
+.learn-input-card h3,
+.learn-result-card h3 {
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  color: var(--du-ink, #2e2a22) !important;
+  margin: 0 !important;
+  font-family: "Noto Serif SC", "Songti SC", serif !important;
+}
+
+/* 描述文字 */
+.learn-desc {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: var(--du-muted, #7c7870) !important;
+  margin: 0 !important;
+}
+
+/* 表单字段容器 */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-group label {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--du-ink, #2e2a22) !important;
+}
+
+/* 题材分类 select 覆写 */
+#learnGenre {
+  height: 44px !important;
+  padding: 0 12px !important;
+  background: #fdfcf9 !important;
+  border: 1px solid rgba(46, 42, 34, 0.16) !important;
+  border-radius: 8px !important;
+  color: #2e2a22 !important;
+  font-size: 14px !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer;
+}
+#learnGenre:focus {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12) !important;
+}
+
+/* 原文输入区：flex 拉伸 */
+.learn-raw-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+/* 原文上方的 label 行（标题 + 导入按钮） */
+.learn-raw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.learn-raw-header label {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--du-ink, #2e2a22) !important;
+}
+
+/* 导入 TXT 文件的 label 按钮 */
+.learn-import-label {
+  font-size: 11px !important;
+  background: rgba(139, 92, 246, 0.08) !important;
+  color: #8b5cf6 !important;
+  padding: 6px 14px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  font-weight: bold !important;
+  transition: all 0.2s ease !important;
+}
+.learn-import-label:hover {
+  background: rgba(139, 92, 246, 0.15) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* 原文 textarea */
+#learnRawText {
+  resize: vertical;
+  flex: 1;
+  min-height: 260px !important;
+  background: #fdfcf9 !important;
+  border: 1px solid rgba(46, 42, 34, 0.16) !important;
+  border-radius: 8px !important;
+  color: #2e2a22 !important;
+  font-size: 14px !important;
+  padding: 14px !important;
+  outline: none !important;
+  line-height: 1.6 !important;
+  transition: all 0.2s ease !important;
+  font-family: inherit;
+}
+#learnRawText:focus {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12) !important;
+  background: #ffffff !important;
+}
+
+/* ⚡ 新生代扁平 Brutalism 按钮设计，完美对齐高保真设计图 ── */
+#startLearnBtn,
+#saveInspirationBtn {
+  width: 100% !important;
+  height: 48px !important;
+  background: #efede8 !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 0 #000000 !important;
+  transition: all 0.1s ease !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-family: "Microsoft YaHei", sans-serif !important;
+}
+#startLearnBtn:hover,
+#saveInspirationBtn:hover {
+  background: #e5e2db !important;
+}
+#startLearnBtn:active,
+#saveInspirationBtn:active {
+  transform: translateY(3px) !important;
+  box-shadow: 0 1px 0 #000000 !important;
+}
+#startLearnBtn:disabled,
+#saveInspirationBtn:disabled {
+  background: #f3f1ed !important;
+  border-color: #8c8980 !important;
+  color: #8c8980 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* ── 拆解结果区 ── */
+
+/* 结果卡片列表容器 */
+#learnResultArea {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 单条结果卡片 — 极白卡片搭配高饱和度紫色高亮，高度吻合设计图 */
+.learn-result-item {
+  background: #ffffff !important;
+  border: 1px solid rgba(46, 42, 34, 0.12) !important;
+  border-radius: 10px !important;
+  padding: 18px !important;
+  box-shadow: 0 4px 16px rgba(47, 40, 28, 0.01) !important;
+  transition: all 0.2s ease !important;
+}
+.learn-result-item:hover {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.04) !important;
+}
+
+.learn-result-item strong {
+  color: #8b5cf6 !important; /* 紫色高亮标志 */
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-family: "Microsoft YaHei", sans-serif !important;
+}
+
+/* 结果文本 */
+.learn-result-text {
+  font-size: 13px !important;
+  margin: 10px 0 0 0 !important;
+  line-height: 1.6 !important;
+  color: #4a463c !important;
+  font-family: "Noto Serif SC", "Songti SC", serif !important;
+}
+
+/* outline 保留换行 */
+#learnResultOutline {
+  white-space: pre-wrap;
+}
+
+/* 完美高清晰度空状态提示 */
+#learnEmptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--du-muted, #8c8980);
+  gap: 16px;
+  min-height: 360px;
+}
+
+.learn-empty-icon {
+  font-size: 64px !important;
+  filter: drop-shadow(0 8px 16px rgba(47, 40, 28, 0.08));
+}
+
+#learnEmptyState p {
+  font-size: 13px !important;
+  color: #8c8980 !important;
+  margin: 0 !important;
+  font-family: "Microsoft YaHei", sans-serif !important;
+}
+
+/* ── 知识库面板 ── */
+.knowledge-base-panel {
+  margin-top: 36px;
+  margin-bottom: 36px;
+  padding: 28px !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(46, 42, 34, 0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(47, 40, 28, 0.03) !important;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 知识库 header 行 */
+.knowledge-base-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.knowledge-base-header h3 {
+  margin: 0 !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  font-family: "Noto Serif SC", "Songti SC", serif !important;
+  color: var(--du-ink, #2e2a22) !important;
+}
+
+/* 知识库计数徽标 */
+#knowledgeCount {
+  font-size: 12px !important;
+  background: rgba(139, 92, 246, 0.08) !important;
+  color: #8b5cf6 !important;
+  padding: 6px 14px !important;
+  border-radius: 20px !important;
+  font-weight: bold !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+}
+
+/* RAG 说明文字 */
+.knowledge-base-desc {
+  font-size: 12px !important;
+  color: var(--du-muted, #7c7870) !important;
+  margin: -10px 0 20px 0 !important;
+}
+
+/* 已存写作模型卡片 */
+.knowledge-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(46, 42, 34, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  box-shadow: 0 4px 16px rgba(47, 40, 28, 0.02) !important;
+  transition: all 0.2s ease !important;
+}
+.knowledge-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(139, 92, 246, 0.24) !important;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.06) !important;
+}
+
+/* 一致性检查按钮样式 */
+#checkConsistencyBtn {
+  width: 100%;
+  margin-top: 12px;
+  height: 38px;
+  border: 1px solid var(--du-line);
+  border-radius: 6px;
+  background: rgba(255, 252, 245, 0.86);
+  color: var(--du-ink);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+#checkConsistencyBtn:hover {
+  background: var(--du-green-soft);
+  color: var(--du-green);
+  border-color: rgba(23, 107, 84, 0.26);
+}

@@ -1,0 +1,642 @@
+/* ================================================================
+   desktop-ui-components.css — 桌面版设计稿：卡片、面板、组件元素
+   ================================================================ */
+.score-panel,
+.hook-box,
+.diagnosis-box,
+.diff-viewer,
+.chapter-card,
+.novel-item,
+.proposal-card,
+.route-card,
+.pitch-card {
+  color: var(--du-ink);
+  background: var(--du-panel);
+  border: 1px solid var(--du-line);
+  border-radius: var(--du-radius);
+  box-shadow: var(--du-shadow);
+}
+
+.result-panel,
+.score-panel {
+  padding: 16px;
+}
+
+.desktop-story-card,
+.desktop-outline-card,
+.desktop-evidence-card {
+  padding: 14px;
+  box-shadow: none;
+}
+
+.desktop-story-card {
+  border-left: 3px solid var(--du-green);
+}
+
+.desktop-editor-panel {
+  grid-column: 1;
+  grid-row: 1 !important;
+  min-height: 606px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.desktop-memory-panel {
+  grid-column: 1;
+  grid-row: 2 !important;
+  padding: 12px;
+}
+
+.desktop-episode-panel {
+  grid-column: 1;
+  grid-row: 3 !important;
+}
+
+.desktop-proposal-panel {
+  grid-column: 1;
+  grid-row: 4 !important;
+}
+
+.panel-title {
+  min-height: 38px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--du-line);
+}
+
+.panel-title span {
+  width: 24px;
+  height: 24px;
+  color: #fffdf7;
+  background: #1f211d;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.panel-title h3 {
+  color: var(--du-ink);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.desktop-editor-panel .panel-title {
+  margin: 0;
+  padding: 12px 16px 10px;
+  background: rgba(255, 252, 245, 0.76);
+}
+
+.desktop-editor-panel .panel-title span {
+  display: none;
+}
+
+.desktop-editor-panel .panel-title h3 {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 15px !important;
+}
+
+.desktop-editor-panel .panel-title h3 .ch-name {
+  color: var(--du-green);
+  font-weight: 700;
+  display: inline-block;
+  margin-right: 18px;
+}
+
+.desktop-editor-panel .panel-title h3 .editor-action-tag {
+  display: inline-block;
+  font-size: 11px;
+  margin-left: 10px;
+  color: var(--du-muted);
+  border: 1px solid rgba(79, 72, 59, 0.2);
+  padding: 1px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  vertical-align: middle;
+  font-family: sans-serif;
+}
+
+.desktop-chapter-strip {
+  display: flex;
+  height: 40px;
+  align-items: stretch;
+  gap: 0;
+  padding: 0 16px;
+  overflow-x: auto;
+  background: rgba(255, 252, 245, 0.74);
+  border-bottom: 1px solid var(--du-line);
+}
+
+.desktop-chapter-strip button {
+  position: relative;
+  min-width: 132px;
+  padding: 0 16px;
+  color: var(--du-muted);
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--du-line);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.desktop-chapter-strip button.active {
+  color: var(--du-green);
+  font-weight: 800;
+}
+
+.desktop-chapter-strip button.active::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  left: 12px;
+  height: 2px;
+  background: var(--du-green);
+}
+
+.desktop-chapter-strip .desktop-add-tab {
+  min-width: 42px;
+  color: var(--du-ink);
+  font-size: 18px;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 5px 12px;
+  color: var(--du-muted);
+  background: rgba(255, 252, 245, 0.72);
+  border-bottom: 1px solid var(--du-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.editor-toolbar::-webkit-scrollbar { display: none; }
+
+.editor-actions {
+  gap: 6px;
+}
+
+.editor-actions button,
+.editor-toolbar button {
+  min-height: 30px;
+  color: #fff;
+  background: var(--du-green);
+  border: 0;
+}
+
+.draft-progress-wrap {
+  display: none;
+}
+
+.draft-editor {
+  display: block;
+  width: calc(100% - 32px);
+  min-height: 438px;
+  height: 438px;
+  margin: 16px 16px 0;
+  padding: 34px clamp(48px, 8vw, 126px);
+  color: #26251f;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(181, 138, 67, 0.08), transparent 42%),
+    linear-gradient(transparent 35px, rgba(73, 60, 39, 0.045) 36px) 0 0 / 100% 36px,
+    #fffdf6;
+  border: 1px solid var(--du-line);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: 18px;
+  line-height: 2.0; /* 18px * 2.0 = 36px 完美吻合格线背景，消除滚屏错位 */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.desktop-memory-panel {
+  overflow: hidden;
+}
+
+.desktop-memory-panel .panel-title {
+  margin-bottom: 10px;
+}
+
+.desktop-memory-panel .asset-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(138px, 1fr));
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.desktop-memory-panel .asset-item {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  color: var(--du-muted);
+  background: rgba(255, 252, 245, 0.72);
+  border-radius: 7px;
+}
+
+.desktop-memory-panel .asset-item.active {
+  border-color: rgba(23, 107, 84, 0.72);
+  box-shadow: inset 3px 0 0 var(--du-green);
+}
+
+.desktop-memory-panel .asset-item strong {
+  color: var(--du-ink);
+  font-size: 14px;
+}
+
+.desktop-memory-panel .asset-item span {
+  font-size: 12px;
+}
+
+.desktop-memory-panel .asset-item p {
+  margin: 2px 0 auto;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.desktop-memory-panel .asset-item em {
+  align-self: flex-start;
+  padding: 2px 7px;
+  color: var(--du-green);
+  background: var(--du-green-soft);
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 11px;
+}
+
+.draft-editor::placeholder {
+  color: rgba(42, 39, 30, 0.92);
+  opacity: 1;
+}
+
+.desktop-editor-statusbar {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 28px;
+  margin: 0 16px 16px;
+  padding: 0 14px;
+  color: var(--du-muted);
+  background: rgba(255, 252, 245, 0.82);
+  border: 1px solid var(--du-line);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  font-size: 12px;
+}
+
+.desktop-editor-statusbar span {
+  white-space: nowrap;
+}
+
+.desktop-editor-statusbar button {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  color: var(--du-ink);
+  background: transparent;
+  border: 0;
+  font-size: 17px;
+}
+
+.micro-actions {
+  padding: 0 16px 16px;
+}
+
+.micro-actions button:hover {
+  color: var(--du-green);
+  background: var(--du-green-soft);
+  border-color: rgba(23, 107, 84, 0.28);
+}
+
+.title-btn,
+.title-list .title-btn,
+.asset-item,
+.evidence-item,
+.market-item,
+.consistency-item,
+.episode-item,
+.diagnosis-box,
+.hook-box {
+  color: var(--du-muted);
+  background: rgba(255, 252, 245, 0.72);
+  border-color: var(--du-line);
+}
+
+.title-btn:hover,
+.title-btn.active {
+  color: var(--du-green);
+  background: var(--du-green-soft);
+  border-color: rgba(23, 107, 84, 0.34);
+}
+
+.hook-box {
+  border-left: 3px solid var(--du-green);
+}
+
+.asset-item strong,
+.evidence-item strong,
+.market-item strong {
+  color: var(--du-ink);
+}
+
+.outline-list li,
+.proposal-pack,
+.pitch-logline,
+.pitch-synopsis,
+.route-card .r-action,
+.chapter-meta {
+  color: var(--du-muted);
+}
+
+.score-bar {
+  background: rgba(23, 107, 84, 0.12);
+}
+
+.score-bar-fill {
+  background: linear-gradient(90deg, var(--du-green), #68a58e);
+}
+
+.score-val,
+.score-badge {
+  color: var(--du-green);
+}
+
+.proposal-toolbar button,
+#copyProposalBtn {
+  color: var(--du-ink);
+  background: rgba(255, 252, 245, 0.84);
+  border-color: var(--du-line);
+}
+
+/* 连载、学习页面统一方向 */
+#panelSerial,
+#panelLearn {
+  color: var(--du-ink);
+}
+
+.serial-layout {
+  grid-template-columns: 320px minmax(0, 1fr);
+  min-height: calc(100vh - 166px);
+}
+
+.serial-sidebar,
+.serial-main {
+  background: rgba(255, 252, 245, 0.56);
+  border-color: var(--du-line);
+}
+
+.serial-ws-header h2,
+.serial-create h3,
+.chapter-title,
+.novel-item-title {
+  color: var(--du-ink);
+}
+
+.serial-progress-badge {
+  color: var(--du-green);
+  background: var(--du-green-soft);
+  border-color: rgba(23, 107, 84, 0.26);
+}
+
+.serial-gen-btn,
+.chapter-actions button,
+.chapter-reader-bar button {
+  color: var(--du-ink);
+  background: rgba(255, 252, 245, 0.82);
+  border-color: var(--du-line);
+}
+
+.chapter-reader {
+  background: var(--du-bg);
+}
+
+.chapter-reader-bar {
+  background: rgba(255, 252, 245, 0.92);
+  border-bottom-color: var(--du-line);
+}
+
+.chapter-reader-body {
+  color: var(--du-ink);
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+
+/* 会员弹窗跟随新方向，保留高级感 */
+/* 会员弹窗跟随新方向，保留高级感，强化色彩对比度 */
+#billingModal.modal-backdrop {
+  background: rgba(46, 42, 34, 0.54) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.billing-modal {
+  background: linear-gradient(165deg, #fffcf7 0%, #f7f1e3 100%) !important;
+  border-color: var(--du-line-strong) !important;
+  box-shadow: 
+    0 24px 72px rgba(47, 40, 28, 0.22),
+    0 0 0 1px rgba(23, 107, 84, 0.06) !important;
+}
+
+/* 顶部皇冠徽章色彩强化 */
+.billing-crown {
+  color: #c27803 !important;
+  background: rgba(217, 119, 6, 0.08) !important;
+  border-color: rgba(217, 119, 6, 0.32) !important;
+}
+
+.billing-head h2,
+.price-amount,
+.price-num,
+.price-unit,
+.pitch-title,
+.route-card .r-name,
+.proposal-card .p-text {
+  color: var(--du-ink) !important;
+}
+
+.billing-subtitle,
+.price-features li,
+.price-card-badge,
+.pay-methods-label,
+.price-period,
+.trial-link,
+.order-qr-tip {
+  color: var(--du-muted) !important;
+}
+
+/* 支付方式标题特殊加深与强化 */
+.pay-methods-label {
+  color: var(--du-ink) !important;
+  font-weight: 700 !important;
+  opacity: 0.85 !important;
+}
+
+/* 价格单位周期后缀字色加深，确保时间一目了然 */
+.price-period {
+  color: var(--du-muted) !important;
+  font-weight: 600 !important;
+  opacity: 0.9 !important;
+}
+
+/* 试用链接字色加深与引导强化 */
+.trial-link {
+  color: var(--du-ink) !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  opacity: 0.8 !important;
+}
+
+.trial-link:hover {
+  opacity: 1 !important;
+}
+
+/* 加强非 Pro 属性列表的文字可读性 */
+.price-features li {
+  color: #4a463c !important;
+  font-weight: 500;
+}
+
+/* 普通卡片与功能面板 */
+.price-card,
+.order-result-area,
+.pay-method-chip {
+  background: rgba(255, 252, 245, 0.9) !important;
+  border-color: var(--du-line) !important;
+  color: var(--du-ink) !important;
+}
+
+/* 支付方式单选框选中态样式强化 */
+.pay-method-chip.selected {
+  background: var(--du-green-soft) !important;
+  border-color: rgba(23, 107, 84, 0.45) !important;
+  color: var(--du-green) !important;
+}
+
+/* 普通卡片底部的立刻开通按钮 — 彻底解决隐形文字 Bug */
+.price-btn {
+  background: rgba(46, 42, 34, 0.06) !important;
+  border: 1px solid rgba(46, 42, 34, 0.16) !important;
+  color: var(--du-ink) !important;
+  transition: all 0.2s ease;
+}
+.price-btn:hover {
+  background: rgba(46, 42, 34, 0.12) !important;
+  border-color: rgba(46, 42, 34, 0.24) !important;
+  color: var(--du-ink) !important;
+}
+
+.price-card-pro {
+  background: var(--du-green-soft) !important;
+  border-color: rgba(23, 107, 84, 0.36) !important;
+}
+
+/* 年度 Pro 推荐特色卡片列表项目 */
+.price-card-pro .price-features li {
+  color: var(--du-ink) !important;
+  font-weight: 600;
+}
+
+/* 订单详情面板背景及数据行高对比度优化 */
+.order-result-area {
+  background: #fdfaf2 !important;
+  border: 1px solid rgba(46, 42, 34, 0.12) !important;
+}
+
+.order-result-row {
+  color: #615c52 !important;
+  border-bottom-color: rgba(46, 42, 34, 0.08) !important;
+}
+
+.order-result-row strong {
+  color: var(--du-ink) !important;
+  font-weight: 700;
+}
+
+.order-result-row .order-id {
+  color: #7a766e !important;
+}
+
+.price-btn-pro,
+.order-pay-btn {
+  background: linear-gradient(135deg, var(--du-green), var(--du-green-2)) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+.price-btn-pro:hover,
+.order-pay-btn:hover {
+  background: linear-gradient(135deg, #268c71, #136b56) !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 1380px) {
+  .desktop-toolbar {
+    padding-left: 188px;
+    grid-template-columns: 230px auto auto 1fr auto auto;
+    gap: 12px;
+  }
+
+  .app-shell {
+    grid-template-columns: 150px 310px minmax(500px, 1fr) 280px;
+  }
+
+  .result-grid {
+    grid-template-columns: minmax(500px, 1fr);
+  }
+}
+
+@media (max-width: 1180px) {
+  body {
+    overflow: auto;
+  }
+
+  .desktop-toolbar {
+    padding-left: 12px;
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .desktop-toolbar-spacer,
+  .desktop-database-button,
+  .desktop-settings-button {
+    display: none;
+  }
+
+  .app-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .desktop-rail {
+    display: none;
+  }
+
+  .control-panel {
+    max-height: none;
+  }
+
+  .result-grid,
+  .serial-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .desktop-inspector {
+    border-left: 0;
+    border-top: 1px solid var(--du-line);
+  }
+
+  .main-result,
+  .result-grid > .result-panel:nth-of-type(2),
+  .result-grid > .result-panel:nth-of-type(3),
+  .result-grid > .result-panel:nth-of-type(4),
+  .result-grid > .result-panel:nth-of-type(5),
+  .result-grid > .result-panel:nth-of-type(6),
+  .result-grid > .result-panel:nth-of-type(7),
+  .result-grid > .result-panel:nth-of-type(8),
+  .score-panel,
+  .monetization-panel {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+

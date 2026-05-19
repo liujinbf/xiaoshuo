@@ -1,0 +1,305 @@
+:root {
+  --paper: #f6f5ef;
+  --ink: #191919;
+  --muted: #63635c;
+  --line: #d8d5c9;
+  --red: #c83b28;
+  --green: #116b5b;
+  --gold: #b9822a;
+  --white: #fffdfa;
+  --shadow: 0 20px 50px rgba(25, 25, 25, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(25, 25, 25, 0.035) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(180deg, rgba(25, 25, 25, 0.035) 1px, transparent 1px) 0 0 / 28px 28px,
+    var(--paper);
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(300px, 370px) 1fr;
+  min-height: 100vh;
+}
+
+.control-panel {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+  padding: 28px;
+  color: var(--white);
+  background:
+    radial-gradient(circle at 24% 14%, rgba(200, 59, 40, 0.38), transparent 34%),
+    linear-gradient(150deg, #171717 0%, #252018 58%, #10110f 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.brand-block {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.brand-mark {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  color: var(--white);
+  font-size: 28px;
+  font-weight: 800;
+  background: var(--red);
+  box-shadow: 8px 8px 0 rgba(255, 255, 255, 0.12);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: currentColor;
+  opacity: 0.66;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: 25px;
+  line-height: 1.15;
+}
+
+h2 {
+  margin-bottom: 0;
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 1.03;
+  letter-spacing: 0;
+}
+
+h3 {
+  margin-bottom: 0;
+  font-size: 18px;
+}
+
+.control-form {
+  display: grid;
+  gap: 18px;
+}
+
+.history-panel {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.billing-panel,
+.sync-panel {
+  margin-top: 26px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.billing-heading,
+.sync-heading {
+  margin-bottom: 12px;
+}
+
+.billing-heading h2,
+.sync-heading h2 {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.plan-badge {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  padding: 0 10px;
+  margin-bottom: 12px;
+  color: var(--ink);
+  border-radius: 999px;
+  background: var(--white);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.plan-badge.pro {
+  color: var(--white);
+  background: var(--green);
+}
+
+.quota-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.quota-row {
+  display: grid;
+  gap: 6px;
+}
+
+.quota-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.76);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quota-bar {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.quota-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gold);
+}
+
+.billing-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.billing-actions button {
+  min-height: 38px;
+  color: var(--ink);
+  border: 0;
+  border-radius: 6px;
+  background: var(--white);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-weight: 800;
+}
+
+.billing-notice {
+  min-height: 18px;
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.sync-user,
+.sync-status {
+  margin: 0 0 10px;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.sync-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sync-actions button {
+  min-height: 38px;
+  color: var(--ink);
+  border: 0;
+  border-radius: 6px;
+  background: var(--white);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-weight: 800;
+}
+
+.history-heading {
+  margin-bottom: 12px;
+}
+
+.history-heading h2 {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.history-empty {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.history-item {
+  width: 100%;
+  padding: 11px 12px;
+  color: var(--white);
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.history-item:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.history-title {
+  display: block;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-meta {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.62);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+}

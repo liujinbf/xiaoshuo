@@ -1,0 +1,385 @@
+﻿/* ═══════════════════════════════
+   视图模式：编辑主视图 vs 规划视图
+   ═══════════════════════════════ */
+
+/* 默认：编辑器主视图，仅显示编辑器 + 记忆卡片 */
+.result-grid .result-panel:not(.desktop-editor-panel):not(.desktop-memory-panel) {
+  display: none;
+}
+.result-grid .score-panel,
+.result-grid .desktop-episode-panel,
+.result-grid .desktop-proposal-panel {
+  display: none;
+}
+
+/* 规划视图：显示所有面板 */
+.result-grid.show-plan .result-panel {
+  display: block;
+}
+.result-grid.show-plan .score-panel {
+  display: block;
+}
+.result-grid.show-plan .desktop-editor-panel {
+  grid-row: auto !important;
+  min-height: 320px;
+}
+.result-grid.show-plan .desktop-memory-panel {
+  grid-row: auto !important;
+}
+
+/* 记忆卡片内部样式增强 */
+.desktop-memory-panel .panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--du-line);
+}
+.desktop-memory-panel .asset-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  overflow-x: auto;
+}
+.desktop-memory-panel .asset-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  background: rgba(255, 252, 245, 0.72);
+  border: 1px solid var(--du-line);
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--du-muted);
+}
+.desktop-memory-panel .asset-item strong {
+  color: var(--du-ink);
+  font-size: 13px;
+}
+
+/* 编辑器状态栏 */
+.desktop-editor-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 0 16px 12px;
+  padding: 6px 14px;
+  color: var(--du-muted);
+  background: rgba(255, 252, 245, 0.82);
+  border: 1px solid var(--du-line);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  font-size: 12px;
+}
+
+/* ── 编辑器格式工具栏 ── */
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--du-ink);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms;
+  flex-shrink: 0;
+}
+.tb-btn:hover {
+  background: rgba(23, 107, 84, 0.08);
+  border-color: rgba(23, 107, 84, 0.2);
+}
+.tb-btn strong { font-weight: 700; font-size: 13px; }
+.tb-btn em     { font-style: italic; font-size: 13px; }
+.tb-btn u      { text-decoration: underline; font-size: 13px; }
+
+.tb-sep {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: var(--du-line-strong);
+  margin: 0 3px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.tb-select {
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--du-line);
+  border-radius: 4px;
+  background: rgba(255, 252, 245, 0.9);
+  color: var(--du-ink);
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.ghost-sm {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--du-line);
+  border-radius: 5px;
+  background: rgba(255, 252, 245, 0.86);
+  color: var(--du-ink);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ghost-sm:hover { background: #fffdf8; border-color: var(--du-line-strong); }
+
+/* ── 一致性检查状态行 ── */
+.desktop-check-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  margin-bottom: 4px;
+}
+.desktop-check-row span { color: var(--du-ink); }
+.desktop-check-row strong { font-size: 12px; font-weight: 600; }
+
+.desktop-check-row.pass {
+  background: rgba(23, 107, 84, 0.06);
+  border-color: rgba(23, 107, 84, 0.15);
+}
+.desktop-check-row.pass strong { color: var(--du-green); }
+.desktop-check-row.pass strong::before { content: "◎ "; }
+
+.desktop-check-row.warn {
+  background: rgba(200, 100, 30, 0.06);
+  border-color: rgba(200, 100, 30, 0.15);
+}
+.desktop-check-row.warn strong { color: #c8641e; }
+.desktop-check-row.warn strong::before { content: "△ "; }
+
+/* ── 用户信息栏桌面版样式重置 ── */
+#userInfoBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--du-muted);
+  gap: 8px;
+}
+#userInfoBar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#userInfoBar div { display: flex; gap: 6px; flex-shrink: 0; }
+#userInfoBar button,
+#logoutBtn {
+  font-size: 11px;
+  background: none;
+  border: none;
+  color: var(--du-muted);
+  cursor: pointer;
+  padding: 0;
+  min-height: auto !important;
+}
+
+/* ════════════════════════════════════════════
+   工具类 — 替代 index.html 中高频内联样式
+   ════════════════════════════════════════════ */
+
+/* 弹性布局快捷类 */
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-start   { display: flex; align-items: center; gap: 8px; }
+.flex-center  { display: flex; align-items: center; justify-content: center; }
+
+/* 字体尺寸工具 */
+.text-xs   { font-size: 11px; }
+.text-sm   { font-size: 12px; }
+.text-muted { color: var(--du-muted); }
+.text-faint { color: var(--du-faint); }
+.text-green { color: var(--du-green); }
+
+/* 间距工具 */
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.gap-6 { gap: 6px; }
+
+/* 面板标题行（panel-title 快捷组合） */
+.panel-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.panel-hd-left { display: flex; align-items: center; gap: 8px; }
+
+/* 幽灵小按钮（轻量操作） */
+.ghost-xs {
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid var(--du-line);
+  border-radius: 5px;
+  background: rgba(255, 252, 245, 0.9);
+  color: var(--du-ink);
+  cursor: pointer;
+}
+.ghost-xs:hover { background: #fffdf8; }
+
+/* 图标按钮（无边框） */
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--du-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+/* 隐藏但功能保留 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+}
+
+/* ── 配额卡片组件 ── */
+.quota-card-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.quota-circle-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 66px;
+  height: 66px;
+}
+
+.quota-circle-svg {
+  width: 66px;
+  height: 66px;
+  transform: rotate(-90deg);
+}
+
+.quota-circle-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: var(--du-green);
+  line-height: 1.2;
+}
+
+.quota-pct      { font-size: 15px; }
+.quota-used-label { font-size: 10px; color: var(--du-muted); }
+
+.quota-dl {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+}
+
+.quota-row { display: flex; justify-content: space-between; }
+.quota-dt  { color: var(--du-muted); }
+.quota-dd  { margin: 0; font-weight: 600; color: var(--du-ink); }
+.quota-dd-green { color: var(--du-green); }
+
+/* 模型配置保存按钮行 */
+.btn-row-save {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* ── 左侧控制面板组件 ── */
+
+/* control-form 内 field-group/field-grid 默认无外边距 */
+.control-form .field-group,
+.control-form .field-grid { margin: 0; }
+
+/* 面板子标题栏 */
+.panel-subhdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--du-line);
+}
+.panel-subhdr-left  { display: flex; align-items: center; gap: 8px; }
+.panel-subhdr-right { display: flex; gap: 6px; }
+.panel-subhdr-icon  { font-size: 13px; color: var(--du-muted); }
+.panel-subhdr-title { font-size: 14px; color: var(--du-ink); font-weight: 600; }
+
+/* 标题输入衬线字体 */
+.input-serif {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 13px;
+}
+
+/* 基础文本域（替代大量内联 style） */
+.textarea-basic {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--du-line);
+  border-radius: 6px;
+  background: rgba(255, 252, 245, 0.9);
+  color: var(--du-ink);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.7;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+}
+.textarea-basic:focus {
+  border-color: var(--du-green);
+  box-shadow: 0 0 0 2px rgba(23, 107, 84, 0.1);
+}
+
+/* 大纲迷你列表 */
+.outline-mini-list { display: grid; gap: 4px; }
+
+/* 高级参数折叠区 */
+.adv-summary {
+  font-size: 12px;
+  color: var(--du-muted);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.adv-body { display: grid; gap: 8px; margin-top: 8px; }
+
+/* 间距工具补充 */
+.mb-xs { margin-bottom: 6px; }
+.hidden { display: none !important; }
+
+/* control-form 内边距（移出内联 style） */
+.control-form {
+  padding: 10px 16px;
+  display: grid;
+  gap: 10px;
+}
+
+/* 灵感备注区 */
+.inspiration-section {
+  padding: 12px 16px;
+  border-top: 1px solid var(--du-line);
+}

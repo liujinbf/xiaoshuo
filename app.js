@@ -1,0 +1,299 @@
+// ⚠️ 本文件已超过建议行数，请在下次功能迭代时拆分
+// ============================================================
+// 主入口: app.js — 事件监听与初始化 (健壮版 v3)
+// 警告：禁止在此写业务逻辑，应抄取到对应模块
+// ============================================================
+
+// 辅助函数：安全地绑定事件
+function safeListen(selector, event, handler) {
+  const el = document.querySelector(selector);
+  if (el) {
+    el.addEventListener(event, handler);
+    return el;
+  }
+  return null;
+}
+
+// 初始化所有事件
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("SaaS Workspace Initializing...");
+
+  // 1. 核心表单提交 (生成方案)
+  safeListen("#storyForm", "submit", async (event) => {
+    event.preventDefault();
+    if (typeof consumeQuota === "function" && !consumeQuota("ideas")) return;
+    if (typeof renderPlan === "function") {
+      const input = collectInput();
+      if (typeof window.matchKnowledgeForInput === "function") {
+        input.matchedInspirations = await window.matchKnowledgeForInput(input);
+      }
+      renderPlan(input);
+    }
+  });
+
+  // 2. 滑块联动
+  const lIn = document.querySelector("#length");
+  const lOut = document.querySelector("#lengthOutput");
+  if (lIn && lOut) {
+    lIn.addEventListener("input", () => { lOut.textContent = lIn.value + " 字"; });
+  }
+
+  const iIn = document.querySelector("#intensity");
+  const iOut = document.querySelector("#intensityOutput");
+  if (iIn && iOut) {
+    iIn.addEventListener("input", () => { iOut.textContent = iIn.value + " / 10"; });
+  }
+
+  // 3. 标签云
+  safeListen("#tagCloud", "click", (event) => {
+    const button = event.target.closest(".tag");
+    if (!button) return;
+    button.classList.toggle("active");
+  });
+
+  // 4. 动态更新题材预设与标签云（业务逻辑在 planner.js 中）
+
+  // 题材下拉切换监听
+  const genreSelect = document.querySelector("#genre");
+  if (genreSelect) {
+    genreSelect.addEventListener("change", (e) => {
+      updateGenrePresets(e.target.value, true);
+    });
+  }
+
+  // 随机灵感
+  safeListen("#randomBtn", "click", () => {
+    if (typeof consumeQuota === "function" && !consumeQuota("ideas")) return;
+    const genreSelect = document.querySelector("#genre");
+    if (genreSelect) {
+      // 随机选择一个题材
+      const randIdx = Math.floor(Math.random() * genreSelect.options.length);
+      genreSelect.selectedIndex = randIdx;
+      // 触发更新
+      updateGenrePresets(genreSelect.value, true);
+    }
+    if (typeof renderPlan === "function") renderPlan(collectInput());
+  });
+
+  // 5. 导出 TXT
+  safeListen("#exportBtn", "click", () => {
+    const plan = window.currentPlan; // 关键：用 window.currentPlan
+    if (!plan) return;
+    const content = typeof formatProposalPack === "function"
+      ? [
+          plan.titles.join("\n"), "",
+          "【首段钩子】", plan.hook, "",
+          "【故事大纲】", plan.outline.map((item, i) => `${i + 1}. ${item}`).join("\n"), "",
+          "【人物与动机】", plan.characters.map(c => `${c.role}｜${c.name}\n${c.motive}`).join("\n\n"), "",
+          "【正文试写】", plan.draft.join("\n\n"), "",
+          "【AI 续写提示词】", plan.prompt
+        ].join("\n")
+      : JSON.stringify(plan, null, 2);
+    if (typeof downloadText === "function") downloadText("故事方案.txt", content);
+  });
+
+  // 6. AI 生成正文
+  safeListen("#aiDraftBtn", "click", async () => {
+    if (!window.currentPlan) {
+      return alert("请先生成故事方案");
+    }
+    try {
+      if (typeof setAiLoading === "function") setAiLoading(true);
+      const text = await requestAiGeneration("draft");
+      const editor = document.querySelector("#draftEditor");
+      if (editor && text) {
+        editor.value = text;
+        editor.dispatchEvent(new Event("input"));
+        // 自动触发一致性检查
+        setTimeout(() => {
+          document.querySelector("#checkConsistencyBtn")?.click();
+        }, 300);
+      }
+    } catch (e) {
+      alert(e.message || "AI 生成失败，请检查模型配置");
+    } finally {
+      if (typeof setAiLoading === "function") setAiLoading(false);
+    }
+  });
+
+  // 7. 编辑器实时字数统计
+  const editor = document.querySelector("#draftEditor");
+  if (editor) {
+    editor.addEventListener("input", () => {
+      if (typeof syncDraftFromEditor === "function") syncDraftFromEditor();
+    });
+  }
+
+  // 8. 检查一致性
+  safeListen("#checkConsistencyBtn", "click", () => {
+    if (!window.currentPlan) {
+      alert("请先生成故事方案，再进行一致性检查");
+      return;
+    }
+    const draftEl = document.querySelector("#draftEditor");
+    if (!draftEl || !draftEl.value.trim()) {
+      alert("正文为空，请先生成或输入正文");
+      return;
+    }
+    if (typeof checkDraftConsistency === "function" && typeof renderConsistency === "function") {
+      const items = checkDraftConsistency(window.currentPlan);
+      renderConsistency(items);
+      document.querySelector("#consistencyList")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  });
+
+  // 9. 版本对比
+  safeListen("#diffVersionBtn", "click", () => {
+    const viewer = document.querySelector("#diffViewer");
+    const editorEl = document.querySelector("#draftEditor");
+    const plan = window.currentPlan;
+    if (!viewer || !editorEl || !plan) return;
+
+    if (viewer.hidden) {
+      const currentText = editorEl.value;
+      const originalText = Array.isArray(plan.draft) ? plan.draft.join("\n\n") : (plan.draft || "");
+      
+      viewer.innerHTML = `
+        <div class="diff-header" style="padding: 8px; background: var(--bg-app); border-bottom: 1px solid var(--border); font-size: 12px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+          <span>对比基准：上次保存/生成的版本</span>
+          <span style="color: var(--text-muted);">红色删除，绿色新增</span>
+        </div>
+        ${generateDiffHtml(originalText, currentText)}
+      `;
+      viewer.hidden = false;
+      editorEl.hidden = true;
+      document.querySelector("#diffVersionBtn").textContent = "退出对比";
+    } else {
+      viewer.hidden = true;
+      editorEl.hidden = false;
+      document.querySelector("#diffVersionBtn").textContent = "版本对比";
+    }
+  });
+
+  // 10. 保存项目
+  safeListen("#saveProjectBtn", "click", () => {
+    if (typeof consumeQuota === "function" && !consumeQuota("saves")) return;
+    if (typeof saveCurrentProject === "function") saveCurrentProject();
+  });
+
+  // 转入连载铸造
+  safeListen("#importToSerialBtn", "click", () => {
+    const plan = window.currentPlan;
+    if (!plan) return;
+    
+    // 切换到连载铸造 tab
+    const tabSerial = document.querySelector("#tabSerial");
+    if (tabSerial) tabSerial.click();
+    
+    // 填充表单
+    const titleEl = document.querySelector("#serialTitle");
+    const genreEl = document.querySelector("#serialGenre");
+    const outlineEl = document.querySelector("#serialOutline");
+    const charactersEl = document.querySelector("#serialCharacters");
+    
+    if (titleEl && plan.titles && plan.titles.length > 0) {
+      titleEl.value = plan.titles[0];
+    }
+    
+    // 尽量匹配原表单的类型，如果不匹配保留原值
+    const shortGenre = document.querySelector("#genre")?.value;
+    if (genreEl && shortGenre) {
+      const options = Array.from(genreEl.options).map(o => o.value);
+      if (options.includes(shortGenre)) {
+        genreEl.value = shortGenre;
+      }
+    }
+    
+    if (outlineEl && plan.outline) {
+      outlineEl.value = plan.outline.join("\n");
+    }
+    
+    if (charactersEl && plan.characters) {
+      charactersEl.value = plan.characters.map(c => `【${c.role}】${c.name}\n动机：${c.motive}`).join("\n\n");
+    }
+    
+    // 滚动到创建表单
+    setTimeout(() => {
+      document.querySelector(".serial-creator")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  });
+
+
+  // 11. 支付相关
+  safeListen("#upgradeBtn", "click", () => {
+    if (typeof openBillingModal === "function") openBillingModal();
+  });
+  safeListen("#closeBillingBtn", "click", () => {
+    if (typeof closeBillingModal === "function") closeBillingModal();
+  });
+  safeListen("#billingModal", "click", (event) => {
+    if (event.target.id === "billingModal" && typeof closeBillingModal === "function") {
+      closeBillingModal();
+    }
+  });
+  safeListen("#trialBtn", "click", () => {
+    if (typeof startTrial === "function") startTrial();
+  });
+  safeListen("#trialModalBtn", "click", () => {
+    if (typeof startTrial === "function") startTrial();
+  });
+  document.querySelectorAll("[data-plan-order]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (typeof createOrder !== "function") return;
+      createOrder(button.dataset.planOrder);
+    });
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && typeof closeBillingModal === "function") {
+      closeBillingModal();
+    }
+  });
+
+  // 12. 初始渲染
+  const initialGenre = document.querySelector("#genre")?.value || "history";
+  updateGenrePresets(initialGenre, false); // 仅加载标签，不覆盖初始输入框文字
+  if (typeof renderBilling === "function") renderBilling();
+  if (typeof renderHistory === "function") renderHistory();
+  if (typeof window.syncProjectChrome === "function") window.syncProjectChrome(window.currentPlan);
+
+  safeListen("#historyList", "click", (event) => {
+    const item = event.target.closest("[data-project-id]");
+    if (!item || typeof loadProject !== "function") return;
+    loadProject(item.dataset.projectId);
+  });
+
+  // 13. 清空生成状态
+  safeListen("#clearGenStatusBtn", "click", () => {
+    const ids = ["genStatusVal", "genStartTime", "genWordCount", "genElapsed"];
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = id === "genStatusVal" ? "空闲" : "--";
+    });
+  });
+
+  // 14. 复制提案包
+  safeListen("#copyProposalBtn", "click", function () {
+    if (typeof window.copyCurrentProposal === "function") {
+      window.copyCurrentProposal();
+    }
+    this.textContent = "已复制";
+    setTimeout(() => { this.textContent = "复制提案包"; }, 2000);
+  });
+
+  // 15. 登录弹窗按鈕绑定
+  safeListen("#authLoginBtn", "click", () => {
+    const u = document.getElementById("authUsername")?.value;
+    const p = document.getElementById("authPassword")?.value;
+    if (typeof handleLogin === "function") handleLogin(u, p);
+  });
+  safeListen("#authRegisterBtn", "click", () => {
+    const u = document.getElementById("authUsername")?.value;
+    const p = document.getElementById("authPassword")?.value;
+    if (typeof handleRegister === "function") handleRegister(u, p);
+  });
+  safeListen("#authLocalModeBtn", "click", () => {
+    if (typeof hideLoginModal === "function") hideLoginModal();
+  });
+
+  console.log("SaaS Workspace Ready ✓");
+});

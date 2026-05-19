@@ -1,0 +1,401 @@
+
+.draft-editor:focus {
+  border-color: rgba(17, 107, 91, 0.48);
+  box-shadow: 0 0 0 3px rgba(17, 107, 91, 0.12);
+}
+
+.asset-list,
+.market-list,
+.evidence-list,
+.episode-list,
+.consistency-list {
+  display: grid;
+  gap: 12px;
+}
+
+.asset-card,
+.market-card,
+.evidence-card,
+.episode-card,
+.consistency-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.asset-card strong,
+.market-card strong,
+.evidence-card strong,
+.episode-card strong,
+.consistency-card strong {
+  display: block;
+  margin-bottom: 6px;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+}
+
+.asset-card p,
+.market-card p,
+.evidence-card p,
+.episode-card p,
+.consistency-card p {
+  margin-bottom: 0;
+  color: #3c3a34;
+  line-height: 1.75;
+}
+
+.evidence-card {
+  border-left: 4px solid var(--gold);
+}
+
+.episode-card {
+  border-left: 4px solid var(--green);
+}
+
+.consistency-card.ok {
+  border-left: 4px solid var(--green);
+}
+
+.consistency-card.warn {
+  border-left: 4px solid var(--gold);
+}
+
+.consistency-card.risk {
+  border-left: 4px solid var(--red);
+}
+
+.evidence-meta,
+.episode-meta,
+.consistency-meta {
+  display: inline-flex;
+  margin-bottom: 7px;
+  padding: 3px 8px;
+  color: var(--muted);
+  border-radius: 999px;
+  background: #efede4;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 15, 13, 0.54);
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.billing-modal {
+  width: min(720px, 100%);
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.32);
+}
+
+.modal-header {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  font-size: 34px;
+}
+
+.modal-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--white);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.price-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+}
+
+.price-card.featured {
+  border-top: 6px solid var(--red);
+}
+
+.price-card span {
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.price-card strong {
+  display: block;
+  margin: 8px 0;
+  font-size: 38px;
+}
+
+.price-card p {
+  min-height: 54px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.price-card button {
+  width: 100%;
+  min-height: 42px;
+  color: var(--white);
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-weight: 800;
+}
+
+.order-draft {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px dashed var(--gold);
+  border-radius: 6px;
+  background: rgba(185, 130, 42, 0.1);
+  color: #3c3a34;
+  font-family: "Microsoft YaHei", sans-serif;
+  line-height: 1.7;
+}
+
+.micro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.micro-actions button {
+  padding: 0 12px;
+}
+
+.score-list {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.monetization-panel {
+  grid-column: 1 / -1;
+}
+
+.proposal-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.proposal-toolbar p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.proposal-toolbar button {
+  min-height: 36px;
+  padding: 0 12px;
+  color: var(--white);
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  font-family: "Microsoft YaHei", sans-serif;
+  font-weight: 800;
+}
+
+.proposal-pack {
+  display: grid;
+  gap: 14px;
+}
+
+.proposal-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  color: var(--white);
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--ink), #47372a);
+}
+
+.proposal-score span,
+.proposal-card span,
+.pitch-box span,
+.route-card span {
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.proposal-score span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.proposal-score strong {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.proposal-grid,
+.route-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.proposal-card,
+.pitch-box,
+.route-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.proposal-card p,
+.pitch-box p,
+.route-card p {
+  margin: 6px 0 0;
+  line-height: 1.75;
+}
+
+.pitch-box {
+  border-left: 5px solid var(--red);
+}
+
+.pitch-box strong,
+.route-card strong {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+.route-card {
+  border-top: 4px solid var(--green);
+}
+
+.proposal-checklist {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 14px 14px 34px;
+  border: 1px dashed var(--gold);
+  border-radius: 6px;
+  background: rgba(185, 130, 42, 0.08);
+  line-height: 1.7;
+}
+
+.score-row {
+  display: grid;
+  gap: 8px;
+}
+
+.score-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.meter {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dedbd0;
+}
+
+.meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
+}
+
+@media (max-width: 980px) {
+  .app-shell,
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    position: relative;
+    height: auto;
+  }
+
+  .workspace-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .proposal-grid,
+  .route-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .control-panel,
+  .workspace {
+    padding: 20px;
+  }
+
+  .field-grid,
+  .button-row,
+  .billing-actions,
+  .sync-actions,
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .proposal-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .icon-action {
+    width: 100%;
+  }
+
+  h2 {
+    font-size: 34px;
+  }
+}
+
+/* ===== 模型配置面板 ===== */
+.model-panel {
+  margin-top: 26px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}

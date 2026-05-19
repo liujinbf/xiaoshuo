@@ -1,0 +1,137 @@
+/*
+  全局中文字体系统
+  目标：把设计稿里的思源宋体气质打包进项目，浏览器版和桌面版都稳定一致。
+*/
+@font-face {
+  font-family: "Story Serif CN";
+  src:
+    local("Source Han Serif SC"),
+    local("思源宋体"),
+    local("Source Han Serif CN"),
+    local("Source Han Serif"),
+    url("../assets/fonts/SourceHanSerifCN-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Story Serif CN";
+  src:
+    local("Source Han Serif SC SemiBold"),
+    local("Source Han Serif CN SemiBold"),
+    url("../assets/fonts/SourceHanSerifCN-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Story Serif CN";
+  src:
+    local("Source Han Serif SC Bold"),
+    local("Source Han Serif CN Bold"),
+    url("../assets/fonts/SourceHanSerifCN-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Story Serif CN";
+  src:
+    local("Source Han Serif SC Heavy"),
+    local("Source Han Serif CN Heavy"),
+    url("../assets/fonts/SourceHanSerifCN-Heavy.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Story Serif CN";
+  src:
+    local("Source Han Serif SC Heavy"),
+    local("Source Han Serif CN Heavy"),
+    url("../assets/fonts/SourceHanSerifCN-Heavy.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-serif-cn: "Story Serif CN", "Source Han Serif SC", "思源宋体", "Noto Serif SC", "Songti SC", "SimSun", "宋体", serif;
+  --font-ui-cn: var(--font-serif-cn);
+  --font-mono-cn: "Cascadia Mono", "Consolas", "Courier New", monospace;
+}
+
+html,
+body {
+  font-family: var(--font-serif-cn) !important;
+}
+
+body,
+body *:not(code):not(pre):not(kbd):not(samp) {
+  font-family: var(--font-serif-cn) !important;
+}
+
+body .app-shell.app-shell *,
+body .desktop-titlebar.desktop-titlebar *,
+body .modal-backdrop.modal-backdrop *,
+body .billing-modal.billing-modal *,
+body .editor-wrap.editor-wrap *,
+body .panel.panel *,
+body .control-panel.control-panel *,
+body .workspace.workspace *,
+body .desktop-inspector.desktop-inspector *,
+body .desktop-rail.desktop-rail * {
+  font-family: var(--font-serif-cn) !important;
+}
+
+#editorWordCount,
+#editorChapterWords,
+#editorReadTime,
+#editorAutoSave,
+#draftEditor,
+#projectSelect,
+#saveBtn,
+#exportTxtBtn,
+#generateBtn,
+#localDbBtn,
+#settingsBtn {
+  font-family: var(--font-serif-cn) !important;
+}
+
+.desktop-rail-item span,
+.desktop-rail-logo,
+.quota-pct,
+.quota-dl dd,
+.quota-dt,
+.quota-dd,
+.desktop-status-list dt,
+.desktop-status-list dd,
+.desktop-model-tuning input,
+.desktop-model-tuning output,
+.desktop-check-row span,
+.desktop-check-row strong,
+.desktop-check-row.pass strong,
+.desktop-check-row.warn strong,
+.price-amount,
+.price-num,
+.price-unit,
+.price-period,
+.proposal-score-badge .value,
+.word-count,
+.elapsed-time,
+.elapsed-label,
+.quota-row span:last-child,
+.order-result-row .order-id {
+  font-family: var(--font-serif-cn) !important;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-mono-cn) !important;
+}

@@ -1,0 +1,250 @@
+// ============================================================
+// 模块: planner-render.js — 故事方案界面渲染与 DOM 交互
+// 依赖: planner.js, utils.js, ai.js
+// ============================================================
+
+function getDraftEditorEl() { return document.querySelector("#draftEditor"); }
+function getDraftStatsEl() { return document.querySelector("#draftStats"); }
+
+function renderDraft(draft) {
+  const el = getDraftEditorEl();
+  if (el) {
+    el.value = draft.join("\n\n");
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  syncDraftFromEditor();
+}
+
+function getDraftText() {
+  const el = getDraftEditorEl();
+  return el ? el.value.trim() : "";
+}
+
+function getDraftParagraphs() {
+  const el = getDraftEditorEl();
+  return el ? splitParagraphs(el.value) : [];
+}
+
+function countChineseLikeChars(text) {
+  return text.replace(/\s/g, "").length;
+}
+
+function getPlanDisplayTitle(plan = window.currentPlan) {
+  const manualTitle = document.querySelector("#storyTitle")?.value?.trim();
+  if (manualTitle) return manualTitle;
+  if (plan?.displayTitle) return plan.displayTitle;
+  if (plan?.titles?.[0]) return plan.titles[0];
+  if (plan?.input?.theme) {
+    return typeof compactTheme === "function" ? compactTheme(plan.input.theme) : plan.input.theme;
+  }
+  const themeTitle = document.querySelector("#theme")?.value?.trim();
+  if (themeTitle) return typeof compactTheme === "function" ? compactTheme(themeTitle) : themeTitle;
+  return "未命名故事";
+}
+
+function syncProjectChrome(plan = window.currentPlan, options = {}) {
+  const title = options.title || getPlanDisplayTitle(plan);
+  const safeTitle = typeof escapeHtml === "function" ? escapeHtml(title) : title;
+
+  const topBarProj = document.querySelector("#desktopProjectName");
+  if (topBarProj) topBarProj.textContent = `项目：${title}`;
+
+  const edTitle = document.querySelector("#editorChapterTitle");
+  if (edTitle) {
+    edTitle.innerHTML = `第 1 章  <span class="ch-name">${safeTitle}</span> <span class="editor-action-tag">正文编辑</span>`;
+  }
+
+  const tabEl = document.querySelector("#chapterStrip button.active");
+  if (tabEl) tabEl.textContent = `正文稿：${title} ×`;
+}
+
+window.syncProjectChrome = syncProjectChrome;
+
+function updateDraftStats() {
+  const text = getDraftText();
+  const charCount = countChineseLikeChars(text);
+  const paragraphCount = getDraftParagraphs().length;
+  const statsEl = getDraftStatsEl();
+  if (statsEl) statsEl.textContent = `${charCount} 字 · ${paragraphCount} 段`;
+
+  const plan = window.currentPlan;
+  const target = plan ? plan.input.length : 8000;
+  const percent = Math.min(100, Math.round((charCount / target) * 100));
+  const fill = document.querySelector("#draftProgressFill");
+  if (fill) {
+    fill.style.width = `${percent}%`;
+    fill.classList.toggle("near", percent >= 75 && percent < 100);
+    fill.classList.toggle("done", percent >= 100);
+  }
+}
+
+function syncDraftFromEditor() {
+  if (window.currentPlan) {
+    window.currentPlan.draft = getDraftParagraphs();
+  }
+  updateDraftStats();
+}
+
+function renderPlanData(plan) {
+  // 确保数据已标准化
+  if (typeof normalizePlan === "function") {
+    plan = normalizePlan(plan);
+  }
+  window.currentPlan = plan;
+  
+  document.querySelector("#projectTitle").textContent = `${plan.profile.label}：${plan.input.theme}`;
+  syncProjectChrome(plan);
+  
+  document.querySelector("#titleList").innerHTML = plan.titles.map((title) => `<div class="title-item">${escapeHtml(title)}</div>`).join("");
+  document.querySelector("#hookText").textContent = plan.hook;
+  document.querySelector("#outlineList").innerHTML = plan.outline.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+  
+  const importBtn = document.querySelector("#importToSerialBtn");
+  if (importBtn) importBtn.style.display = "inline-block";
+  
+  const memoryItems = [
+    ...plan.characters.map((item, index) => ({
+      title: item.name || item.role,
+      type: item.role,
+      weight: index === 0 ? "高" : index < 3 ? "中" : "低",
+      text: item.motive,
+      tags: [item.role, index === 0 ? "主线" : "伏笔"]
+    })),
+    ...plan.evidenceChain.slice(0, 2).map((item, index) => ({
+      title: item.clue,
+      type: item.stage || "线索",
+      weight: index === 0 ? "高" : "中",
+      text: item.purpose || item.payoff,
+      tags: ["线索", item.appears || "回收"]
+    })),
+    {
+      title: "旧物",
+      type: "场景",
+      weight: "中",
+      text: plan.input?.theme || "承载故事核心情绪和关键记忆的物件。",
+      tags: ["意象", "氛围"]
+    }
+  ].slice(0, 5);
+
+  document.querySelector("#characterList").innerHTML = memoryItems
+    .map((item, index) => `
+      <div class="asset-card memory-card">
+        <strong>${escapeHtml(item.title)}</strong>
+        <span class="memory-meta">类型：${escapeHtml(item.type)} · 重要度：${escapeHtml(item.weight)}</span>
+        <p>${escapeHtml(item.text)}</p>
+        <div class="memory-tags">
+          ${(item.tags || []).slice(0, 2).map((tag) => `<span>#${escapeHtml(tag)}</span>`).join("")}
+        </div>
+      </div>
+    `)
+    .join("");
+    
+  document.querySelector("#marketList").innerHTML = plan.marketBeats
+    .map((item) => `
+      <div class="market-card">
+        <strong>${escapeHtml(item.title)}</strong>
+        <p>${escapeHtml(item.text)}</p>
+      </div>
+    `)
+    .join("");
+    
+  document.querySelector("#evidenceList").innerHTML = plan.evidenceChain
+    .map((item) => `
+      <div class="evidence-card">
+        <span class="evidence-meta">${escapeHtml(item.stage)} · ${escapeHtml(item.appears)}</span>
+        <strong>${escapeHtml(item.clue)}</strong>
+        <p>${escapeHtml(item.purpose)}</p>
+        <p>${escapeHtml(item.payoff)}</p>
+      </div>
+    `)
+    .join("");
+    
+  document.querySelector("#episodeList").innerHTML = plan.dramaEpisodes
+    .map((item) => `
+      <div class="episode-card">
+        <span class="episode-meta">第 ${escapeHtml(item.episode)} 集</span>
+        <strong>${escapeHtml(item.title)}</strong>
+        <p>${escapeHtml(item.premise)}</p>
+        <p>${escapeHtml(item.cliffhanger)}</p>
+      </div>
+    `)
+    .join("");
+    
+  renderDraft(plan.draft);
+  
+  if (typeof checkDraftConsistency === "function" && typeof renderConsistency === "function") {
+    renderConsistency(checkDraftConsistency(plan));
+  }
+  
+  document.querySelector("#scoreList").innerHTML = plan.scores
+    .map(([name, value]) => `
+      <div class="score-row">
+        <div class="score-meta"><span>${name}</span><span>${value}</span></div>
+        <div class="meter"><span style="width:${value}%"></span></div>
+      </div>
+    `)
+    .join("");
+    
+  document.querySelector("#diagnosisText").textContent = plan.diagnosis;
+  document.querySelector("#proposalPack").innerHTML = `
+    <div class="proposal-header">
+      <div class="proposal-score-badge">
+        <span class="label">变现评分</span>
+        <span class="value">${escapeHtml(plan.proposalPack.score)}</span>
+      </div>
+    </div>
+    
+    <div class="proposal-grid">
+      ${plan.proposalPack.positioning
+        .map((item) => `
+          <div class="proposal-card">
+            <div class="p-label">${escapeHtml(item.label)}</div>
+            <div class="p-text">${escapeHtml(item.text)}</div>
+          </div>
+        `)
+        .join("")}
+    </div>
+
+    <div class="pitch-container">
+      <div class="p-section-title">投稿 Pitch</div>
+      <div class="pitch-card">
+        <h4 class="pitch-title">${escapeHtml(plan.proposalPack.pitch.title)}</h4>
+        <div class="pitch-logline">${escapeHtml(plan.proposalPack.pitch.logline)}</div>
+        <div class="pitch-synopsis">${escapeHtml(plan.proposalPack.pitch.synopsis)}</div>
+        <div class="pitch-note">💡 ${escapeHtml(plan.proposalPack.pitch.editorNote)}</div>
+      </div>
+    </div>
+
+    <div class="routes-container">
+      <div class="p-section-title">商业化路径建议</div>
+      <div class="route-grid">
+        ${plan.proposalPack.routes
+          .map((item) => `
+            <div class="route-card">
+              <div class="r-header">
+                <span class="r-name">${escapeHtml(item.name)}</span>
+                <span class="r-tag">${escapeHtml(item.speed)}</span>
+              </div>
+              <div class="r-revenue">${escapeHtml(item.revenue)}</div>
+              <div class="r-action">${escapeHtml(item.action)}</div>
+            </div>
+          `)
+          .join("")}
+      </div>
+    </div>
+
+    <div class="checklist-container">
+      <div class="p-section-title">投前自查清单</div>
+      <ul class="proposal-checklist">
+        ${plan.proposalPack.checklist.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+function renderPlan(input) {
+  if (typeof buildPlan !== "function") return;
+  const plan = buildPlan(input);
+  window.currentPlan = plan; 
+  renderPlanData(plan);
+}

@@ -1,0 +1,427 @@
+﻿/* 主工作区：暖色桌面应用，而不是暗黑 SaaS */
+.workspace {
+  background: transparent;
+  min-width: 0;
+}
+
+.workspace-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 16px 24px;
+  color: var(--txt);
+  background: rgba(255, 250, 240, 0.86);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 10px 26px rgba(60, 48, 30, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.workspace-header h2 {
+  color: var(--txt);
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: 22px;
+  max-width: 620px;
+}
+
+.workspace-header .eyebrow,
+.workspace-tabs .tab-btn,
+.api-status {
+  color: var(--txt3);
+}
+
+.header-actions {
+  gap: 8px;
+}
+
+.api-status {
+  min-height: 32px;
+  background: rgba(255, 255, 255, 0.58);
+  border-color: var(--border);
+}
+
+.ghost-action {
+  min-height: 34px;
+  color: var(--txt2);
+  background: rgba(255, 250, 240, 0.74);
+  border-color: var(--border2);
+}
+
+.ghost-action:hover {
+  color: var(--txt);
+  background: #fffaf0;
+  border-color: rgba(183, 67, 46, 0.32);
+}
+
+.workspace-tabs {
+  gap: 6px;
+  padding: 12px 24px 0;
+  background: rgba(255, 250, 240, 0.66);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.tab-btn {
+  min-height: 38px;
+  padding: 8px 18px 10px;
+  border-radius: 8px 8px 0 0;
+  color: var(--txt3);
+}
+
+.tab-btn.active {
+  color: var(--txt);
+  background: rgba(255, 250, 240, 0.82);
+  border-bottom-color: var(--green);
+}
+
+#panelShort {
+  padding: 22px 24px 28px;
+}
+
+.result-grid {
+  grid-template-columns: minmax(280px, 0.9fr) minmax(440px, 1.35fr) minmax(260px, 0.82fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.result-panel,
+.score-panel,
+.chapter-card,
+.novel-item,
+.pitch-card,
+.proposal-card,
+.route-card,
+.serial-summary-bar,
+.diagnosis-box,
+.hook-box,
+.diff-viewer {
+  color: var(--txt);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.result-panel:hover,
+.score-panel:hover,
+.chapter-card:hover,
+.novel-item:hover,
+.proposal-card:hover,
+.route-card:hover {
+  border-color: rgba(18, 107, 93, 0.28);
+}
+
+.main-result {
+  grid-column: 1;
+  grid-row: 1;
+  border-top: 4px solid var(--red);
+}
+
+.result-grid > .result-panel:nth-of-type(2) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.result-grid > .result-panel:nth-of-type(3) {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.result-grid > .result-panel:nth-of-type(4) {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  min-height: 610px;
+  border-top: 4px solid var(--green);
+}
+
+.result-grid > .result-panel:nth-of-type(5) {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.result-grid > .result-panel:nth-of-type(6) {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+.result-grid > .result-panel:nth-of-type(7) {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.result-grid > .result-panel:nth-of-type(8) {
+  grid-column: 1 / span 2;
+}
+
+.score-panel {
+  grid-column: 3;
+}
+
+.monetization-panel {
+  grid-column: 1 / -1;
+}
+
+.panel-title {
+  border-bottom-color: var(--border);
+}
+
+.panel-title span {
+  background: var(--ink-panel);
+  color: #fff8eb;
+  border-radius: 6px;
+}
+
+.panel-title h3 {
+  color: var(--txt);
+  font-size: 14px;
+}
+
+.title-btn,
+.title-list .title-btn,
+.asset-item,
+.evidence-item,
+.market-item,
+.consistency-item,
+.episode-item {
+  color: var(--txt2);
+  background: rgba(255, 255, 255, 0.48);
+  border-color: var(--border);
+}
+
+.title-btn:hover,
+.title-btn.active,
+.novel-item:hover,
+.novel-item.active {
+  color: var(--txt);
+  background: rgba(18, 107, 93, 0.08);
+  border-color: rgba(18, 107, 93, 0.32);
+}
+
+.asset-item strong,
+.evidence-item strong,
+.market-item strong,
+.pitch-title,
+.route-card .r-name,
+.proposal-card .p-text {
+  color: var(--txt);
+}
+
+.section-label,
+.proposal-card .p-label,
+.chapter-num,
+.history-meta,
+.novel-item-meta,
+.proposal-toolbar p {
+  color: var(--txt3);
+}
+
+.hook-box {
+  border-left: 4px solid var(--green);
+  background:
+    linear-gradient(transparent 31px, rgba(95, 78, 48, 0.06) 32px) 0 0 / 100% 32px,
+    rgba(255, 253, 248, 0.92);
+}
+
+.outline-list li,
+.proposal-pack,
+.pitch-logline,
+.pitch-synopsis,
+.route-card .r-action,
+.chapter-meta {
+  color: var(--txt2);
+}
+
+.editor-toolbar {
+  color: var(--txt2);
+}
+/* editor-toolbar button styles moved to desktop-ui.css (.tb-btn) */
+
+.draft-editor {
+  min-height: 520px;
+  color: #20231f;
+  background:
+    linear-gradient(transparent 31px, rgba(95, 78, 48, 0.075) 32px) 0 0 / 100% 32px,
+    #fffdf7;
+  border-color: rgba(76, 67, 52, 0.18);
+  border-radius: 8px;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: 16px;
+  line-height: 2;
+}
+
+.draft-editor:focus {
+  border-color: rgba(18, 107, 93, 0.42);
+  box-shadow: 0 0 0 3px rgba(18, 107, 93, 0.1);
+}
+
+.draft-progress-wrap {
+  background: rgba(18, 107, 93, 0.12);
+}
+
+.draft-progress-fill {
+  background: var(--green);
+  box-shadow: 0 0 10px rgba(18, 107, 93, 0.32);
+}
+
+.micro-actions button {
+  color: var(--txt2);
+  background: rgba(255, 255, 255, 0.54);
+  border-color: var(--border);
+}
+
+.micro-actions button:hover {
+  color: var(--green);
+  background: var(--green-dim);
+  border-color: rgba(18, 107, 93, 0.28);
+}
+
+.score-bar {
+  background: rgba(18, 107, 93, 0.13);
+}
+
+.score-bar-fill {
+  background: linear-gradient(90deg, var(--green), var(--gold), var(--red));
+}
+
+.score-val,
+.score-badge,
+.proposal-score-badge .value {
+  color: var(--red);
+}
+
+.proposal-score-badge {
+  background: #fffaf0;
+  border-color: var(--border);
+}
+
+.proposal-grid,
+.route-grid {
+  gap: 12px;
+}
+
+.pitch-card {
+  border-left: 4px solid var(--red);
+}
+
+/* 连载工作区同步桌面质感 */
+#panelSerial,
+#panelLearn {
+  color: var(--txt);
+}
+
+.serial-layout {
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+}
+
+.serial-sidebar,
+.serial-main {
+  background: rgba(255, 250, 240, 0.6);
+}
+
+.serial-sidebar {
+  border-right-color: var(--border);
+}
+
+.serial-create h3,
+.serial-ws-header h2,
+.chapter-title,
+.novel-item-title {
+  color: var(--txt);
+}
+
+.serial-empty-state p,
+.serial-empty-hint {
+  color: var(--txt3);
+}
+
+.serial-progress-badge {
+  color: var(--green);
+  background: var(--green-dim);
+  border-color: rgba(18, 107, 93, 0.26);
+}
+
+.serial-gen-btn,
+.chapter-actions button,
+.chapter-reader-bar button,
+.proposal-toolbar button,
+#copyProposalBtn {
+  color: var(--txt2);
+  background: rgba(255, 250, 240, 0.78);
+  border-color: var(--border2);
+}
+
+.serial-gen-btn:hover,
+.chapter-actions button:hover,
+.chapter-reader-bar button:hover,
+.proposal-toolbar button:hover {
+  color: var(--txt);
+  background: #fffaf0;
+}
+
+.chapter-reader {
+  background: var(--bg);
+}
+
+.chapter-reader-bar {
+  background: rgba(255, 250, 240, 0.9);
+  border-bottom-color: var(--border);
+}
+
+.chapter-reader-body {
+  color: var(--txt);
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+
+/* 爆款拆解中大量内联样式使用变量，这里重置变量后的视觉会自然跟随；补齐少量按钮 */
+.btn,
+.btn-primary,
+.btn-secondary {
+  border-radius: 8px;
+}
+
+/* 响应式：窄屏保持可用，不让三栏挤爆 */
+@media (max-width: 1320px) {
+  .result-grid {
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+  }
+
+  .main-result,
+  .result-grid > .result-panel:nth-of-type(2),
+  .result-grid > .result-panel:nth-of-type(3),
+  .result-grid > .result-panel:nth-of-type(4),
+  .result-grid > .result-panel:nth-of-type(5),
+  .result-grid > .result-panel:nth-of-type(6),
+  .result-grid > .result-panel:nth-of-type(7),
+  .result-grid > .result-panel:nth-of-type(8),
+  .score-panel,
+  .monetization-panel {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .result-grid > .result-panel:nth-of-type(4),
+  .monetization-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 920px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    position: relative;
+    height: auto;
+  }
+
+  .workspace-header,
+  .header-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .result-grid,
+  .serial-layout {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,285 @@
+/* ================================================================
+   desktop-ui-layout.css — 桌面版设计稿：布局框架、侧边栏、工具栏
+   ================================================================ */
+:root {
+  --du-bg: #f4f0e6;
+  --du-panel: rgba(255, 252, 245, 0.92);
+  --du-panel-solid: #fffaf0;
+  --du-panel-soft: #f7f2e8;
+  --du-line: rgba(79, 72, 59, 0.16);
+  --du-line-strong: rgba(79, 72, 59, 0.26);
+  --du-ink: #24241f;
+  --du-muted: #7a756b;
+  --du-faint: #a7a094;
+  --du-green: #176b54;
+  --du-green-2: #0f5a45;
+  --du-green-soft: rgba(23, 107, 84, 0.12);
+  --du-red: #b64631;
+  --du-gold: #b58a43;
+  --du-shadow: 0 14px 34px rgba(58, 49, 35, 0.10);
+  --du-radius: 8px;
+}
+
+html,
+body {
+  overflow: hidden;
+}
+
+body {
+  color: var(--du-ink);
+  background:
+    linear-gradient(90deg, rgba(83, 75, 61, 0.055) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(180deg, rgba(83, 75, 61, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+    radial-gradient(circle at 18% 8%, rgba(181, 138, 67, 0.09), transparent 30%),
+    var(--du-bg);
+  font-family: "Microsoft YaHei", "Noto Sans SC", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  letter-spacing: 0;
+}
+
+button {
+  user-select: none;
+}
+
+.desktop-titlebar {
+  display: flex;
+  height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  color: #22231f;
+  background: rgba(255, 252, 245, 0.94);
+  border-bottom: 1px solid var(--du-line);
+}
+
+.desktop-titlebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.desktop-app-icon {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: #e8d4a6;
+  background: #1e201b;
+  border-radius: 6px;
+  font-size: 13px;
+  box-shadow: inset 0 0 0 1px rgba(232, 212, 166, 0.34);
+}
+
+.desktop-window-dots {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  color: #20211e;
+  font-size: 17px;
+}
+
+.desktop-toolbar {
+  display: grid;
+  grid-template-columns: 260px auto auto 1fr auto auto;
+  height: 62px;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 20px 10px 188px;
+  background: rgba(255, 252, 245, 0.78);
+  border-bottom: 1px solid var(--du-line);
+  backdrop-filter: blur(18px);
+}
+
+.desktop-project-select,
+.desktop-tool-button,
+.desktop-database-button,
+.desktop-settings-button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--du-ink);
+  background: rgba(255, 252, 245, 0.8);
+  border: 1px solid var(--du-line);
+  border-radius: var(--du-radius);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.desktop-project-select {
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.desktop-save-state {
+  color: var(--du-faint);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.desktop-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.desktop-tool-button {
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.desktop-tool-button:hover,
+.desktop-database-button:hover,
+.desktop-settings-button:hover {
+  background: #fffdf8;
+  border-color: var(--du-line-strong);
+}
+
+.desktop-generate {
+  color: #fff;
+  background: linear-gradient(135deg, var(--du-green), var(--du-green-2));
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(23, 107, 84, 0.24);
+}
+
+.desktop-generate::before {
+  content: "✦";
+  font-weight: 800;
+}
+
+.desktop-generate::after {
+  content: "⌄";
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.desktop-icon-only {
+  width: 36px;
+  padding: 0;
+  font-size: 20px;
+}
+
+.desktop-icon-only.muted {
+  color: #c5bfb3;
+}
+
+.desktop-database-button {
+  padding: 0 14px;
+  line-height: 1.1;
+  text-align: left;
+  font-size: 13px;
+}
+
+.desktop-database-button small {
+  color: var(--du-muted);
+  font-size: 11px;
+}
+
+.desktop-settings-button {
+  width: 38px;
+  padding: 0;
+  font-size: 20px;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 164px 340px minmax(560px, 1fr) 300px;
+  height: calc(100vh - 104px);
+  min-height: 0;
+}
+
+.desktop-rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px 0 16px;
+  background: rgba(255, 252, 245, 0.74);
+  border-right: 1px solid var(--du-line);
+  box-shadow: 12px 0 26px rgba(73, 60, 39, 0.05);
+}
+
+.desktop-rail-logo {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  margin: 6px auto 18px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.32), transparent 34%),
+    linear-gradient(145deg, #6f8668, #365a45);
+  border-radius: 50%;
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 31px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(54, 90, 69, 0.22);
+}
+
+.desktop-rail-item {
+  display: flex;
+  position: relative;
+  min-height: 52px;
+  align-items: center;
+  gap: 14px;
+  padding: 0 18px;
+  color: #474a43;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  font-size: 16px;
+  text-align: left;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.desktop-rail-item span {
+  display: grid;
+  width: 24px;
+  place-items: center;
+  color: #666b64;
+  font-size: 21px;
+}
+
+.desktop-rail-item strong {
+  font-weight: 600;
+}
+
+.desktop-rail-item:hover,
+.desktop-rail-item.active {
+  color: var(--du-green);
+  background: rgba(23, 107, 84, 0.1);
+}
+
+.desktop-rail-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 5px;
+  height: 30px;
+  background: var(--du-green);
+  border-radius: 0 999px 999px 0;
+}
+
+.desktop-rail-quote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto 12px 10px;
+  padding: 10px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-height: 120px;
+}
+
