@@ -11,6 +11,7 @@ import { handlePayRoutes } from "./server/routes/pay.js";
 import { handleAdminRoutes } from "./server/routes/admin.js";
 import { handleInspirationsRoutes } from "./server/routes/inspirations.js";
 import { callOpenAI } from "./server/utils/prompts.js";
+import { retrieveKnowledgeForDraft } from "./server/utils/knowledge-retrieval.js";
 import { clientIp, throttle } from "./server/utils/security.js";
 
 const rootDir = resolve(".");
@@ -216,49 +217,26 @@ async function handleApi(request, response, url) {
     try {
       const payload = await readJson(request);
 
-      // RAG: 动态智能召回用户学习过的海量爆款模版（BM25/Lexical 相似度召回）
       const userId = getUserId(request, payload, url);
       if (userId) {
-        const { getInspirations } = await import("./server/utils/db.js");
-        const inspirations = await getInspirations(userId);
-        const genre = payload.input?.genre;
-        if (genre) {
-          let matched = inspirations.filter(ins => {
-            const text = `${ins.theme || ""} ${ins.hook || ""} ${ins.outline || ""}`;
-            return ins.genre === genre
-              && ins.theme
-              && ins.hook
-              && ins.outline
-              && !/[━─=＿_—\-]{3,}|未知设定|精彩故事|公\s*[|/\\.\[\]（）()【】]*\s*(?:众|主)\s*[|/\\.\[\]（）()【】]*\s*号|闲\s*[|/\\.\[\]（）()【】*＊·\s-]*\s*书|书荒|推文|后续|完整版|网盘|加群|关注|菜单栏|阅读全文|番外|来源来自网络/.test(text)
-              && !/公众号|公主号|闲闲书|闲书|书坊|书荒|推文|后续|完整版|网盘|加群|关注|菜单栏|阅读全文|番外|西图澜娅|来源来自网络/.test(text.replace(/[|｜/\\.\[\]【】（）(){}<>《》「」『』·*＊_\-—=~～!！^]+/g, "").replace(/\s+/g, ""));
-          });
-          if (matched.length > 0) {
-            // 获取用户的创作标签和核心主题作为查询 Query
-            const queryWords = [];
-            if (payload.input?.theme) queryWords.push(...payload.input.theme.split(/[，。！？、\s]+/));
-            if (Array.isArray(payload.input?.tags)) queryWords.push(...payload.input.tags);
-            const validQueries = queryWords.filter(w => w.length >= 2); // 过滤短虚词
-
-            // 智能打分排序
-            matched.forEach(ins => {
-              let score = 0;
-              const contentToSearch = (ins.theme + " " + ins.hook + " " + (ins.outline||"")).toLowerCase();
-              validQueries.forEach(q => {
-                if (contentToSearch.includes(q.toLowerCase())) score += 10;
-              });
-              // 加入微小的随机扰动，防止同一题材永远召回同一篇
-              ins._score = score + Math.random() * 5; 
-            });
-
-            matched.sort((a, b) => b._score - a._score);
-            // 将最相关的 Top 3 送入 payload
-            payload.matchedInspirations = matched.slice(0, 3);
-          }
-        }
+        payload.matchedInspirations = await retrieveKnowledgeForDraft({
+          userId,
+          input: payload.input,
+          limit: 5
+        });
       }
 
       const text = await callOpenAI(payload);
-      sendJson(response, 200, { ok: true, text, model });
+      sendJson(response, 200, {
+        ok: true,
+        text,
+        model,
+        knowledgeUsed: (payload.matchedInspirations || []).map((item) => ({
+          id: item.id,
+          theme: item.theme,
+          score: Math.round(item._score || 0)
+        }))
+      });
     } catch (error) {
       sendJson(response, error.statusCode || 500, {
         ok: false,

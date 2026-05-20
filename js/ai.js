@@ -136,6 +136,16 @@ async function requestAiGeneration(mode, direction = "") {
   if (!response.ok || !data.ok) {
     throw new Error(data.message || "AI 生成失败");
   }
+  if (Array.isArray(data.knowledgeUsed)) {
+    plan.knowledgeUsed = data.knowledgeUsed;
+    const knowledgeEl = document.getElementById("genKnowledgeUsed");
+    if (knowledgeEl) {
+      knowledgeEl.textContent = data.knowledgeUsed.length
+        ? `${data.knowledgeUsed.length} 条素材策略`
+        : "未召回";
+      knowledgeEl.title = data.knowledgeUsed.map((item) => item.theme).join("\n");
+    }
+  }
   return data.text;
 }
 

@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 13. 清空生成状态
   safeListen("#clearGenStatusBtn", "click", () => {
-    const ids = ["genStatusVal", "genStartTime", "genWordCount", "genElapsed"];
+    const ids = ["genStatusVal", "genStartTime", "genWordCount", "genKnowledgeUsed", "genElapsed"];
     ids.forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.textContent = id === "genStatusVal" ? "空闲" : "--";

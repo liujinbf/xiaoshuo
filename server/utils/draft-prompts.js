@@ -151,13 +151,12 @@ export function buildUserPrompt(payload) {
   };
   const inspirationSection = [];
   if (Array.isArray(payload.matchedInspirations) && payload.matchedInspirations.length > 0) {
-    inspirationSection.push("\n【可参考的知识库节奏】");
-    payload.matchedInspirations.slice(0, 3).forEach((ins, idx) => {
-      inspirationSection.push(`参考 ${idx + 1}：${ins.theme}`);
-      inspirationSection.push(`- 钩子：${ins.hook}`);
-      inspirationSection.push(`- 节奏：${ins.outline}`);
+    inspirationSection.push("\n【本地素材库召回的写作策略】");
+    payload.matchedInspirations.slice(0, 5).forEach((ins, idx) => {
+      inspirationSection.push(`策略 ${idx + 1}（匹配分 ${Math.round(ins._score || 0)}）：`);
+      inspirationSection.push(ins.strategyPrompt || `主题：${ins.theme}\n钩子：${ins.hook}\n节奏：${ins.outline}`);
     });
-    inspirationSection.push("只学习其开篇冲突密度和白描节奏，禁止借用广告、人物名、原剧情和原句。");
+    inspirationSection.push("优先综合这些策略生成本次故事；固定题材模板只能兜底，不能替代素材库策略。");
   }
 
   return [
