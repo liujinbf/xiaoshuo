@@ -3,6 +3,8 @@
 // 模块: draft-prompts.js — 正文生成 Prompt 构建器与 AI 调用
 // ============================================================
 
+import { assessDraftQuality } from "./draft-quality.js";
+
 function extractChatText(data) {
   return (data?.choices?.[0]?.message?.content || "").trim();
 }
@@ -117,6 +119,10 @@ function buildDraftPolishUserPrompt(input = {}, text = "") {
 
 async function polishGeneratedDraft({ baseUrl, apiKey, modelName, payload, text }) {
   if (payload.mode === "polish") return text;
+  const quality = assessDraftQuality(text, payload.input);
+  const qualityInstruction = quality.ok
+    ? ""
+    : `\n【必须修复的问题】\n${quality.issues.map((item, index) => `${index + 1}. ${item}`).join("\n")}`;
   try {
     const polishResponse = await fetch(`${baseUrl}/v1/chat/completions`, {
       method: "POST",
@@ -128,7 +134,7 @@ async function polishGeneratedDraft({ baseUrl, apiKey, modelName, payload, text 
         model: modelName,
         messages: [
           { role: "system", content: buildDraftPolishSystemPrompt(payload.input) },
-          { role: "user", content: buildDraftPolishUserPrompt(payload.input, text) }
+          { role: "user", content: buildDraftPolishUserPrompt(payload.input, text) + qualityInstruction }
         ],
         max_tokens: payload.mode === "rewrite" ? 1300 : 2800,
         temperature: 0.42
@@ -185,10 +191,7 @@ function localMockGenerate(payload) {
   const theme = input.theme || "家里人逼我让步";
   const place = input.genre === "family" ? "酒店化妆间外" : "门口";
   const proof = input.genre === "family" ? "母亲那本旧账本" : "手机里的录音";
-  const title = input.title || theme;
   return [
-    `《${title}》`,
-    "",
     `我站在${place}，听见我妈隔着门说：“先别让她进来，今天不能闹。”`,
     "",
     `门缝里漏出一点暖黄的灯。里面很热闹，妹妹的伴娘在笑，司仪一遍遍确认流程。只有我手里的${proof}，冷得像刚从冰水里捞出来。`,

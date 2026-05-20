@@ -9,6 +9,7 @@ import {
   buildChapterPolishSystemPrompt,
   buildChapterPolishUserPrompt
 } from "../utils/prompts.js";
+import { retrieveKnowledgeForDraft } from "../utils/knowledge-retrieval.js";
 
 function parseChapterMemory(rawText) {
   const raw = String(rawText || "").trim().replace(/^```json\s*|\s*```$/g, "");
@@ -162,45 +163,28 @@ export async function handleNovelRoutes(request, response, url, helpers) {
         }
       }
 
-      // --- 1.5 召回已学爆款模版 (RAG) ---
-      let matchedInspirations = [];
-      try {
-        const { getInspirations } = await import("../utils/db.js");
-        const inspirations = await getInspirations(userId);
-        const genreEnMap = {
-          "悬疑反转": "suspense",
-          "婚恋复仇": "revenge",
-          "大女主爽文": "heroine",
-          "世情家庭": "family",
-          "中式志怪": "folklore",
-          "历史错位爽文": "history",
-          "规则怪谈脑洞": "rules",
-          "职场内幕": "workplace"
-        };
-        const enGenre = genreEnMap[novel.genre];
-        if (enGenre) {
-          let matched = inspirations.filter(ins => ins.genre === enGenre);
-          if (matched.length > 0) {
-            // 用小说的标题和大纲分词作为 Query，智能筛选爆款模版
-            const queryWords = [];
-            if (novel.title) queryWords.push(...novel.title.split(/[，。！？、\s]+/));
-            if (novel.outline) queryWords.push(...novel.outline.split(/[，。！？、；\s]+/));
-            const validQueries = queryWords.filter(w => w.length >= 2);
-
-            matched.forEach(ins => {
-              let score = 0;
-              const contentToSearch = (ins.theme + " " + ins.hook + " " + (ins.outline||"")).toLowerCase();
-              validQueries.forEach(q => {
-                if (contentToSearch.includes(q.toLowerCase())) score += 10;
-              });
-              ins._score = score + Math.random() * 5; 
-            });
-
-            matched.sort((a, b) => b._score - a._score);
-            matchedInspirations = matched.slice(0, 3);
-          }
+      // --- 1.5 召回本地素材库策略 (RAG) ---
+      const genreEnMap = {
+        "悬疑反转": "suspense",
+        "婚恋复仇": "revenge",
+        "大女主爽文": "heroine",
+        "世情家庭": "family",
+        "中式志怪": "folklore",
+        "历史错位爽文": "history",
+        "规则怪谈脑洞": "rules",
+        "职场内幕": "workplace"
+      };
+      const matchedInspirations = await retrieveKnowledgeForDraft({
+        userId,
+        limit: 5,
+        input: {
+          genre: genreEnMap[novel.genre] || novel.genre,
+          title: novel.title,
+          theme: novel.outline,
+          notes: novel.characters,
+          tags: []
         }
-      } catch (_) { /* 容错 */ }
+      });
 
       // --- 2. 生成章节正文 ---
       const contentRes = await fetch(`${baseUrl}/v1/chat/completions`, {
