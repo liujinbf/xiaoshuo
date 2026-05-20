@@ -4,24 +4,57 @@
 // ============================================================
 
 import { assessDraftQuality } from "./draft-quality.js";
+import { extractChatText } from "./vector.js";
 
-function extractChatText(data) {
-  return (data?.choices?.[0]?.message?.content || "").trim();
-}
 
-export function buildSystemPrompt() {
-  return [
+export function buildSystemPrompt(genreStats = null) {
+  const base = [
     "你是一名中文短篇故事主编，专长是知乎盐选、盐言故事风格的商业短篇。",
     "写作目标：强开篇钩子、现实情绪、清晰反转、人物动机可信、适合移动端阅读。",
     "必须像真人作者写一场正在发生的戏：有地点、人物动作、对话、证据、即时目标和因果推进。",
     "【去 AI 味硬规则】",
     "1. 禁止复述标题、复述用户的一句话概述，禁止把设定改写成旁白说明。",
-    "2. 禁止使用“事情发生在”“那时我还不知道”“真正的局”“只是一个幌子”“三个月前就已经开始”等模板句。",
+    "2. 禁止使用“事情发生在”“那时我还不知道”“真正的局”“只是一个幌子”“三个月前就已经开始”等套话。",
     "3. 禁止总结和说教，结尾只能停在动作、证据、台词或新的反常事实上。",
     "4. 每段只写一个动作、一个发现或一次对话推进；少用抽象词，多写可看见的细节。",
-    "5. 人物关系必须自洽：谁在场、谁说话、谁施压、主角为什么不能立刻走，都要让读者读得明白。",
-    "6. 禁止输出“以下是”“正文如下”“创作思路”等提示语，只输出正文。"
-  ].join("\n");
+    "5. 人物关系必须自洽：谁在场、谁说话、谁施压、主角为什么不能立刻走。",
+    "6. 禁止输出任何提示语，只输出正文。"
+  ];
+
+  if (genreStats && genreStats.sampleCount >= 3) {
+    base.push("");
+    base.push(`【基于 ${genreStats.sampleCount} 本同类爆款书的统计风格参数（必须遵守）】`);
+    if (genreStats.avgOpeningSpeed >= 4) {
+      base.push(`开篇速度：该题材爆款平均第 ${genreStats.avgFirstConflictAt} 句出现冲突，必须在前 ${Math.ceil(Number(genreStats.avgFirstConflictAt) * 1.2)} 句内切入核心矛盾。`);
+    }
+    if (genreStats.avgDialogueRatio) {
+      base.push(`对话比例：该题材爆款对话占比约 ${genreStats.avgDialogueRatio}%，请保持相近密度。`);
+    }
+    if (genreStats.dominantSentenceStyle) {
+      const styleMap = {
+        "极短句主导": "大量使用 5-10 字短句，制造阅读节奏感",
+        "短长混合": "短句制造冲击感，长句铺垫情绪，错落有致",
+        "长句为主": "绵密长句积累情绪，关键处用短句切断",
+      };
+      base.push(`句式风格：${styleMap[genreStats.dominantSentenceStyle] || genreStats.dominantSentenceStyle}`);
+    }
+    if (genreStats.dominantEndingHook) {
+      const hookMap = {
+        "动作断章": "结尾用一个具体动作停住，不要解释",
+        "台词断章": "结尾用出乎意料的一句台词直接收笔",
+        "发现断章": "结尾用发现异常信息的瞬间停住",
+        "悬念留白": "结尾抛出一个问题，不给答案",
+      };
+      base.push(`断章方式：${hookMap[genreStats.dominantEndingHook] || genreStats.dominantEndingHook}`);
+    }
+    if (genreStats.powerPhrases && genreStats.powerPhrases.length > 0) {
+      const sampled = [...genreStats.powerPhrases].sort(() => Math.random() - 0.5).slice(0, 3);
+      base.push("\n参考爆款金句（学节奏和力度，绝不复制）：");
+      sampled.forEach(p => base.push(`  「${p.slice(0, 80)}」`));
+    }
+  }
+
+  return base.join("\n");
 }
 
 function buildGenreWritingRules(input = {}) {
@@ -225,14 +258,20 @@ export async function callOpenAI(payload) {
     body: JSON.stringify({
       model: modelName,
       messages: [
-        { role: "system", content: buildSystemPrompt() },
+        // 🆕 传入题材统计规律，动态生成更有针对性的 System Prompt
+        { role: "system", content: buildSystemPrompt(payload.genreStats || null) },
         { role: "user", content: buildUserPrompt(payload) }
       ],
       max_tokens: payload.mode === "rewrite" ? 1200 : 2600,
-      temperature: 0.58
+      // 🆕 temperature 0.58 → 0.88，释放创意空间
+      temperature: payload.mode === "polish" ? 0.72 : 0.88,
+      // 🆕 降低重复词汇出现率
+      frequency_penalty: 0.35,
+      presence_penalty: 0.2,
     }),
     signal: AbortSignal.timeout(120000)
   });
+
 
   const data = await apiResponse.json();
   if (!apiResponse.ok) {

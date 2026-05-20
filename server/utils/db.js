@@ -154,13 +154,16 @@ export async function saveSetting(key, value) {
   );
 }
 
-export async function saveInspiration(id, userId, genre, theme, hook, outline, rawText) {
+export async function saveInspiration(id, userId, genre, theme, hook, outline, rawText, fingerprint = null) {
   const db = await getDb();
   await db.run(
-    "INSERT INTO inspirations (id, user_id, genre, theme, hook, outline, raw_text, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-    [id, userId, genre, theme, hook, outline, rawText, new Date().toISOString()]
+    `INSERT INTO inspirations (id, user_id, genre, theme, hook, outline, raw_text, fingerprint, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET fingerprint=excluded.fingerprint`,
+    [id, userId, genre, theme, hook, outline, rawText, fingerprint, new Date().toISOString()]
   );
 }
+
 
 export async function getInspirations(userId) {
   const db = await getDb();
@@ -177,4 +180,108 @@ export async function getInspirations(userId) {
 export async function deleteInspiration(userId, inspirationId) {
   const db = await getDb();
   await db.run("DELETE FROM inspirations WHERE id = ? AND user_id = ?", [inspirationId, userId]);
+}
+
+/**
+ * 清空用户的所有素材（不含 admin 系统素材）
+ * @param {string} userId
+ * @param {boolean} includeAdmin - 是否同时清空 admin 批量素材（仅管理员可用）
+ * @returns {Promise<number>} 实际删除的条数
+ */
+export async function clearInspirations(userId, includeAdmin = false) {
+  const db = await getDb();
+  if (includeAdmin && userId === "admin") {
+    const result = await db.run("DELETE FROM inspirations");
+    return result.changes ?? 0;
+  }
+  const result = await db.run(
+    "DELETE FROM inspirations WHERE user_id = ?",
+    [userId]
+  );
+  return result.changes ?? 0;
+}
+
+// ===== chapter_embeddings — 向量嵌入独立存储 =====
+
+/**
+ * 保存或更新章节嵌入向量
+ * @param {string} novelId
+ * @param {number} chapterIndex
+ * @param {number[]} embedding - 浮点数组
+ */
+export async function saveChapterEmbedding(novelId, chapterIndex, embedding) {
+  const db = await getDb();
+  await db.run(
+    `INSERT INTO chapter_embeddings (novel_id, chapter_index, embedding, created_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(novel_id, chapter_index) DO UPDATE SET embedding = excluded.embedding`,
+    [novelId, chapterIndex, JSON.stringify(embedding), new Date().toISOString()]
+  );
+}
+
+/**
+ * 获取指定小说所有章节的嵌入向量
+ * @param {string} novelId
+ * @returns {Promise<Array<{chapterIndex: number, embedding: number[]}>>}
+ */
+export async function getChapterEmbeddings(novelId) {
+  const db = await getDb();
+  const rows = await db.all(
+    "SELECT chapter_index, embedding FROM chapter_embeddings WHERE novel_id = ? ORDER BY chapter_index ASC",
+    [novelId]
+  );
+  return rows.map(r => ({
+    chapterIndex: r.chapter_index,
+    embedding: JSON.parse(r.embedding)
+  }));
+}
+
+/**
+ * 删除小说的全部章节嵌入向量（删除小说时调用）
+ * @param {string} novelId
+ */
+export async function deleteChapterEmbeddings(novelId) {
+  const db = await getDb();
+  await db.run("DELETE FROM chapter_embeddings WHERE novel_id = ?", [novelId]);
+}
+
+// ===== 自动关联学科知识库相关查询 =====
+
+/**
+ * 获取所有的知识库列表
+ * @returns {Promise<Array<{id: string, category: string, entity: string, content: string}>>}
+ */
+export async function getAllKnowledge() {
+  const db = await getDb();
+  return await db.all("SELECT * FROM knowledge_base ORDER BY created_at DESC");
+}
+
+/**
+ * 根据实体列表获取知识库内容
+ * @param {string[]} entities
+ * @returns {Promise<Array<{id: string, category: string, entity: string, content: string}>>}
+ */
+export async function getKnowledgeByEntities(entities) {
+  if (!Array.isArray(entities) || entities.length === 0) return [];
+  const db = await getDb();
+  const placeholders = entities.map(() => "?").join(",");
+  return await db.all(
+    `SELECT * FROM knowledge_base WHERE entity IN (${placeholders})`,
+    entities
+  );
+}
+
+/**
+ * 保存或更新知识库实体常识
+ */
+export async function saveKnowledge(category, entity, content, alias = "", embedding = null) {
+  const db = await getDb();
+  const id = `kb_${category}_${Date.now()}`;
+  const embVal = embedding ? (typeof embedding === "string" ? embedding : JSON.stringify(embedding)) : null;
+  await db.run(
+    `INSERT INTO knowledge_base (id, category, entity, content, alias, embedding, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(entity) DO UPDATE SET category=excluded.category, content=excluded.content, alias=excluded.alias, embedding=excluded.embedding`,
+    [id, category, entity, content, alias || "", embVal, new Date().toISOString()]
+  );
 }

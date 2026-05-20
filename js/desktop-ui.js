@@ -8,16 +8,36 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. 工具栏代理点击 (data-click-target)
   document.querySelectorAll('[data-click-target]').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (btn.dataset.viewMode) {
+        window.currentShortViewMode = btn.dataset.viewMode;
+      }
       const target = document.querySelector(btn.dataset.clickTarget);
       if (target) target.click();
     });
   });
 
-  // 2. 规划视图 vs 编辑视图切换
+  // 2. 统一路由选项卡管理器
   const resultGrid = document.querySelector('.result-grid');
   const tabShort = document.getElementById('tabShort');
   const tabSerial = document.getElementById('tabSerial');
   const tabLearn = document.getElementById('tabLearn');
+
+  const panels = {
+    short: document.getElementById('panelShort'),
+    serial: document.getElementById('panelSerial'),
+    learn: document.getElementById('panelLearn'),
+    task: document.getElementById('panelTask'),
+    world: document.getElementById('panelWorld'),
+    admin: document.getElementById('panelAdmin')
+  };
+  const tabs = {
+    short: tabShort,
+    serial: tabSerial,
+    learn: tabLearn,
+    task: document.getElementById('tabTask'),
+    world: document.getElementById('tabWorld'),
+    admin: document.getElementById('tabAdmin')
+  };
 
   function setEditMode() {
     if (resultGrid) resultGrid.classList.remove('show-plan');
@@ -26,9 +46,96 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resultGrid) resultGrid.classList.add('show-plan');
   }
 
-  if (tabShort) tabShort.addEventListener('click', setPlanMode);
-  if (tabSerial) tabSerial.addEventListener('click', setEditMode);
-  if (tabLearn) tabLearn.addEventListener('click', setEditMode);
+  function switchWorkspaceTab(targetName) {
+    // 0. 联动左二侧栏对应的控制面板显隐
+    const controlShort = document.getElementById('controlShortContainer');
+    const controlSerial = document.getElementById('controlSerialContainer');
+    const controlLearn = document.getElementById('controlLearnContainer');
+    
+    if (controlShort) controlShort.hidden = (targetName !== 'short');
+    if (controlSerial) controlSerial.hidden = (targetName !== 'serial');
+    if (controlLearn) controlLearn.hidden = (targetName !== 'learn');
+
+    // 0.5 动态更新 body 类名实现网格自适应锁屏自锁
+    document.body.classList.remove('layout-short', 'layout-serial', 'layout-learn', 'layout-task', 'layout-world', 'layout-admin');
+    document.body.classList.add(`layout-${targetName}`);
+
+    // === 强力动态布局重塑，彻底解决控制面板隐藏后的 390px 大留白和拉长问题 ===
+    const appShell = document.querySelector('.app-shell');
+    const controlPanel = document.querySelector('.control-panel');
+    if (appShell && controlPanel) {
+      if (targetName === 'task' || targetName === 'world' || targetName === 'admin') {
+        controlPanel.style.setProperty('display', 'none', 'important');
+        appShell.style.setProperty('grid-template-columns', '196px minmax(760px, 1fr) 350px', 'important');
+      } else {
+        controlPanel.style.removeProperty('display');
+        appShell.style.removeProperty('grid-template-columns');
+      }
+    }
+
+    // 1. 显隐工作面板
+    Object.entries(panels).forEach(([name, panel]) => {
+      if (panel) panel.hidden = (name !== targetName);
+    });
+
+    // 2. 选项卡高亮
+    Object.entries(tabs).forEach(([name, tab]) => {
+      if (tab) tab.classList.toggle('active', name === targetName);
+    });
+
+    // 2.5 联动左侧 Rail 导航项的高亮
+    document.querySelectorAll('.desktop-rail-item').forEach(item => {
+      const clickTarget = item.dataset.clickTarget || '';
+      const matchName = clickTarget.replace('#tab', '').toLowerCase();
+      if (matchName === 'short') {
+        const itemMode = item.dataset.viewMode || 'edit';
+        const activeMode = window.currentShortViewMode || 'edit';
+        item.classList.toggle('active', itemMode === activeMode && targetName === 'short');
+      } else {
+        item.classList.toggle('active', matchName === targetName);
+      }
+    });
+
+    // 3. 规划/编辑模式切换
+    if (targetName === 'short') {
+      const activeMode = window.currentShortViewMode || 'edit';
+      if (activeMode === 'edit') {
+        setEditMode();
+      } else {
+        setPlanMode();
+      }
+    } else {
+      setEditMode();
+    }
+
+    // 4. 触发各个面板的生命周期数据加载
+    if (targetName === 'serial') {
+      if (typeof window.loadNovels === 'function') {
+        window.loadNovels();
+      }
+    } else if (targetName === 'learn') {
+      if (typeof window.loadKnowledgeList === 'function') {
+        window.loadKnowledgeList();
+      }
+      if (typeof window.loadSubjectKnowledgeFullList === 'function') {
+        window.loadSubjectKnowledgeFullList();
+      }
+    } else if (targetName === 'admin') {
+      if (typeof window.initAdminPanel === 'function') {
+        window.initAdminPanel();
+      }
+    }
+  }
+
+  // 暴露给全局以便其他脚本按需调用
+  window.switchWorkspaceTab = switchWorkspaceTab;
+
+  // 唯一绑定选项卡点击事件
+  Object.entries(tabs).forEach(([name, tab]) => {
+    if (tab) {
+      tab.addEventListener('click', () => switchWorkspaceTab(name));
+    }
+  });
 
   // 默认编辑主视图（不加 show-plan）
 
@@ -64,12 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 保存时更新自动保存时间
   const saveBtn2 = document.getElementById('saveProjectBtn');
+  const statusbarSaveEl = document.getElementById('statusbarSaveTime');
   if (saveBtn2 && elAutoSave) {
     saveBtn2.addEventListener('click', () => {
       setTimeout(() => {
         const now = new Date();
         const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
         elAutoSave.textContent = `自动保存 ${t}`;
+        if (statusbarSaveEl) statusbarSaveEl.textContent = `自动保存：${t}`;
       }, 400);
     });
   }
@@ -183,7 +292,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = row.querySelector('input[type="range"]');
     const output = row.querySelector('output');
     if (!input || !output) return;
-    const sync = () => { output.textContent = input.value; };
+    const sync = () => {
+      const value = Number(input.value);
+      const min = Number(input.min || 0);
+      const max = Number(input.max || 100);
+      const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
+      output.textContent = input.step === '0.01' ? value.toFixed(2) : input.value;
+      input.style.setProperty('--range-pct', `${Math.max(0, Math.min(100, pct))}%`);
+    };
     input.addEventListener('input', sync);
     sync();
   });

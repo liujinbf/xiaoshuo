@@ -1,4 +1,3 @@
-<!-- ⚠️ 本文件已超过建议行数，请在下次功能迭代时拆分模板片段 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -11,14 +10,17 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/billing-pro.css">
   <link rel="stylesheet" href="css/serial.css">
-  <link rel="stylesheet" href="css/learn.css">
   <link rel="stylesheet" href="css/desktop-ui-shell.css">
   <link rel="stylesheet" href="css/desktop-ui-panels.css">
   <link rel="stylesheet" href="css/desktop-ui-editor.css">
   <link rel="stylesheet" href="css/desktop-ui-cards.css">
+  <link rel="stylesheet" href="css/desktop-ui-widgets.css">
   <link rel="stylesheet" href="css/desktop-restoration.css">
+  <link rel="stylesheet" href="css/model-config-panel.css">
+  <link rel="stylesheet" href="css/learn-panel.css">
 </head>
-<body>
+<body class="layout-short">
+  <!-- 1. 窗口标题栏 -->
   <div class="desktop-titlebar">
     <div class="desktop-titlebar-brand">
       <span class="desktop-app-icon">盐</span>
@@ -27,33 +29,96 @@
     <div class="desktop-window-dots"><span>−</span><span>□</span><span>×</span></div>
   </div>
 
+  <!-- 2. 工具栏 -->
   <header class="desktop-toolbar">
     <div class="desktop-project-select"><span id="desktopProjectName">项目：未命名故事</span><span>⌄</span></div>
     <span class="desktop-save-state">○ 已保存　<span id="editorAutoSave">--:--:--</span></span>
     <div class="desktop-toolbar-actions">
-      <button id="saveProjectBtn" class="desktop-tool-button" type="button">保存</button>
-      <button id="exportBtn" class="desktop-tool-button" type="button">导出 TXT</button>
-      <button id="aiDraftBtn" class="desktop-tool-button desktop-generate" type="button">生成正文</button>
+      <button id="saveProjectBtn" class="desktop-tool-button" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        保存
+      </button>
+      <button id="exportBtn" class="desktop-tool-button" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        导出 TXT
+      </button>
+      <button id="aiDraftBtn" class="desktop-tool-button desktop-generate" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));"><path d="M15 4V2"></path><path d="M15 16v-2"></path><path d="M8 9h2"></path><path d="M20 9h-2"></path><path d="M17.8 11.8L19 13"></path><path d="M15 9h0.01"></path><path d="M17.8 6.2L19 5"></path><path d="M12.2 6.2L11 5"></path><path d="M12.2 11.8L11 13"></path><path d="M10 20l-4-4 10-10 4 4z"></path></svg>
+        生成正文 <span class="btn-arrow" style="margin-left: 6px; opacity: 0.8;">⌄</span>
+      </button>
     </div>
     <div class="desktop-undo-group">
-      <button class="desktop-icon-btn" type="button" title="撤销">↶</button>
-      <button class="desktop-icon-btn muted" type="button" title="重做">↷</button>
+      <button class="desktop-icon-btn" type="button" title="撤销">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+      </button>
+      <button class="desktop-icon-btn muted" type="button" title="重做">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path></svg>
+      </button>
     </div>
     <span id="apiStatus" class="api-status">检测 AI 服务中</span>
-    <button class="desktop-database-button" type="button">本地数据库<br><small>SQLite</small></button>
-    <button id="upgradeBtn" class="desktop-settings-button" type="button">设置</button>
+    <button class="desktop-database-button" type="button" style="gap: 8px; display: inline-flex; align-items: center; padding: 0 12px; text-align: left;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"></path></svg>
+      <div style="line-height: 1.2;">本地数据库<br><small style="font-size: 9px; opacity: 0.6; display: block; line-height: 1; font-weight: normal; margin-top: 1px;">SQLite</small></div>
+    </button>
+    <button id="settingsBtn" class="desktop-settings-button" type="button" title="设置大模型" style="display: grid; place-items: center; padding: 0;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
   </header>
 
+  <!-- 3. 主一体化四栏骨架 -->
   <main class="app-shell">
+    <!-- 第一栏：极简左侧 Rail 导航轨 -->
     <nav class="desktop-rail">
       <div class="desktop-rail-logo">文</div>
-      <button class="desktop-rail-item active" data-click-target="#tabShort" type="button"><span>⌂</span><strong>工作台</strong></button>
-      <button class="desktop-rail-item" data-click-target="#tabShort" type="button"><span>▤</span><strong>短篇方案</strong></button>
-      <button class="desktop-rail-item" data-click-target="#tabSerial" type="button"><span>✚</span><strong>连载铸造</strong></button>
-      <button class="desktop-rail-item" data-click-target="#tabShort" type="button"><span>✎</span><strong>正文编辑</strong></button>
-      <button class="desktop-rail-item" data-click-target="#tabLearn" type="button"><span>▦</span><strong>爆款拆解</strong></button>
-      <button class="desktop-rail-item" data-click-target="#tabLearn" type="button"><span>◎</span><strong>本地数据库</strong></button>
-      <button class="desktop-rail-item" type="button"><span>⚙</span><strong>设置</strong></button>
+      <button class="desktop-rail-item active" data-click-target="#tabShort" data-view-mode="edit" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+        <strong>工作台</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabShort" data-view-mode="plan" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+        <strong>短篇方案</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabSerial" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+        <strong>连载铸造</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabTask" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></span>
+        <strong>任务设定</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabWorld" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+        <strong>世界设定</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabShort" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
+        <strong>记忆卡片</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabShort" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <strong>一致检查</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabLearn" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+        <strong>爆款拆解</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabLearn" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg></span>
+        <strong>本地数据库</strong>
+      </button>
+      <div class="rail-sep"></div>
+      <button class="desktop-rail-item" data-click-target="#tabShort" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+        <strong>今日配额</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#settingsBtn" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <strong>设置</strong>
+      </button>
+      <button class="desktop-rail-item" id="railAdminBtn" data-click-target="#tabAdmin" type="button" style="display:none;">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        <strong>系统后台</strong>
+      </button>
       <div class="desktop-rail-quote">
         <span class="quote-bamboo"></span>
         <p>笔墨当随心，<br>故事自生长。</p>
@@ -61,6 +126,7 @@
       </div>
     </nav>
 
+    <!-- 第二栏：控制侧栏 (Slot) -->
     <aside class="control-panel">
       <div id="userInfoBar">
         <span id="userInfoName">本地模式</span>
@@ -69,318 +135,139 @@
           <button id="logoutBtn" type="button" class="ghost-sm">登录</button>
         </div>
       </div>
-
-      <form id="storyForm" class="control-form">
-        <div class="panel-title form-title"><span>目</span><h3>短篇方案</h3><button id="randomBtn" class="mini-icon" type="button" title="随机灵感">⟳</button></div>
-        <div class="field-group">
-          <label for="storyTitle">标题</label>
-          <input id="storyTitle" name="storyTitle" type="text" placeholder="雨巷尽头的灯">
-        </div>
-        <div class="field-group">
-          <label for="genre">类型</label>
-          <select id="genre" name="genre">
-            <option value="history">历史错位爽文</option>
-            <option value="rules">规则怪谈脑洞</option>
-            <option value="suspense" selected>悬疑反转</option>
-            <option value="revenge">婚恋复仇</option>
-            <option value="heroine">大女主爽文</option>
-            <option value="family">世情家庭</option>
-            <option value="folklore">中式志怪</option>
-            <option value="workplace">职场内幕</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label for="theme">一句话概述</label>
-          <textarea id="theme" name="theme" rows="3" placeholder="在一条即将拆迁的老街巷里，一盏常年亮着的灯，照亮了两个迷失的灵魂。"></textarea>
-        </div>
-        <div class="field-group">
-          <label for="storyTopic">主题</label>
-          <input id="storyTopic" name="storyTopic" type="text" placeholder="告别与重逢，记忆与新生">
-        </div>
-        <div class="field-group">
-          <label for="viewpoint">视角</label>
-          <select id="viewpoint" name="viewpoint">
-            <option value="first" selected>第一人称</option>
-            <option value="third">第三人称</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label for="ending">结尾</label>
-          <select id="ending" name="ending">
-            <option value="twist" selected>二次反转</option>
-            <option value="he">爽感收束</option>
-            <option value="be">遗憾余味</option>
-            <option value="open">开放结局</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label class="range-label" for="length">目标字数 <output id="lengthOutput">8000 字</output></label>
-          <input id="length" name="length" type="range" min="3000" max="30000" step="500" value="8000">
-        </div>
-        <div class="field-group">
-          <label class="range-label" for="intensity">冲突强度 <output id="intensityOutput">7 / 10</output></label>
-          <input id="intensity" name="intensity" type="range" min="1" max="10" step="1" value="7">
-        </div>
-        <div class="field-group">
-          <span class="section-label">标签</span>
-          <div id="tagCloud" class="tag-cloud"></div>
-          <div id="genreChips" class="tag-cloud hidden-soft"></div>
-        </div>
-        <div class="field-group outline-field">
-          <div class="section-label row-between"><span>大纲结构</span><span class="soft-count">自动生成</span></div>
-          <div id="leftOutlineList" class="left-outline-list"></div>
-        </div>
-        <div class="field-group">
-          <label for="storyNotes">灵感备注</label>
-          <textarea id="storyNotes" name="storyNotes" rows="5" maxlength="500" placeholder="老街、雨夜、旧书店、手写信、木质台灯。"></textarea>
-          <small class="note-counter">0/500</small>
-        </div>
-        <div class="button-row">
-          <button class="primary-action" type="submit">生成方案</button>
-          <button class="icon-action" type="button" title="刷新">⟳</button>
-        </div>
-      </form>
-
-      <section class="history-panel">
-        <div class="history-heading"><h3>本地草稿</h3></div>
-        <div id="historyList"></div>
-      </section>
+      <div id="controlShortContainer"></div>
+      <div id="controlSerialContainer" hidden></div>
+      <div id="controlLearnContainer" hidden></div>
     </aside>
 
+    <!-- 第三栏：中间核心创作/分析工作区 (Slot) -->
     <section class="workspace">
       <div class="workspace-tabs">
-        <button id="tabShort" class="tab-btn active" type="button">短篇方案</button>
+        <button id="tabShort" class="tab-btn active" type="button">正文编辑 ×</button>
         <button id="tabSerial" class="tab-btn" type="button">连载铸造</button>
+        <button id="tabTask" class="tab-btn" type="button">任务设定</button>
+        <button id="tabWorld" class="tab-btn" type="button">世界设定</button>
         <button id="tabLearn" class="tab-btn" type="button">爆款拆解</button>
+        <button id="tabAdmin" class="tab-btn" type="button" style="display:none;">系统后台</button>
+        <button class="workspace-tabs-more" type="button" title="更多视图">···</button>
       </div>
-
-      <section id="panelShort" class="workspace-panel">
-        <div class="result-grid">
-          <section class="result-panel desktop-editor-panel main-result">
-            <div class="panel-title"><span>文</span><h3 id="editorChapterTitle">第 1 章 <span class="ch-name">未命名故事</span> <span class="editor-action-tag">正文编辑</span></h3></div>
-            <div id="chapterStrip" class="desktop-chapter-strip"><button class="active" type="button">第 1 章　未命名故事 ×</button><button type="button">第 2 章　灯下的人</button><button type="button">第 3 章　消失的巷子</button><button type="button" class="desktop-add-tab">＋</button></div>
-            <div class="editor-toolbar">
-              <button class="tb-btn" type="button" title="撤销">↶</button>
-              <button class="tb-btn" type="button" title="重做">↷</button>
-              <span class="tb-sep"></span>
-              <select class="tb-select" aria-label="段落样式"><option>正文</option><option>标题</option></select>
-              <select class="tb-select" aria-label="字号"><option>16</option><option>18</option><option>20</option></select>
-              <button class="tb-btn" type="button" title="加粗"><strong>B</strong></button>
-              <button class="tb-btn" type="button" title="斜体"><em>I</em></button>
-              <button class="tb-btn" type="button" title="下划线"><u>U</u></button>
-              <span class="tb-sep"></span>
-              <button class="tb-btn" type="button" title="列表">☷</button>
-              <button class="tb-btn" type="button" title="对齐">≡</button>
-              <span class="editor-spacer"></span>
-              <span id="draftStats" class="draft-stat-pill">0 字 · 0 段</span>
-              <div class="micro-actions">
-                <button id="checkConsistencyBtn" type="button">一致性检查</button>
-                <button id="diffVersionBtn" type="button">版本对比</button>
-                <button id="importToSerialBtn" type="button" style="display:none">转入连载</button>
-              </div>
-            </div>
-            <div class="draft-progress-wrap"><div id="draftProgressFill" class="draft-progress-fill"></div></div>
-            <textarea id="draftEditor" class="draft-editor" placeholder="生成正文后会出现在这里，也可以直接写作..."></textarea>
-            <div id="diffViewer" class="diff-viewer" hidden></div>
-            <div class="desktop-editor-statusbar">
-              <span>字数：<b id="editorWordCount">0</b></span>
-              <span>章节字数：<b id="editorChapterWords">0</b></span>
-              <span>预计阅读：<b id="editorReadTime">1 分钟</b></span>
-            </div>
-          </section>
-
-          <section class="result-panel desktop-memory-panel">
-            <div class="panel-title"><span>记</span><h3>记忆卡片</h3><button class="ghost-sm" type="button">＋ 新建卡片</button></div>
-            <div id="characterList" class="asset-list"></div>
-          </section>
-
-          <section class="result-panel">
-            <div class="panel-title"><span>题</span><h3 id="projectTitle">等待生成方案</h3></div>
-            <div id="titleList" class="title-list"></div>
-            <div class="hook-box"><p id="hookText">填写左侧信息后生成。</p></div>
-          </section>
-          <section class="result-panel">
-            <div class="panel-title"><span>纲</span><h3>大纲结构</h3></div>
-            <ol id="outlineList" class="outline-list"></ol>
-            <div id="outlineMirrorList"></div>
-          </section>
-          <section class="result-panel"><div class="panel-title"><span>市</span><h3>市场节拍</h3></div><div id="marketList" class="market-list"></div></section>
-          <section class="result-panel"><div class="panel-title"><span>证</span><h3>证据链</h3></div><div id="evidenceList" class="evidence-list"></div></section>
-          <section class="result-panel desktop-episode-panel"><div class="panel-title"><span>剧</span><h3>短剧分集</h3></div><div id="episodeList" class="episode-list"></div></section>
-          <section class="score-panel"><div class="panel-title"><span>分</span><h3>商业评分</h3></div><div id="scoreList" class="score-list"></div><div class="diagnosis-box"><p id="diagnosisText">暂无诊断。</p></div></section>
-          <section class="result-panel desktop-proposal-panel monetization-panel">
-            <div class="proposal-toolbar"><p>提案包</p><button id="copyProposalBtn" type="button">复制提案包</button></div>
-            <div id="proposalPack" class="proposal-pack"></div>
-          </section>
-        </div>
-      </section>
-
-      <section id="panelSerial" class="workspace-panel" hidden>
-        <div class="serial-layout">
-          <section class="serial-creator result-panel">
-            <div class="panel-title"><span>连</span><h3>创建连载</h3></div>
-            <input id="serialTitle" type="text" placeholder="连载标题">
-            <select id="serialGenre">
-              <option value="history">历史错位爽文</option><option value="rules">规则怪谈脑洞</option><option value="suspense">悬疑反转</option><option value="revenge">婚恋复仇</option><option value="heroine">大女主爽文</option><option value="family">世情家庭</option><option value="folklore">中式志怪</option><option value="workplace">职场内幕</option>
-            </select>
-            <textarea id="serialOutline" rows="6" placeholder="连载大纲"></textarea>
-            <textarea id="serialCharacters" rows="6" placeholder="人物设定"></textarea>
-            <input id="serialChapterLength" type="number" value="2500" min="800" step="100">
-            <input id="serialTargetChapters" type="number" value="10" min="1" step="1">
-            <button id="createNovelBtn" class="primary-action serial-create-btn" type="button">创建连载</button>
-          </section>
-          <section class="result-panel">
-            <div class="panel-title"><span>库</span><h3>连载列表</h3></div>
-            <div id="serialNovelList"></div>
-          </section>
-          <section id="serialEmptyState" class="result-panel"><p>选择或创建一部连载开始。</p></section>
-          <section id="serialWorkspace" class="result-panel" hidden>
-            <div class="panel-title"><span>章</span><h3 id="serialWsTitle">未选择连载</h3><small id="serialProgressBadge"></small></div>
-            <div id="serialSummaryBar" hidden><strong>最新记忆：</strong><span id="serialLastSummary"></span></div>
-            <div class="micro-actions">
-              <button id="generateChapterBtn" class="primary-action serial-gen-btn" type="button">单章铸造</button>
-              <button id="batchGenerateBtn" class="ghost-action" type="button">批量全自动铸造</button>
-              <button id="exportSerialBtn" class="ghost-action" type="button">导出全文</button>
-              <button id="exportScriptBtn" class="ghost-action" type="button">导出短剧脚本</button>
-            </div>
-            <div id="serialChapterList"></div>
-          </section>
-        </div>
-      </section>
-
-      <section id="panelLearn" class="workspace-panel" hidden>
-        <div class="learn-layout">
-          <section class="learn-panel">
-            <div class="panel-title"><span>学</span><h3>爆款拆解</h3></div>
-            <select id="learnGenre">
-              <option value="history">历史错位爽文</option><option value="rules">规则怪谈脑洞</option><option value="suspense" selected>悬疑反转</option><option value="revenge">婚恋复仇</option><option value="heroine">大女主爽文</option><option value="family">世情家庭</option><option value="folklore">中式志怪</option><option value="workplace">职场内幕</option>
-            </select>
-            <input id="learnImportTxt" type="file" accept=".txt">
-            <textarea id="learnRawText" rows="16" placeholder="粘贴爆款文章原文，系统会先过滤广告噪声再拆解。"></textarea>
-            <button id="startLearnBtn" class="primary-action" type="button">让 AI 开始拆解学习</button>
-          </section>
-          <section class="learn-panel">
-            <div id="learnEmptyState">等待拆解结果。</div>
-            <div id="learnResultArea" class="learn-result-area">
-              <h3 id="learnResultTheme"></h3>
-              <div><strong>开篇钩子</strong><p id="learnResultHook"></p></div>
-              <div><strong>骨架大纲</strong><pre id="learnResultOutline"></pre></div>
-              <button id="saveInspirationBtn" class="ghost-action" type="button">保存为专属灵感库</button>
-            </div>
-          </section>
-          <section class="learn-panel" style="grid-column: 1 / -1;">
-            <div class="panel-title"><span>库</span><h3>知识库</h3><small id="knowledgeCount">加载中</small></div>
-            <div id="knowledgeEmptyState">暂无可用素材。</div>
-            <div id="knowledgeList" class="knowledge-list"></div>
-          </section>
-        </div>
-      </section>
+      <div id="panelShort" class="workspace-panel"></div>
+      <div id="panelSerial" class="workspace-panel" hidden></div>
+      <div id="panelTask" class="workspace-panel" hidden></div>
+      <div id="panelWorld" class="workspace-panel" hidden></div>
+      <div id="panelLearn" class="workspace-panel" hidden></div>
+      <div id="panelAdmin" class="workspace-panel" hidden></div>
     </section>
 
-    <aside class="desktop-inspector">
-      <section class="model-panel desktop-model-enhanced">
-        <div class="model-heading"><h2>模型配置</h2></div>
-        <div class="field-group"><label>模型</label><input id="modelName" type="text" value="gpt-5.2"></div>
-        <div class="desktop-model-tuning">
-          <label>温度 <output>0.75</output><input type="range" min="0" max="1" step="0.01" value="0.75"></label>
-          <label>最大输出长度 <output>1024</output><input type="range" min="256" max="4096" step="128" value="1024"></label>
-          <label>重复惩罚 <output>1.10</output><input type="range" min="0.8" max="1.5" step="0.01" value="1.1"></label>
-        </div>
-        <details class="model-advanced">
-          <summary>高级设置</summary>
-          <div class="field-group"><label>Base URL</label><input id="modelBaseUrl" type="text" placeholder="https://api.openai.com"></div>
-          <div class="field-group"><label>API Key</label><input id="modelApiKey" type="password" placeholder="sk-..."></div>
-          <div class="button-row"><button id="saveModelConfigBtn" type="button">保存配置</button><button id="clearModelConfigBtn" type="button">清空</button></div>
-          <div id="modelConfigStatus" class="model-config-status">未配置客户端模型</div>
-        </details>
-      </section>
-
-      <section class="billing-panel">
-        <div class="billing-heading"><h2>今日配额 <span id="planBadge" class="plan-badge">Free</span></h2></div>
-        <svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="44" fill="none" stroke="#e2ddd2" stroke-width="10"/><circle id="quotaArc" cx="60" cy="60" r="44" fill="none" stroke="#176b54" stroke-width="10" stroke-dasharray="276" stroke-dashoffset="276" transform="rotate(-90 60 60)"/></svg>
-        <strong id="quotaPct">0%</strong>
-        <div id="quotaList"></div>
-        <div class="status-row"><span>总额度</span><span id="quotaTotal">--</span></div>
-        <div class="status-row"><span>已使用</span><span id="quotaUsed">--</span></div>
-        <div class="status-row"><span>剩余额度</span><span id="quotaRemain">--</span></div>
-        <div class="status-row"><span>重置时间</span><span id="quotaReset">--</span></div>
-        <div id="billingNotice" class="billing-notice"></div>
-        <button id="trialBtn" class="ghost-action" type="button">开启试用</button>
-      </section>
-
-      <section class="desktop-generation-card">
-        <h3>生成状态</h3>
-        <div class="status-row"><span>状态</span><strong id="genStatusVal">空闲</strong></div>
-        <div class="status-row"><span>上次生成</span><span id="genStartTime">--</span></div>
-        <div class="status-row"><span>生成字数</span><span id="genWordCount">0 字</span></div>
-        <div class="status-row"><span>知识库</span><span id="genKnowledgeUsed">--</span></div>
-        <div class="status-row"><span>耗时</span><span id="genElapsed">--</span></div>
-        <button id="clearGenStatusBtn" class="ghost-action" type="button">清空记录</button>
-      </section>
-
-      <section class="desktop-inspector-card desktop-consistency-card">
-        <h3>一致性检查</h3>
-        <div id="consistencyList" class="consistency-list"></div>
-      </section>
-
-      <section class="sync-panel">
-        <div class="sync-heading"><h2>同步</h2></div>
-        <p id="userIdText" class="sync-user"></p>
-        <p id="syncStatus" class="sync-status">本地模式</p>
-        <div class="sync-actions"><button id="syncNowBtn" type="button">同步</button><button id="pullSyncBtn" type="button">拉取</button></div>
-      </section>
-    </aside>
+    <!-- 第四栏：右四常驻状态配置栏 (Slot) -->
+    <aside class="desktop-inspector" id="inspectorContainer"></aside>
   </main>
 
-  <section id="chapterReader" class="desktop-reader" hidden>
-    <button id="closeReaderBtn" class="ghost-action" type="button">关闭</button>
-    <h2 id="chapterReaderLabel"></h2>
-    <div id="chapterReaderBody" class="desktop-reader-body"></div>
-  </section>
+  <!-- 4. 各种全局模态弹窗与阅读器 (Slot) -->
+  <div id="modalsContainer"></div>
 
-  <section id="billingModal" class="modal-backdrop" hidden>
-    <div class="billing-modal">
-      <div class="modal-header"><h2>升级 Creator Pro</h2><button id="closeBillingBtn" class="modal-close" type="button">×</button></div>
-      <div class="pricing-grid">
-        <div class="price-card" data-plan="monthly"><span>月度</span><strong>¥<b class="price-num">29</b></strong><p>适合短期冲刺。</p><button data-plan-order="monthly" type="button">购买月度</button></div>
-        <div class="price-card featured" data-plan="yearly"><span>年度</span><strong>¥<b class="price-num">199</b></strong><p class="price-save">更适合长期创作。</p><button data-plan-order="yearly" type="button">购买年度</button></div>
-      </div>
-      <div id="paymentMethodsRadios" class="payment-methods"></div>
-      <button id="trialModalBtn" class="ghost-action" type="button">开启 7 天试用</button>
-      <div id="orderDraft" class="order-draft"></div>
-    </div>
-  </section>
+  <!-- 5. 异步并行模板装配与 addEventListener 代理引导脚本 -->
+  <script>
+    (async function() {
+      // A. DOMReady 代理，保证后续动态加载的脚本的 DOMContentLoaded 回调能 100% 触发
+      const eventQueue = [];
+      const windowEventQueue = [];
+      
+      const originalAddEventListener = document.addEventListener;
+      document.addEventListener = function(type, listener, options) {
+        if (type === 'DOMContentLoaded') {
+          eventQueue.push(listener);
+        } else {
+          originalAddEventListener.call(this, type, listener, options);
+        }
+      };
 
-  <section id="authModal" class="modal-backdrop" style="display:none">
-    <div class="billing-modal">
-      <div class="modal-header"><h2>登录</h2></div>
-      <input id="authUsername" type="text" placeholder="用户名">
-      <input id="authPassword" type="password" placeholder="密码">
-      <div class="micro-actions">
-        <button id="authLoginBtn" class="primary-action" type="button">登录</button>
-        <button id="authRegisterBtn" class="ghost-action" type="button">注册</button>
-        <button id="authLocalModeBtn" class="ghost-action" type="button">继续本地模式</button>
-      </div>
-    </div>
-  </section>
+      const originalWindowAddEventListener = window.addEventListener;
+      window.addEventListener = function(type, listener, options) {
+        if (type === 'DOMContentLoaded' || type === 'load') {
+          windowEventQueue.push(listener);
+        } else {
+          originalWindowAddEventListener.call(this, type, listener, options);
+        }
+      };
 
-  <script src="js/auth.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/constants.js"></script>
-  <script src="js/model-config.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/planner-titles.js"></script>
-  <script src="js/planner-format.js"></script>
-  <script src="js/planner.js?v=20260520-planner-draft-fix"></script>
-  <script src="js/planner-render.js"></script>
-  <script src="js/planner-history-strategy.js"></script>
-  <script src="js/ai.js"></script>
-  <script src="js/billing.js"></script>
-  <script src="js/projects.js"></script>
-  <script src="js/serial-render.js"></script>
-  <script src="js/serial.js"></script>
-  <script src="js/learning.js"></script>
-  <script src="js/desktop-ui.js"></script>
-  <script src="app.js?v=20260520-planner-draft-fix"></script>
+      // B. 异步并行加载所有 HTML 片段并注入容器
+      const templates = [
+        { id: 'controlShortContainer', url: 'templates/control-short.html' },
+        { id: 'controlSerialContainer', url: 'templates/control-serial.html' },
+        { id: 'controlLearnContainer', url: 'templates/control-learn.html' },
+        { id: 'panelShort', url: 'templates/workspace-short.html' },
+        { id: 'panelSerial', url: 'templates/workspace-serial.html' },
+        { id: 'panelTask', url: 'templates/workspace-task.html' },
+        { id: 'panelWorld', url: 'templates/workspace-world.html' },
+        { id: 'panelLearn', url: 'templates/workspace-learn.html' },
+        { id: 'panelAdmin', url: 'templates/workspace-admin.html' },
+        { id: 'inspectorContainer', url: 'templates/inspector.html' },
+        { id: 'modalsContainer', url: 'templates/modals.html' }
+      ];
+
+      await Promise.all(templates.map(async (tpl) => {
+        try {
+          const res = await fetch(tpl.url);
+          if (res.ok) {
+            const html = await res.text();
+            document.getElementById(tpl.id).innerHTML = html;
+          }
+        } catch (e) {
+          console.error('Failed to load template:', tpl.url, e);
+        }
+      }));
+
+      // C. 串行动态按序挂载原有业务 JS
+      const scripts = [
+        "js/auth.js",
+        "js/data.js",
+        "js/constants.js",
+        "js/model-config.js",
+        "js/utils.js",
+        "js/planner-titles.js",
+        "js/planner-format.js",
+        "js/planner-submission.js",
+        "js/planner.js?v=20260520-planner-draft-fix",
+        "js/planner-render.js",
+        "js/planner-history-strategy.js",
+        "js/ai.js",
+        "js/billing.js",
+        "js/projects.js",
+        "js/serial-render.js",
+        "js/serial.js",
+        "js/learning.js",
+        "js/desktop-ui.js",
+        "js/task-world.js",
+        "js/admin-panel.js",
+        "app.js?v=20260521-modular-rebuild"
+      ];
+
+      for (const src of scripts) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = src;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+
+      // D. DOM 装载和脚本加载全部就绪，还原监听函数并手动按序触发先前排队的 DOMContentLoaded 回调
+      document.addEventListener = originalAddEventListener;
+      window.addEventListener = originalWindowAddEventListener;
+      
+      eventQueue.forEach(fn => { try { fn(); } catch(e) { console.error(e); } });
+      windowEventQueue.forEach(fn => { try { fn({ type: 'DOMContentLoaded' }); } catch(e) { console.error(e); } });
+
+      // E. 初始化默认 Tab 视图
+      if (typeof window.switchWorkspaceTab === 'function') {
+        window.switchWorkspaceTab('short');
+      } else {
+        const grid = document.querySelector('.result-grid');
+        if (grid) grid.classList.add('show-plan');
+      }
+    })();
+  </script>
 </body>
 </html>

@@ -128,16 +128,15 @@ function renderPlanData(plan) {
 
   document.querySelector("#characterList").innerHTML = memoryItems
     .map((item, index) => `
-      <div class="asset-card memory-card">
+      <div class="asset-item memory-card" data-type="${escapeHtml(item.type)}">
         <strong>${escapeHtml(item.title)}</strong>
-        <span class="memory-meta">类型：${escapeHtml(item.type)} · 重要度：${escapeHtml(item.weight)}</span>
+        <span class="memory-meta">${escapeHtml(item.type)} · 重要度：${escapeHtml(item.weight)}</span>
         <p>${escapeHtml(item.text)}</p>
-        <div class="memory-tags">
-          ${(item.tags || []).slice(0, 2).map((tag) => `<span>#${escapeHtml(tag)}</span>`).join("")}
-        </div>
+        <em>${escapeHtml((item.tags || [])[0] || item.type)}</em>
       </div>
     `)
     .join("");
+
     
   document.querySelector("#marketList").innerHTML = plan.marketBeats
     .map((item) => `
@@ -248,3 +247,105 @@ function renderPlan(input) {
   window.currentPlan = plan; 
   renderPlanData(plan);
 }
+
+// ── 从 planner.js 迁入：题材预设与标签云联动更新 ──
+// planner.js 只调用此函数，不持有业务逻辑
+/**
+ * 根据选中的题材更新主题输入框和标签云
+ * @param {string} genre - 题材标识符
+ * @param {boolean} autoRandomTheme - 是否自动随机填入主题
+ */
+function updateGenrePresets(genre, autoRandomTheme = true) {
+  const themeInput = document.querySelector("#theme");
+  const tagCloud = document.querySelector("#tagCloud");
+
+  if (themeInput && typeof inspirationPool !== "undefined" && typeof pick === "function") {
+    const pool = inspirationPool[genre];
+    if (pool && pool.length > 0 && autoRandomTheme) {
+      themeInput.value = pick(pool);
+    }
+  }
+
+  if (tagCloud && typeof genreTags !== "undefined") {
+    const tags = genreTags[genre] || [];
+    tagCloud.innerHTML = "";
+    tags.forEach((tag, idx) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = idx < 2 ? "tag active" : "tag";
+      btn.dataset.tag = tag;
+      btn.textContent = tag;
+      tagCloud.appendChild(btn);
+    });
+  }
+}
+
+// ===== 学科知识库自动关联与渲染逻辑 =====
+
+const CATEGORY_NAMES = {
+  history: "历史",
+  geography: "地理",
+  physics: "物理",
+  chemistry: "化学",
+  science: "科技",
+  people: "人物"
+};
+
+/**
+ * 请求后端获取输入文本关联的公开常识库并渲染
+ * @param {string} text 
+ */
+async function refreshSubjectKnowledge(text) {
+  const listEl = document.getElementById("subjectKnowledgeList");
+  if (!listEl) return;
+  
+  if (!text || text.trim().length < 2) {
+    listEl.innerHTML = `<div class="empty-placeholder" style="color:var(--text-muted);font-size:12px;padding:10px;text-align:center;">暂无匹配常识约束</div>`;
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token") || "mock-token";
+    const res = await fetch("/api/knowledge/retrieve", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ text, limit: 3 })
+    });
+    
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.matched)) {
+      if (data.matched.length === 0) {
+        listEl.innerHTML = `<div class="empty-placeholder" style="color:var(--text-muted);font-size:12px;padding:10px;text-align:center;">暂无匹配常识约束</div>`;
+      } else {
+        listEl.innerHTML = data.matched.map(item => `
+          <div class="consistency-item" style="border-left: 3px solid var(--accent); padding-left: 8px; margin-bottom: 8px; background: rgba(23, 107, 84, 0.05); padding: 6px 8px; border-radius: 4px;">
+            <div style="font-weight: bold; font-size: 13px; color: var(--accent); margin-bottom: 2px;">
+              [${CATEGORY_NAMES[item.category] || item.category}] ${escapeHtml(item.entity)}
+            </div>
+            <div style="font-size: 12px; line-height: 1.4; color: var(--text-color);">
+              ${escapeHtml(item.content)}
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+  } catch (error) {
+    console.error("[Subject Knowledge Render] Failed to fetch and render:", error);
+  }
+}
+
+let subjectKnowledgeTimeout = null;
+function refreshSubjectKnowledgeDebounced(text) {
+  if (subjectKnowledgeTimeout) clearTimeout(subjectKnowledgeTimeout);
+  subjectKnowledgeTimeout = setTimeout(() => {
+    refreshSubjectKnowledge(text);
+  }, 400);
+}
+
+window.refreshSubjectKnowledge = refreshSubjectKnowledge;
+window.refreshSubjectKnowledgeDebounced = refreshSubjectKnowledgeDebounced;
+

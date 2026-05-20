@@ -22,26 +22,6 @@ async function loadNovels() {
 
 // --- 事件绑定 (由 app.js 调用或自执行) ---
 function initSerialEvents() {
-  const tabShort = document.querySelector("#tabShort");
-  const tabSerial = document.querySelector("#tabSerial");
-  const panelShort = document.querySelector("#panelShort");
-  const panelSerial = document.querySelector("#panelSerial");
-
-  tabShort.addEventListener("click", () => {
-    tabShort.classList.add("active");
-    tabSerial.classList.remove("active");
-    panelShort.hidden = false;
-    panelSerial.hidden = true;
-  });
-
-  tabSerial.addEventListener("click", () => {
-    tabSerial.classList.add("active");
-    tabShort.classList.remove("active");
-    panelSerial.hidden = false;
-    panelShort.hidden = true;
-    loadNovels();
-  });
-
   document.querySelector("#createNovelBtn").addEventListener("click", handleCreateNovel);
   document.querySelector("#generateChapterBtn").addEventListener("click", handleGenerateSingle);
   document.querySelector("#batchGenerateBtn").addEventListener("click", handleBatchGenerate);
@@ -187,14 +167,99 @@ async function convertChapterToScript(chapter) {
   }
 }
 
+// 全局进度定时器与模拟参数
+let progressTimer = null;
+
+function startSerialProgressSimulation() {
+  const card = document.getElementById("serialGenProgressCard");
+  const fill = document.getElementById("serialGenProgressBarFill");
+  const pctText = document.getElementById("serialGenProgressPct");
+  const stepText = document.getElementById("serialGenProgressStep");
+  
+  if (!card || !fill || !pctText || !stepText) return;
+  
+  card.hidden = false;
+  fill.style.width = "0%";
+  fill.style.background = ""; // 重置样式
+  pctText.textContent = "0%";
+  stepText.textContent = "正在深度解析上一章上下文与世界观遗留设定...";
+  
+  let currentPct = 0;
+  
+  if (progressTimer) clearInterval(progressTimer);
+  
+  progressTimer = setInterval(() => {
+    // 渐进式增加百分比，在前段增长快，后段接近极限时减速悬停，防卡死
+    if (currentPct < 40) {
+      currentPct += Math.floor(Math.random() * 8) + 4;
+    } else if (currentPct < 75) {
+      currentPct += Math.floor(Math.random() * 4) + 2;
+    } else if (currentPct < 96) {
+      currentPct += 1;
+    }
+    
+    currentPct = Math.min(96, currentPct);
+    fill.style.width = `${currentPct}%`;
+    pctText.textContent = `${currentPct}%`;
+    
+    // 对应百分比展示多步骤文案
+    if (currentPct < 25) {
+      stepText.textContent = "正在深度解析上一章上下文与世界观遗留设定...";
+    } else if (currentPct < 55) {
+      stepText.textContent = "正在启动大模型分析当前大纲并铸造下一章核心冲突...";
+    } else if (currentPct < 78) {
+      stepText.textContent = "正在检索并应用学科常识约束规范，校准科学性与合理性设定...";
+    } else if (currentPct < 92) {
+      stepText.textContent = "正在精雕细琢人物台词与动作细节，生成高保真章节正文...";
+    } else {
+      stepText.textContent = "正文生成完毕，正在进行最后的语言润色与逻辑一致性校验...";
+    }
+  }, 300);
+}
+
+function finishSerialProgressSimulation(isSuccess) {
+  if (progressTimer) clearInterval(progressTimer);
+  
+  const card = document.getElementById("serialGenProgressCard");
+  const fill = document.getElementById("serialGenProgressBarFill");
+  const pctText = document.getElementById("serialGenProgressPct");
+  const stepText = document.getElementById("serialGenProgressStep");
+  
+  if (!card || !fill || !pctText || !stepText) return;
+  
+  if (isSuccess) {
+    fill.style.width = "100%";
+    pctText.textContent = "100%";
+    stepText.textContent = "🎉 铸造成功，正在为您装载章节内容！";
+    setTimeout(() => {
+      card.hidden = true;
+    }, 1200);
+  } else {
+    fill.style.width = "100%";
+    fill.style.background = "var(--du-warn)"; // 变警告色
+    pctText.textContent = "ERROR";
+    stepText.textContent = "❌ 铸造中断，请检查模型 API Key 配置或网络连接。";
+    setTimeout(() => {
+      card.hidden = true;
+    }, 4000);
+  }
+}
+
 async function handleGenerateSingle() {
   if (isBatchGenerating) return;
   if (window.currentNovel.chapters.length >= window.currentNovel.targetChapters) {
     if (!confirm("已达目标章数，确定继续生成？")) return;
   }
   setSerialGeneratingState(true, false);
-  await generateChapterLogic(true);
-  setSerialGeneratingState(false, false);
+  startSerialProgressSimulation();
+  
+  let success = false;
+  try {
+    success = await generateChapterLogic(true);
+  } finally {
+    finishSerialProgressSimulation(success);
+    setSerialGeneratingState(false, false);
+  }
 }
 
 async function handleBatchGenerate() {
@@ -217,7 +282,15 @@ async function handleBatchGenerate() {
   
   while (isBatchGenerating && window.currentNovel.chapters.length < window.currentNovel.targetChapters) {
     document.querySelector("#batchGenerateBtn").textContent = `⏹ 停止 (第 ${window.currentNovel.chapters.length + 1} 章)...`;
-    const success = await generateChapterLogic(false);
+    
+    startSerialProgressSimulation();
+    let success = false;
+    try {
+      success = await generateChapterLogic(false);
+    } finally {
+      finishSerialProgressSimulation(success);
+    }
+
     if (!success) {
       isBatchGenerating = false;
       break;
@@ -273,5 +346,6 @@ function downloadBlob(filename, content) {
   URL.revokeObjectURL(a.href);
 }
 
-// 自动初始化
+// 自动初始化与全局方法挂载
+window.loadNovels = loadNovels;
 document.addEventListener("DOMContentLoaded", initSerialEvents);

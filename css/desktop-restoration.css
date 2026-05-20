@@ -1,5 +1,7 @@
 /* 桌面设计稿还原入口：实际样式已按开发规则拆分 */
-@import url("./desktop-restoration-layout.css");
+@import url("./desktop-layout-core.css");
+@import url("./desktop-layout-panels.css");
 @import url("./desktop-restoration-components.css");
 @import url("./desktop-restoration-inspector.css");
 @import url("./desktop-polish.css");
+

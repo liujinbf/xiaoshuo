@@ -1,6 +1,7 @@
 import { createPayment, verifyEpaySign } from "../utils/payment.js";
-import { getOrders, saveOrder, getUserAccount, saveUserAccount, getSetting } from "../utils/db.js";
+import { getOrders, saveOrder, getUserAccount, saveUserAccount, getSetting, getDb } from "../utils/db.js";
 import crypto from "node:crypto";
+
 
 function safeReturnUrl(value) {
   const appUrl = process.env.APP_URL || "http://127.0.0.1:4173";
@@ -166,22 +167,33 @@ export async function handlePayRoutes(request, response, url, helpers) {
     return true;
   }
 
-  // POST /api/pay/notify/alipay - 支付宝异步回调
+  // POST /api/pay/notify/alipay - 支付宝官方异步回调
   if (url.pathname === "/api/pay/notify/alipay" && request.method === "POST") {
-    // 实际应引入 SDK 验证签名
-    // 此处简化处理
-    const payload = await readJson(request); // 这里可能需要改成 formData 解析
-    // verify ...
-    // await completeOrder(payload.out_trade_no);
-    response.writeHead(200);
+    // 支付宝回调为 application/x-www-form-urlencoded 格式，暂以 JSON 兼容解析
+    // TODO: 接入官方 SDK 后需改用 alipay-sdk 验签
+    try {
+      const payload = await readJson(request);
+      if (payload.trade_status === "TRADE_SUCCESS") {
+        await completeOrder(payload.out_trade_no, payload.total_amount || payload.buyer_pay_amount);
+      }
+    } catch { /* 容错 */ }
+    response.writeHead(200, { "Content-Type": "text/plain" });
     response.end("success");
     return true;
   }
 
-  // POST /api/pay/notify/wechat - 微信异步回调
+  // POST /api/pay/notify/wechat - 微信支付官方异步回调
   if (url.pathname === "/api/pay/notify/wechat" && request.method === "POST") {
-    // 实际应引入 SDK 解析密文
-    response.writeHead(200);
+    // TODO: 接入官方 SDK 后需改用 wechatpay-node-v3 解密密文并验签
+    try {
+      const payload = await readJson(request);
+      if (payload?.resource?.ciphertext) {
+        // 占位：待 SDK 接入后解密 ciphertext 获取 out_trade_no 和 amount
+      } else if (payload.out_trade_no && payload.trade_state === "SUCCESS") {
+        await completeOrder(payload.out_trade_no, payload.total?.amount ? payload.total.amount / 100 : undefined);
+      }
+    } catch { /* 容错 */ }
+    response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ code: "SUCCESS", message: "成功" }));
     return true;
   }
@@ -191,15 +203,18 @@ export async function handlePayRoutes(request, response, url, helpers) {
 
 // 通用订单完成逻辑：更新订单状态 + 下发会员权益
 async function completeOrder(orderId, paidAmount) {
-  const { getDb } = await import("../utils/db.js");
   const db = await getDb();
   
   const row = await db.get("SELECT * FROM orders WHERE id = ?", [orderId]);
   if (!row) return false;
   const order = JSON.parse(row.data);
   if (order.status === "paid") return true; // 幂等
-  if (paidAmount !== undefined && Number(paidAmount) !== Number(order.amount)) {
-    return false;
+
+  // BUG-03 修复：使用整数分比较，避免浮点精度误差（如 29.00 !== 29）
+  if (paidAmount !== undefined) {
+    const paidCents = Math.round(Number(paidAmount) * 100);
+    const orderCents = Math.round(Number(order.amount) * 100);
+    if (paidCents !== orderCents) return false;
   }
 
   order.status = "paid";
@@ -207,7 +222,6 @@ async function completeOrder(orderId, paidAmount) {
   await db.run("UPDATE orders SET status = ?, data = ? WHERE id = ?", ["paid", JSON.stringify(order), orderId]);
 
   // 更新用户账户
-  const { getUserAccount, saveUserAccount } = await import("../utils/db.js");
   let account = await getUserAccount(order.userId);
   if (account) {
     account.tier = "pro";
@@ -217,7 +231,6 @@ async function completeOrder(orderId, paidAmount) {
       : new Date();
     currentEnd.setDate(currentEnd.getDate() + addDays);
     account.proEndsAt = currentEnd.toISOString();
-    
     await saveUserAccount(order.userId, account);
   }
   return true;

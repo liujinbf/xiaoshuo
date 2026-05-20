@@ -1,0 +1,227 @@
+<div class="admin-panel-wrapper" style="width: 96%; max-width: 1360px; margin: 0 auto; padding: 20px 0;">
+
+  <!-- 页面顶部标题 -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px solid var(--du-line); padding-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #ef4444, #b91c1c); display: grid; place-items: center; color: #fff; font-size: 18px; font-weight: 900; flex-shrink: 0; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);">管</span>
+      <div>
+        <h2 style="font-size: 20px; font-weight: 900; margin: 0; color: var(--du-ink); font-family: 'Noto Serif SC', serif;">系统运维与商业控制台</h2>
+        <p style="font-size: 12px; color: var(--du-muted); margin: 3px 0 0;">监控系统核心支付网关、定义增值付费价格，并审计系统交易订单数据</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 4px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--du-line); border-radius: 20px; padding: 3px;">
+      <button class="admin-tab-btn active" data-admin-tab="settings" type="button">收款网关配置</button>
+      <button class="admin-tab-btn" data-admin-tab="orders" type="button">订单流水审计</button>
+    </div>
+  </div>
+
+  <!-- 顶部 KPI 商业指标卡 (4列) -->
+  <section class="admin-metrics-grid">
+    <div class="admin-metric-card">
+      <div class="metric-top"><span class="metric-title">今日流水总额</span><span class="metric-trendup">+12.4%</span></div>
+      <div class="metric-val">&#165; 2,840.00</div>
+      <div class="metric-footer">昨日同期：&#165; 2,526.00</div>
+    </div>
+    <div class="admin-metric-card">
+      <div class="metric-top"><span class="metric-title">年度/月度 Pro 会员</span><span class="metric-trendup">+8.2%</span></div>
+      <div class="metric-val">429 人</div>
+      <div class="metric-footer">转化率保持：2.4% 稳步上升</div>
+    </div>
+    <div class="admin-metric-card">
+      <div class="metric-top"><span class="metric-title">接口网关可用率</span><span class="metric-val-ok">99.98%</span></div>
+      <div class="metric-val" style="font-size: 18px; line-height: 2.2;">Online - 185ms</div>
+      <div class="metric-footer">自动健康监测机制已保活</div>
+    </div>
+    <div class="admin-metric-card">
+      <div class="metric-top"><span class="metric-title">并发生成任务队列</span><span class="metric-val-ok" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">健康</span></div>
+      <div class="metric-val" style="font-size: 18px; line-height: 2.2;">0 个任务积压</div>
+      <div class="metric-footer">后端 GPU 线程负载：4%</div>
+    </div>
+  </section>
+
+  <!-- 双栏交互主体 -->
+  <div class="admin-layout-columns">
+
+    <!-- 支付配置 (settings) -->
+    <div id="adminTabSettings" class="admin-tab-panel" style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+      
+      <!-- 会员价格 -->
+      <div class="admin-glass-card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">
+          <strong style="font-size: 14px; color: var(--du-ink);">定价模型设置</strong>
+          <span style="font-size: 10px; color: var(--du-muted);">价格修改将对新用户即时生效</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">月度 VIP 价格 (元)</label>
+            <input id="admin_monthly_amount" type="number" min="1" max="99999" step="0.01" placeholder="29" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-weight: 600;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">年度 VIP 价格 (元)</label>
+            <input id="admin_yearly_amount" type="number" min="1" max="99999" step="0.01" placeholder="199" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-weight: 600;">
+          </div>
+        </div>
+        <p style="font-size: 11px; color: var(--du-muted); margin: 0;">月度推荐 19-39 元，年度推荐 129-299 元。</p>
+      </div>
+
+      <!-- 易支付 -->
+      <div class="admin-glass-card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">
+          <strong style="font-size: 14px; color: var(--du-ink);">三方易支付网关 (聚合支付)</strong>
+          <span class="admin-status-badge disabled" id="admin_epayStatus"><span class="admin-status-dot"></span>未启用</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">三方网关接口 API 地址</label>
+            <input id="admin_epay_url" type="text" placeholder="https://epay.example.com/submit.php" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-family: monospace;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">商户 ID (PID)</label>
+              <input id="admin_epay_pid" type="text" placeholder="如 1001" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-family: monospace;">
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">密钥 (MD5 KEY)</label>
+              <input id="admin_epay_key" type="password" placeholder="************" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-family: monospace;">
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 6px;">支付分流开启渠道</label>
+            <div style="display: flex; gap: 24px;">
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: var(--du-ink);"><input type="checkbox" id="admin_epay_enable_alipay" style="accent-color: #ef4444;"> 支付宝通道</label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: var(--du-ink);"><input type="checkbox" id="admin_epay_enable_wxpay" style="accent-color: #ef4444;"> 微信支付通道</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 微信官方 -->
+      <div class="admin-glass-card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">
+          <strong style="font-size: 14px; color: var(--du-ink);">微信官方支付接口 (APIv3 Native)</strong>
+          <span class="admin-status-badge disabled" id="admin_wechatStatus"><span class="admin-status-dot"></span>未启用</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">商户号 (MCHID)</label>
+            <input id="admin_wechat_mchid" type="text" placeholder="填写商户ID以启用" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-family: monospace;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">APIv3 密钥 (V3KEY)</label>
+            <input id="admin_wechat_key" type="password" placeholder="************" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-family: monospace;">
+          </div>
+        </div>
+      </div>
+
+      <!-- 支付宝官方 -->
+      <div class="admin-glass-card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">
+          <strong style="font-size: 14px; color: var(--du-ink);">支付宝官方接口 (电脑网站支付)</strong>
+          <span class="admin-status-badge disabled" id="admin_alipayStatus"><span class="admin-status-dot"></span>未启用</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">商户 APP ID</label>
+            <input id="admin_alipay_app_id" type="text" placeholder="填写APPID以启用" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-family: monospace;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">商户应用 RSA2 私钥</label>
+            <input id="admin_alipay_private_key" type="password" placeholder="************" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); font-family: monospace;">
+          </div>
+        </div>
+      </div>
+
+      <!-- 保存 -->
+      <div style="display: flex; align-items: center; gap: 16px; margin-top: 6px;">
+        <button id="admin_saveBtn" type="button" style="padding: 10px 28px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25); transition: all 0.2s;">
+          部署网关配置
+        </button>
+        <span id="admin_statusMsg" style="font-size: 13px; font-weight: 600;"></span>
+      </div>
+    </div>
+
+    <!-- 订单流水 (orders) -->
+    <div id="adminTabOrders" class="admin-tab-panel" hidden style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+      <div class="admin-glass-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 18px 20px; border-bottom: 1px solid var(--du-line); display: flex; align-items: center; justify-content: space-between;">
+          <strong style="font-size: 14px; color: var(--du-ink);">历史账单支付审计流水</strong>
+          <span style="font-size: 11px; color: var(--du-muted); background: rgba(255,255,255,0.03); border: 1px solid var(--du-line); padding: 2px 8px; border-radius: 4px;">全量流水</span>
+        </div>
+        <div style="overflow-x: auto; max-height: 520px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid var(--du-line);">
+                <th style="padding: 12px 16px; color: var(--du-muted); font-weight: 700; font-size: 11px;">交易订单号</th>
+                <th style="padding: 12px 16px; color: var(--du-muted); font-weight: 700; font-size: 11px;">订购用户</th>
+                <th style="padding: 12px 16px; color: var(--du-muted); font-weight: 700; font-size: 11px;">会员套餐</th>
+                <th style="padding: 12px 16px; color: var(--du-muted); font-weight: 700; font-size: 11px;">交易金额</th>
+                <th style="padding: 12px 16px; color: var(--du-muted); font-weight: 700; font-size: 11px;">状态</th>
+                <th style="padding: 12px 16px; color: var(--du-muted); font-weight: 700; font-size: 11px;">到账时间</th>
+              </tr>
+            </thead>
+            <tbody id="admin_orderTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 48px; color: var(--du-muted);">正在连接核心计费服务以拉取账单流水...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 极客诊断控制台 -->
+      <div class="admin-console-window">
+        <div class="console-titlebar">
+          <div class="console-circles"><span class="circle-red"></span><span class="circle-yellow"></span><span class="circle-green"></span></div>
+          <div class="console-title">system_diagnostics.log</div>
+          <div style="width: 52px;"></div>
+        </div>
+        <div class="console-body">
+          <div class="console-line"><span class="log-tag debug">[DEBUG]</span> Initializing system diagnostic logs...</div>
+          <div class="console-line"><span class="log-tag info">[INFO]</span> Checking payment database connections: <span style="color: #10b981;">OK</span></div>
+          <div class="console-line"><span class="log-tag info">[INFO]</span> EPay gateway url parser listener registered.</div>
+          <div class="console-line"><span class="log-tag warn">[WARN]</span> WeChat official pay cert files not found, fallback enabled.</div>
+          <div class="console-line"><span class="log-tag info">[INFO]</span> API client rate limiters: 60req/min, status: nominal.</div>
+          <div class="console-line"><span class="log-tag info">[INFO]</span> Admin UI loaded successfully. Listening on orders Webhook...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.admin-layout-columns { display: flex; gap: 28px; align-items: start; }
+.admin-tab-panel { flex: 1; }
+.admin-metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.admin-metric-card { background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 12px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: flex; flex-direction: column; justify-content: space-between; min-height: 80px; }
+.admin-metric-card .metric-top { display: flex; justify-content: space-between; align-items: center; }
+.admin-metric-card .metric-title { font-size: 11px; font-weight: 700; color: var(--du-muted); }
+.admin-metric-card .metric-trendup { font-size: 10px; color: #10b981; font-weight: 800; background: rgba(16, 185, 129, 0.12); padding: 1px 6px; border-radius: 10px; }
+.admin-metric-card .metric-val-ok { font-size: 10px; color: #10b981; font-weight: 800; background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 12px; }
+.admin-metric-card .metric-val { font-size: 22px; font-weight: 900; color: var(--du-ink); margin: 8px 0; letter-spacing: -0.02em; }
+.admin-metric-card .metric-footer { font-size: 10px; color: var(--du-muted); }
+.admin-glass-card { background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); transition: border-color 0.25s; }
+.admin-glass-card:hover { border-color: rgba(239, 68, 68, 0.3); }
+.admin-tab-btn { padding: 6px 16px; border: none; background: transparent; color: var(--du-muted); font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 16px; transition: all 0.2s; }
+.admin-tab-btn.active { background: #ef4444 !important; color: #fff !important; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35); }
+.admin-status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.admin-status-badge.enabled { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.admin-status-badge.disabled { background: rgba(100,116,139,0.12); color: var(--du-muted); border: 1px solid rgba(100,116,139,0.2); }
+.admin-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.admin-status-pill { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.admin-status-pill.paid { background: rgba(34,197,94,0.15); color: #4ade80; }
+.admin-status-pill.pending { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.admin-console-window { background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); font-family: monospace; overflow: hidden; }
+.console-titlebar { background: #1e293b; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
+.console-circles { display: flex; gap: 6px; }
+.console-circles span { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.circle-red { background: #ef4444; }
+.circle-yellow { background: #f59e0b; }
+.circle-green { background: #10b981; }
+.console-title { font-size: 11px; color: #94a3b8; font-weight: 600; letter-spacing: 0.05em; }
+.console-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; min-height: 160px; max-height: 240px; overflow-y: auto; }
+.console-line { font-size: 12px; color: #cbd5e1; line-height: 1.5; display: flex; align-items: flex-start; gap: 6px; }
+.log-tag { font-weight: 700; font-size: 11px; }
+.log-tag.debug { color: #64748b; }
+.log-tag.info { color: #38bdf8; }
+.log-tag.warn { color: #fbbf24; }
+@media (max-width: 990px) { .admin-metrics-grid { grid-template-columns: 1fr 1fr; } .admin-layout-columns { flex-direction: column; } }
+</style>

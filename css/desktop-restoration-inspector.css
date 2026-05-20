@@ -92,43 +92,41 @@
   margin-top: 4px;
 }
 
+/* billing-panel 使用 .quota-body flex 布局，block 容器即可；显式清除 base.css 的 margin-top:26px 和 padding:16px 残留 */
 .billing-panel {
-  display: grid;
-  grid-template-columns: 106px minmax(0, 1fr);
-  column-gap: 12px;
-  align-items: center;
+  display: block;
   position: relative;
+  margin-top: 0;        /* 覆盖 base.css .billing-panel { margin-top: 26px } */
+  padding: 10px 12px 12px; /* 覆盖 base.css .billing-panel { padding: 16px } */
 }
 
-.billing-panel svg {
-  grid-column: 1;
-  grid-row: 2 / 6;
+.billing-panel .quota-ring-wrap svg {
   display: block;
   width: 104px;
   height: 104px;
-  margin: 4px auto 0;
+  margin: 0;
 }
 
 #quotaPct {
-  grid-column: 1;
-  grid-row: 2 / 6;
-  display: grid;
-  place-items: center;
-  margin: 4px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: var(--du-green);
-  font-size: 24px;
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
 }
 
 .billing-panel .billing-heading,
 .billing-panel #quotaList,
 .billing-panel #billingNotice,
 .billing-panel #trialBtn {
-  grid-column: 1 / -1;
+  /* 保留：确保这些元素正常布局 */
 }
 
 .billing-panel .status-row {
-  grid-column: 2;
+  /* 状态行展示在 .quota-data 内，不需grid放置 */
 }
 
 #quotaList {
@@ -283,16 +281,15 @@
 @media (max-width: 1320px) {
   .desktop-toolbar {
     grid-template-columns: minmax(180px, 260px) 120px auto 62px minmax(150px, 1fr) 120px 42px;
-    padding-left: 178px;
+    padding-left: 118px; /* Rail 112px + 6px边距 */
     gap: 10px;
   }
 
   .app-shell {
-    grid-template-columns: 156px 330px minmax(480px, 1fr) 288px;
+    grid-template-columns: 112px 252px minmax(480px, 1fr) 278px;
   }
 
   .asset-list {
     grid-template-columns: repeat(4, minmax(120px, 1fr));
   }
 }
-

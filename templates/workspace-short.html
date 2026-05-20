@@ -1,0 +1,93 @@
+<div class="result-grid">
+  <!-- 编辑器面板 -->
+  <section class="result-panel desktop-editor-panel main-result">
+    <div class="panel-title"><span>文</span><h3 id="editorChapterTitle">第 1 章 <span class="ch-name">未命名故事</span> <span class="editor-action-tag">正文编辑</span></h3></div>
+    <!-- 彻底扫除被写死的硬编码假数据页签，仅保留由 JS 真实数据联动的页签 -->
+    <div id="chapterStrip" class="desktop-chapter-strip">
+      <button class="active" type="button">第 1 章　未命名故事 ×</button>
+      <button type="button" class="desktop-add-tab">＋</button>
+    </div>
+    <div class="editor-toolbar">
+      <button class="tb-btn" type="button" title="撤销">↶</button>
+      <button class="tb-btn" type="button" title="重做">↷</button>
+      <span class="tb-sep"></span>
+      <select class="tb-select" aria-label="段落样式"><option>正文</option><option>标题</option></select>
+      <select class="tb-select" aria-label="字号"><option>16</option><option>18</option><option>20</option></select>
+      <button class="tb-btn" type="button" title="加粗"><strong>B</strong></button>
+      <button class="tb-btn" type="button" title="斜体"><em>I</em></button>
+      <button class="tb-btn" type="button" title="下划线"><u>U</u></button>
+      <span class="tb-sep"></span>
+      <button class="tb-btn" type="button" title="列表">☷</button>
+      <button class="tb-btn" type="button" title="对齐">≡</button>
+      <span class="editor-spacer"></span>
+      <span id="draftStats" class="draft-stat-pill">0 字 · 0 段</span>
+      <div class="micro-actions">
+        <button id="diffVersionBtn" type="button">版本对比</button>
+        <button id="importToSerialBtn" type="button" style="display:none">转入连载</button>
+      </div>
+    </div>
+    <div class="draft-progress-wrap"><div id="draftProgressFill" class="draft-progress-fill"></div></div>
+    <textarea id="draftEditor" class="draft-editor" placeholder="生成正文后会出现在这里，也可以直接写作..."></textarea>
+    <div id="diffViewer" class="diff-viewer" hidden></div>
+    <div class="desktop-editor-statusbar">
+      <span>字数：<b id="editorWordCount">0</b></span>
+      <span>章节字数：<b id="editorChapterWords">0</b></span>
+      <span>预计阅读：<b id="editorReadTime">1 分钟</b></span>
+      <span id="statusbarSaveTime" class="statusbar-save-time">自动保存：--:--:--</span>
+      <button class="statusbar-expand-btn" type="button" title="全屏编辑">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2 2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- 记忆卡片面板 -->
+  <section class="result-panel desktop-memory-panel">
+    <div class="panel-title"><span>记</span><h3>记忆卡片</h3><button class="ghost-sm" type="button">＋ 新建卡片</button></div>
+    <div id="characterList" class="asset-list"></div>
+  </section>
+
+  <!-- 标题与开篇钩子 -->
+  <section class="result-panel">
+    <div class="panel-title"><span>题</span><h3 id="projectTitle">等待生成方案</h3></div>
+    <div id="titleList" class="title-list"></div>
+    <div class="hook-box"><p id="hookText">填写左侧信息后生成。</p></div>
+  </section>
+
+  <!-- 大纲结构 -->
+  <section class="result-panel">
+    <div class="panel-title"><span>纲</span><h3>大纲结构</h3></div>
+    <ol id="outlineList" class="outline-list"></ol>
+    <div id="outlineMirrorList"></div>
+  </section>
+
+  <!-- 市场节拍 -->
+  <section class="result-panel">
+    <div class="panel-title"><span>市</span><h3>市场节拍</h3></div>
+    <div id="marketList" class="market-list"></div>
+  </section>
+
+  <!-- 证据链 -->
+  <section class="result-panel">
+    <div class="panel-title"><span>证</span><h3>证据链</h3></div>
+    <div id="evidenceList" class="evidence-list"></div>
+  </section>
+
+  <!-- 短剧分集 -->
+  <section class="result-panel desktop-episode-panel">
+    <div class="panel-title"><span>剧</span><h3>短剧分集</h3></div>
+    <div id="episodeList" class="episode-list"></div>
+  </section>
+
+  <!-- 商业评分与诊断 -->
+  <section class="score-panel">
+    <div class="panel-title"><span>分</span><h3>商业评分</h3></div>
+    <div id="scoreList" class="score-list"></div>
+    <div class="diagnosis-box"><p id="diagnosisText">暂无诊断。</p></div>
+  </section>
+
+  <!-- 提案包 -->
+  <section class="result-panel desktop-proposal-panel monetization-panel">
+    <div class="proposal-toolbar"><p>提案包</p><button id="copyProposalBtn" type="button">复制提案包</button></div>
+    <div id="proposalPack" class="proposal-pack"></div>
+  </section>
+</div>

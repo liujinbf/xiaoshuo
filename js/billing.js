@@ -112,6 +112,24 @@ function renderBilling() {
       `;
     })
     .join("");
+
+  // 根据当前会员状态，智能自适应试用和升级按钮
+  const trialBtn = document.getElementById("trialBtn");
+  const quotaUpgradeBtn = document.getElementById("quotaUpgradeBtn");
+  if (trialBtn) {
+    if (tier === "pro" || tier === "trial") {
+      trialBtn.style.display = "none";
+    } else {
+      trialBtn.style.display = "inline-flex";
+    }
+  }
+  if (quotaUpgradeBtn) {
+    const spanText = quotaUpgradeBtn.querySelector("span");
+    if (spanText) {
+      spanText.textContent = tier === "pro" ? "续费 Pro 会员" : "升级 Pro 会员";
+    }
+  }
+
   updateAiButtonState();
 }
 

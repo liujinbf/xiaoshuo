@@ -1,7 +1,8 @@
 # 盐选故事工作台 — 开发规则
 
-> **版本**: 1.1.0 | **生效日期**: 2026-05-19  
+> **版本**: 1.2.0 | **生效日期**: 2026-05-20  
 > 所有新功能开发、bug 修复、AI 辅助开发，均须遵守本文档。
+
 
 ---
 
@@ -89,15 +90,20 @@ app.js              ← 主入口（DOM 引用 + 事件监听 + 初始化）
 server.js              ← 主服务器（路由分发 + 静态文件）
 server/
 ├── utils/
-│   ├── db.js          ← SQLite 初始化与数据访问
-│   ├── prompts.js     ← AI Prompt 构建器与 AI 调用
+│   ├── db.js          ← SQLite 数据访问层（账号/项目/小说/订单/嵌入/灵感库）
+│   ├── db-init.js     ← 数据库初始化、结构迁移、种子数据（WAL 模式已在此启用）
+│   ├── vector.js      ← 向量工具（fetchEmbedding / cosineSimilarity / extractChatText）
+│   │                    ⚠️ 所有 AI 响应解析和向量操作必须从此模块导入，禁止重复定义
+│   ├── prompts.js     ← AI Prompt 构建器与 AI 调用（连载部分）
+│   ├── draft-prompts.js ← 单篇正文 Prompt 构建与调用
 │   └── payment.js     ← 支付网关封装
 └── routes/
     ├── auth.js        ← 登录注册与云端同步
     ├── account.js     ← 账户、草稿、订单路由
-    ├── novels.js      ← 连载路由
+    ├── novels.js      ← 连载路由（章节生成、向量记忆、章节嵌入）
     ├── pay.js         ← 支付路由
-    └── admin.js       ← 管理后台路由
+    ├── admin.js       ← 管理后台路由
+    └── inspirations.js ← 爆款拆解学习库路由
 ```
 
 ---
@@ -129,7 +135,26 @@ server/
 
 ---
 
-## 五、命名规范
+## 五、性能与数据库规范
+
+### 5.1 SQLite 性能
+- 数据库已启用 **WAL 模式**（`PRAGMA journal_mode = WAL`），允许读写并发，禁止在代码中重复设置冲突 PRAGMA
+- 所有新表需在 `db-init.js` 中通过 `CREATE TABLE IF NOT EXISTS` + `CREATE INDEX IF NOT EXISTS` 声明
+- **禁止**向 `novels.data` 等 JSON BLOB 字段中存入大体积数组（如向量、历史快照）
+  - 向量嵌入必须存入 `chapter_embeddings` 表，通过 `db.js` 中的 `saveChapterEmbedding / getChapterEmbeddings` 访问
+
+### 5.2 向量操作
+- 所有向量函数（`fetchEmbedding`、`cosineSimilarity`、`extractChatText`）统一从 `server/utils/vector.js` 导入
+- 嵌入向量存储时以 `JSON.stringify(embedding)` 序列化；读取时 `JSON.parse` 还原
+- 向量召回采用余弦相似度阈值 **0.6**，Top **2**
+
+### 5.3 写库优化原则
+- `GET /api/account` 只在以下情况触发写库：账户首次创建、日期变更、会员状态降级
+- 不得在查询型接口中无条件执行 `UPDATE` / `INSERT`
+
+---
+
+## 六、命名规范
 
 | 对象 | 规范 | 示例 |
 |------|------|------|
@@ -142,7 +167,7 @@ server/
 
 ---
 
-## 六、禁止项
+## 七、禁止项
 
 - ❌ 在 `js/data.js` 或 `js/constants.js` 中写任何函数或 DOM 操作
 - ❌ 在 `app.js` 主入口中写超过 10 行的业务逻辑（应抽取到对应模块）
@@ -151,10 +176,13 @@ server/
 - ❌ 在字符串字面量里直接嵌入中文引号（如 `"模型配置"`），必须转义或改用模板字符串
 - ❌ 直接操作 `data/database.sqlite` 或旧版 `store.json`（只通过 `server/utils/db.js` 访问）
 - ❌ 硬编码 API Key（应通过 `.env` 或 `localStorage` 传入）
+- ❌ 在 `server/routes/*.js` 或 `server/utils/prompts.js` 中**重复定义** `extractChatText`（统一用 `vector.js`）
+- ❌ 将向量数组（`summaryEmbedding` 等）序列化后存入小说/项目的 JSON BLOB 字段（应存入 `chapter_embeddings` 表）
+- ❌ 在 `js/planner.js` 中写 DOM 操作（DOM 操作统一在 `planner-render.js` 中进行）
 
 ---
 
-## 七、代码审查清单
+## 八、代码审查清单
 
 提交 PR 前必须确认：
 - [ ] 无任何单文件超过强制拆分阈值
@@ -163,7 +191,10 @@ server/
 - [ ] `js/` 下所有 `*.js` 文件通过 `node --check` 检查（由于浏览器 API 会报错，改用 `node --input-type=module` 检查 ES 语法）
 - [ ] `app.js?v=` 的版本号已更新
 - [ ] 新增 `<script>` 标签的加载顺序符合依赖链
+- [ ] 新增向量操作已从 `vector.js` 导入，未在其他文件重复定义
+- [ ] 新增数据库表已在 `db-init.js` 声明（含索引）
+- [ ] 支付金额比较使用整数分（`Math.round(amount * 100)`），不使用浮点直接比较
 
 ---
 
-*本文档由 AI 助手自动生成，需要团队 review 后执行。*
+*本文档由 AI 助手自动维护，每次重要架构变更后更新版本号。*

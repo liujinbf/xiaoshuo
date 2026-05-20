@@ -1,8 +1,9 @@
-﻿import sqlite3 from "sqlite3";
+import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { join } from "node:path";
 import { existsSync, readFileSync, renameSync } from "node:fs";
 import { DEFAULT_INSPIRATIONS } from "./default-inspirations.js";
+import { DEFAULT_KNOWLEDGE } from "./default-knowledge.js";
 
 let dbPromise = null;
 
@@ -12,6 +13,12 @@ export async function initializeDatabase() {
       filename: join(process.cwd(), "data", "database.sqlite"),
       driver: sqlite3.Database
     }).then(async (db) => {
+      // === 性能优化：WAL 模式 + 缓存配置 ===
+      await db.run("PRAGMA journal_mode = WAL");
+      await db.run("PRAGMA synchronous = NORMAL");
+      await db.run("PRAGMA cache_size = -8000"); // 8MB 页缓存
+      await db.run("PRAGMA temp_store = MEMORY");
+
       await db.exec(`
         CREATE TABLE IF NOT EXISTS accounts (
           user_id TEXT PRIMARY KEY,
@@ -64,10 +71,30 @@ export async function initializeDatabase() {
           value TEXT
         );
 
+        CREATE TABLE IF NOT EXISTS chapter_embeddings (
+          novel_id TEXT NOT NULL,
+          chapter_index INTEGER NOT NULL,
+          embedding TEXT NOT NULL,
+          created_at TEXT,
+          PRIMARY KEY (novel_id, chapter_index)
+        );
+
+        CREATE TABLE IF NOT EXISTS knowledge_base (
+          id TEXT PRIMARY KEY,
+          category TEXT NOT NULL,
+          entity TEXT NOT NULL UNIQUE,
+          content TEXT NOT NULL,
+          alias TEXT DEFAULT '',
+          embedding TEXT,
+          created_at TEXT
+        );
+
         CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
         CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
         CREATE INDEX IF NOT EXISTS idx_novels_user_id ON novels(user_id);
         CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+        CREATE INDEX IF NOT EXISTS idx_chapter_embeddings_novel ON chapter_embeddings(novel_id);
+        CREATE INDEX IF NOT EXISTS idx_knowledge_base_entity ON knowledge_base(entity);
       `);
 
       // === 数据库结构迁移 ===
@@ -114,6 +141,17 @@ export async function initializeDatabase() {
         console.log("[DB Migration] Granted admin role to 'admin' user");
       }
 
+      // 迁移: 为旧版 knowledge_base 表补加 alias 与 embedding 字段
+      const kbCols = await db.all("PRAGMA table_info(knowledge_base)");
+      if (!kbCols.some(c => c.name === "alias")) {
+        await db.run("ALTER TABLE knowledge_base ADD COLUMN alias TEXT DEFAULT ''");
+        console.log("[DB Migration] Added 'alias' column to knowledge_base table");
+      }
+      if (!kbCols.some(c => c.name === "embedding")) {
+        await db.run("ALTER TABLE knowledge_base ADD COLUMN embedding TEXT");
+        console.log("[DB Migration] Added 'embedding' column to knowledge_base table");
+      }
+
       // 迁移: 爆款拆解学习库
       const inspirationCols = await db.all("PRAGMA table_info(inspirations)");
       if (inspirationCols.length === 0) {
@@ -155,8 +193,14 @@ export async function initializeDatabase() {
           if (store.accounts) {
             for (const [userId, account] of Object.entries(store.accounts)) {
               await db.run(
-                `INSERT OR IGNORE INTO accounts (user_id, data, updated_at) VALUES (?, ?, ?)`,
-                [userId, JSON.stringify(account), account.updatedAt || new Date().toISOString()]
+                `INSERT OR IGNORE INTO accounts (user_id, tier, pro_ends_at, data, updated_at) VALUES (?, ?, ?, ?, ?)`,
+                [
+                  userId,
+                  account.tier || 'free',
+                  account.proEndsAt || null,
+                  JSON.stringify(account),
+                  account.updatedAt || new Date().toISOString()
+                ]
               );
             }
           }
@@ -165,8 +209,14 @@ export async function initializeDatabase() {
             for (const [userId, userProjects] of Object.entries(store.projects)) {
               for (const proj of userProjects) {
                 await db.run(
-                  `INSERT OR IGNORE INTO projects (id, user_id, data, updated_at) VALUES (?, ?, ?, ?)`,
-                  [proj.id, userId, JSON.stringify(proj), proj.updatedAt || new Date().toISOString()]
+                  `INSERT OR IGNORE INTO projects (id, user_id, title, data, updated_at) VALUES (?, ?, ?, ?, ?)`,
+                  [
+                    proj.id,
+                    userId,
+                    proj.input?.theme || proj.title || "未命名项目",
+                    JSON.stringify(proj),
+                    proj.updatedAt || new Date().toISOString()
+                  ]
                 );
               }
             }
@@ -176,8 +226,14 @@ export async function initializeDatabase() {
             for (const [userId, userNovels] of Object.entries(store.novels)) {
               for (const novel of userNovels) {
                 await db.run(
-                  `INSERT OR IGNORE INTO novels (id, user_id, data, updated_at) VALUES (?, ?, ?, ?)`,
-                  [novel.id, userId, JSON.stringify(novel), novel.updatedAt || new Date().toISOString()]
+                  `INSERT OR IGNORE INTO novels (id, user_id, title, data, updated_at) VALUES (?, ?, ?, ?, ?)`,
+                  [
+                    novel.id,
+                    userId,
+                    novel.title || "未命名连载",
+                    JSON.stringify(novel),
+                    novel.updatedAt || new Date().toISOString()
+                  ]
                 );
               }
             }
@@ -186,8 +242,14 @@ export async function initializeDatabase() {
           if (store.orders) {
             for (const order of store.orders) {
               await db.run(
-                `INSERT OR IGNORE INTO orders (id, user_id, data, created_at) VALUES (?, ?, ?, ?)`,
-                [order.id, order.userId, JSON.stringify(order), order.createdAt || new Date().toISOString()]
+                `INSERT OR IGNORE INTO orders (id, user_id, status, data, created_at) VALUES (?, ?, ?, ?, ?)`,
+                [
+                  order.id,
+                  order.userId,
+                  order.status || 'pending',
+                  JSON.stringify(order),
+                  order.createdAt || new Date().toISOString()
+                ]
               );
             }
           }
@@ -201,6 +263,23 @@ export async function initializeDatabase() {
           console.error("[DB] Migration failed:", err);
           await db.run("ROLLBACK").catch(() => {});
         }
+      }
+
+      // 显式安全地保证 chapter_embeddings 表一定存在
+      try {
+        await db.exec(`
+          CREATE TABLE IF NOT EXISTS chapter_embeddings (
+            novel_id TEXT NOT NULL,
+            chapter_index INTEGER NOT NULL,
+            embedding TEXT NOT NULL,
+            created_at TEXT,
+            PRIMARY KEY (novel_id, chapter_index)
+          );
+          CREATE INDEX IF NOT EXISTS idx_chapter_embeddings_novel ON chapter_embeddings(novel_id);
+        `);
+        console.log("[DB] Ensured chapter_embeddings table exists.");
+      } catch (e) {
+        console.error("[DB] Ensuring chapter_embeddings table failed:", e);
       }
 
       // 强制为任何未初始化的实例灌入种子默认灵感库（以 admin 身份）
@@ -218,7 +297,19 @@ export async function initializeDatabase() {
         console.error("[DB] Seeding default templates failed:", e);
       }
 
-            return db;
+      // 强制同步 DEFAULT_KNOWLEDGE 默认学科常识种子
+      try {
+        for (const item of DEFAULT_KNOWLEDGE) {
+          await db.run(
+            "INSERT OR IGNORE INTO knowledge_base (id, category, entity, content, created_at) VALUES (?, ?, ?, ?, ?)",
+            [item.id, item.category, item.entity, item.content, new Date().toISOString()]
+          );
+        }
+        console.log("[DB] Synchronized default knowledge base seeds.");
+      } catch (e) {
+        console.error("[DB] Seeding default knowledge failed:", e);
+      }
+
       return db;
     });
   }

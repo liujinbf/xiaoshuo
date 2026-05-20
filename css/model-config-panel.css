@@ -1,0 +1,367 @@
+/* ================================================================
+   model-config-panel.css — 模型配置面板专属样式 (重新设计版)
+   ================================================================ */
+
+/* ─── 面板容器 ─── */
+.desktop-model-enhanced {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 14px 12px !important;
+  background: linear-gradient(160deg, #fdfbf5 0%, #f6f1e6 100%) !important;
+  border: 1px solid rgba(23, 107, 84, 0.14) !important;
+  border-radius: 10px !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 12px rgba(46, 42, 34, 0.06) !important;
+}
+
+/* 顶部水墨渐变装饰条 */
+.desktop-model-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #176b54, #22a078, #176b54);
+  border-radius: 10px 10px 0 0;
+}
+
+/* ─── 标题行 ─── */
+.desktop-model-enhanced .model-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(23, 107, 84, 0.18);
+}
+
+.desktop-model-enhanced .model-heading::before {
+  content: "◎";
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  color: #176b54;
+  background: rgba(23, 107, 84, 0.08);
+  border: 1px solid rgba(23, 107, 84, 0.2);
+  border-radius: 50%;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.desktop-model-enhanced .model-heading h2 {
+  flex: 1;
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #2e2a1e;
+  letter-spacing: 0.02em;
+}
+
+/* ─── 状态徽章 ─── */
+.mc-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(74, 67, 55, 0.07);
+  border: 1px solid rgba(74, 67, 55, 0.14);
+  color: #7a736a;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.mc-status-badge.success {
+  background: rgba(23, 111, 86, 0.1);
+  border-color: rgba(23, 111, 86, 0.3);
+  color: #176f56;
+}
+
+.mc-status-badge.error {
+  background: rgba(200, 59, 40, 0.08);
+  border-color: rgba(200, 59, 40, 0.25);
+  color: #c83b28;
+}
+
+/* ─── 字段组 ─── */
+.mc-field {
+  margin-bottom: 10px;
+}
+
+.mc-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.mc-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7a726a;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.mc-label-row .mc-label {
+  margin-bottom: 0;
+}
+
+/* ─── 输入框通用 ─── */
+.mc-select,
+.mc-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 252, 245, 0.92) !important;
+  border: 1px solid rgba(139, 130, 112, 0.22) !important;
+  border-radius: 7px !important;
+  color: #2e2a1e !important;
+  font-size: 12px !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+  outline: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.mc-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23176b54'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  padding-right: 28px !important;
+}
+
+.mc-select:focus,
+.mc-input:focus {
+  border-color: rgba(23, 107, 84, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(23, 107, 84, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ─── API Key 输入 + 眼睛按钮 ─── */
+.mc-key-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mc-key-input {
+  padding-right: 36px !important;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.06em;
+}
+
+.mc-eye-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 34px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: none;
+  color: #9b9187;
+  cursor: pointer;
+  transition: color 0.18s ease;
+  border-radius: 0 7px 7px 0;
+}
+
+.mc-eye-btn:hover {
+  color: #176b54;
+  background: rgba(23, 107, 84, 0.06);
+}
+
+/* ─── 刷新列表按钮 ─── */
+.mc-sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(23, 107, 84, 0.22);
+  background: rgba(23, 107, 84, 0.06);
+  color: #176b54;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.mc-sync-btn:hover {
+  background: rgba(23, 107, 84, 0.12);
+  border-color: rgba(23, 107, 84, 0.35);
+}
+
+.mc-sync-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── 分割线 ─── */
+.mc-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(23, 107, 84, 0.12), transparent);
+  margin: 10px 0;
+}
+
+/* ─── 参数调节区重新样式 ─── */
+.desktop-model-enhanced .desktop-model-tuning {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px !important;
+}
+
+.desktop-model-enhanced .desktop-model-tuning label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 0 6px;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #7a726a !important;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 0 !important;
+}
+
+.desktop-model-enhanced .desktop-model-tuning output {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #176b54 !important;
+  background: rgba(23, 107, 84, 0.08);
+  border: 1px solid rgba(23, 107, 84, 0.18);
+  border-radius: 5px;
+  padding: 1px 7px;
+  text-align: center;
+  min-width: 42px;
+  margin-top: 0 !important;
+}
+
+.desktop-model-enhanced .desktop-model-tuning input[type="range"] {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px !important;
+  background: rgba(139, 130, 112, 0.15) !important;
+  border-radius: 4px !important;
+  margin: 4px 0 0 !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.desktop-model-enhanced .desktop-model-tuning input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px !important;
+  height: 13px !important;
+  border-radius: 50% !important;
+  background: #176b54 !important;
+  cursor: pointer !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 1px 5px rgba(23, 107, 84, 0.4) !important;
+  transition: transform 0.12s ease !important;
+}
+
+.desktop-model-enhanced .desktop-model-tuning input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.3) !important;
+}
+
+/* ─── 操作按钮区 ─── */
+.mc-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.mc-btn-save {
+  padding: 9px 10px;
+  background: linear-gradient(135deg, #176b54, #1a8a6a);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 3px 10px rgba(23, 107, 84, 0.3);
+  letter-spacing: 0.02em;
+}
+
+.mc-btn-save:hover {
+  background: linear-gradient(135deg, #1a8a6a, #176b54);
+  box-shadow: 0 5px 16px rgba(23, 107, 84, 0.4);
+  transform: translateY(-1px);
+}
+
+.mc-btn-save:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(23, 107, 84, 0.25);
+}
+
+.mc-btn-test {
+  padding: 9px 10px;
+  background: rgba(255, 252, 245, 0.92);
+  color: #176b54;
+  border: 1.5px solid rgba(23, 107, 84, 0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  letter-spacing: 0.02em;
+}
+
+.mc-btn-test:hover {
+  background: rgba(23, 107, 84, 0.08);
+  border-color: rgba(23, 107, 84, 0.5);
+  box-shadow: 0 0 0 3px rgba(23, 107, 84, 0.08);
+}
+
+.mc-btn-test:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mc-btn-clear {
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  color: #9b9187;
+  border: 1px dashed rgba(139, 130, 112, 0.28);
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  letter-spacing: 0.02em;
+}
+
+.mc-btn-clear:hover {
+  background: rgba(200, 59, 40, 0.05);
+  border-color: rgba(200, 59, 40, 0.25);
+  color: #c83b28;
+}
+
+/* ─── 测试连接中的加载动画 ─── */
+@keyframes mcSpinAnim {
+  to { transform: rotate(360deg); }
+}
+
+.mc-btn-test.testing svg,
+.mc-sync-btn.syncing svg {
+  animation: mcSpinAnim 0.8s linear infinite;
+}

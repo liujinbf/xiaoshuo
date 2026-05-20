@@ -1,0 +1,96 @@
+<div class="lp-shell">
+  <!-- ══ 顶部标题栏 ══ -->
+  <div class="lp-header">
+    <div class="lp-header-left">
+      <div class="lp-icon">⚡</div>
+      <div>
+        <h2 class="lp-title">爆款拆解</h2>
+        <p class="lp-subtitle">上传或粘贴爆款原文，AI 自动提炼写作基因</p>
+      </div>
+    </div>
+    <div class="lp-header-stats">
+      <div class="lp-stat">
+        <span class="lp-stat-num" id="knowledgeCount">0</span>
+        <span class="lp-stat-label">已学模型</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 主区域：结果展示 ══ -->
+  <div class="lp-main">
+    <!-- 右：结果区 (在此独占主宽，极大充实排版) -->
+    <div class="lp-result-col" style="width: 100%;">
+      <!-- 空状态 -->
+      <div id="learnEmptyState" class="lp-empty">
+        <div class="lp-empty-icon">🧬</div>
+        <p class="lp-empty-title">等待拆解结果</p>
+        <p class="lp-empty-hint">粘贴爆款原文并点击「让 AI 开始拆解学习」</p>
+      </div>
+
+      <!-- 结果卡片 -->
+      <div id="learnResultArea" class="lp-result-cards">
+        <!-- 主题 -->
+        <div class="lp-result-card lp-result-theme">
+          <div class="lp-result-card-label">
+            <span class="lp-result-dot"></span>核心主题
+          </div>
+          <p id="learnResultTheme" class="lp-result-theme-text"></p>
+        </div>
+
+        <!-- 开篇钩子 -->
+        <div class="lp-result-card">
+          <div class="lp-result-card-label">
+            <span class="lp-result-dot lp-dot-amber"></span>开篇钩子
+          </div>
+          <p id="learnResultHook" class="lp-result-body"></p>
+        </div>
+
+        <!-- 骨架大纲 -->
+        <div class="lp-result-card lp-result-outline-card">
+          <div class="lp-result-card-label">
+            <span class="lp-result-dot lp-dot-blue"></span>骨架大纲
+          </div>
+          <pre id="learnResultOutline" class="lp-result-outline"></pre>
+        </div>
+
+        <!-- 保存按钮 -->
+        <button id="saveInspirationBtn" class="lp-btn-save" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          存入专属灵感库
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 灵感库 ══ -->
+  <div class="lp-library">
+    <div class="lp-library-header">
+      <div class="lp-library-title">
+        <span class="lp-icon-sm">📚</span>
+        爆款灵感库
+      </div>
+      <div class="lp-library-actions">
+        <!-- clearAllInspirationsBtn 由 JS 动态注入 -->
+      </div>
+    </div>
+    <div id="knowledgeEmptyState" class="lp-library-empty">还没有学习过任何素材，快去拆解第一篇爆款吧！</div>
+    <div id="knowledgeList" class="lp-knowledge-grid"></div>
+  </div>
+
+  <!-- ══ 学科常识规范库 ══ -->
+  <div class="lp-library lp-subject-library">
+    <div class="lp-library-header">
+      <div class="lp-library-title">
+        <span class="lp-icon-sm">🔬</span>
+        学科常识规范库
+        <small id="subjectKnowledgeCount" class="lp-count-badge">加载中</small>
+      </div>
+    </div>
+    <div class="lp-expand-bar">
+      <input id="expandEntityInput" type="text" class="lp-expand-input" placeholder="输入实体名称（如：唐朝、氰化钾、太空真空）">
+      <button id="expandKnowledgeBtn" type="button" class="lp-btn-expand">⚡ 联网/AI 扩充</button>
+    </div>
+    <div id="subjectKnowledgeEmptyState" class="lp-library-empty">暂无常识约束。</div>
+    <div id="subjectKnowledgeFullList" class="lp-knowledge-grid lp-subject-grid"></div>
+  </div>
+</div>

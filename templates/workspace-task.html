@@ -1,0 +1,241 @@
+<div class="task-panel-wrapper" style="width: 96%; max-width: 1360px; margin: 0 auto; padding: 20px 0;">
+
+  <!-- 页面顶部导航栏 -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px solid var(--du-line); padding-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #10b981, #059669); display: grid; place-items: center; color: #fff; font-size: 18px; font-weight: 900; flex-shrink: 0; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">任</span>
+      <div>
+        <h2 style="font-size: 20px; font-weight: 900; margin: 0; color: var(--du-ink); font-family: 'Noto Serif SC', serif;">AI 智能大纲任务中心</h2>
+        <p style="font-size: 12px; color: var(--du-muted); margin: 3px 0 0;">掌控小说的灵魂骨架，通过立体生成流定义人物设定与双阶段故事大纲</p>
+      </div>
+    </div>
+    <div style="font-size: 11px; color: var(--du-muted); background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px;">
+      <span class="task-pulse-dot"></span>
+      <span>AI 引擎就绪</span>
+    </div>
+  </div>
+
+  <!-- 未选中小说时的空状态 -->
+  <div id="taskEmptyState" style="padding: 64px 32px; text-align: center; background: var(--du-panel-solid); border-radius: 14px; border: 1px dashed var(--du-line-strong); max-width: 600px; margin: 40px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+    <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(16, 185, 129, 0.08); display: grid; place-items: center; margin: 0 auto 20px;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </div>
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--du-ink); margin: 0 0 8px;">未加载小说任务</h3>
+    <p style="color: var(--du-muted); font-size: 13px; line-height: 1.5; margin: 0 0 20px;">大纲任务控制中心需要绑定具体的连载小说。请点击下方按钮前往连载铸造区。</p>
+    <button onclick="if(typeof switchWorkspaceTab==='function'){switchWorkspaceTab('serial')}else{document.getElementById('tabSerial')?.click()}" style="padding: 10px 24px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: all 0.2s;">
+      去选择或创建小说
+    </button>
+  </div>
+
+  <!-- 任务设定主体（选中小说后显示） -->
+  <div id="taskPanel" hidden class="task-layout-grid">
+
+    <!-- 左侧：设定生成配置与大片渲染区 (60%) -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+      <!-- 当前绑定小说面板 -->
+      <div class="task-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 8px; background: rgba(16, 185, 129, 0.08); display: grid; place-items: center; color: #10b981; font-size: 20px; font-weight: 900;">&#128214;</div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--du-muted); text-transform: uppercase;">当前绑定的铸造小说</div>
+            <div id="taskNovelTitle" style="font-size: 16px; font-weight: 900; color: var(--du-ink); margin-top: 2px;"></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <div class="task-meta-tag"><span id="taskNovelGenre">--</span><span style="opacity: 0.6;">题材</span></div>
+          <div class="task-meta-tag"><span id="taskNovelChapters">--</span><span style="opacity: 0.6;">目标章</span></div>
+          <div class="task-meta-tag"><span id="taskNovelWords">--</span><span style="opacity: 0.6;">字/章</span></div>
+        </div>
+      </div>
+
+      <!-- 第零步：人物设定生成器 -->
+      <div class="task-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">
+          <strong style="font-size: 14px; color: var(--du-ink); display: flex; align-items: center; gap: 6px;">第零步：AI 批量生成人物设定</strong>
+          <span style="font-size: 10px; color: #7c3aed; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.15); padding: 2px 8px; border-radius: 4px; font-weight: 700;">创意参数最高 (Temp 0.9)</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+          <div class="task-number-widget"><span class="widget-label">主角 (女主)</span><input id="charCountProtagonist" type="number" value="1" min="1" max="3"></div>
+          <div class="task-number-widget"><span class="widget-label">男主角/配偶</span><input id="charCountMaleLead" type="number" value="1" min="0" max="3"></div>
+          <div class="task-number-widget"><span class="widget-label">核心反派</span><input id="charCountVillain" type="number" value="1" min="1" max="3"></div>
+          <div class="task-number-widget"><span class="widget-label">重要配角</span><input id="charCountSupporting" type="number" value="2" min="0" max="5"></div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">核心人物创意碰撞 (发散想法)</label>
+          <textarea id="charBrainstorm" rows="2" placeholder="输入故事灵感。如：男主其实是重生的神尊但伪装成废柴，女主是自带系统的反派大小姐..." style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 13px; padding: 10px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; background: var(--du-bg); color: var(--du-ink); font-family: inherit; line-height: 1.5; outline: none;"></textarea>
+        </div>
+
+        <button id="generateCharactersBtn" type="button" class="task-btn-purple" style="width: 100%; padding: 11px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          启动 AI 人物群像构建流
+        </button>
+
+        <div id="taskCharProgress" hidden style="margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 12px; color: #7c3aed; font-weight: 700;">正在生成立体人设...</span>
+            <span style="font-size: 11px; color: var(--du-muted);">大约需要 30 秒</span>
+          </div>
+          <div style="height: 6px; background: rgba(124, 58, 237, 0.1); border-radius: 10px; overflow: hidden;">
+            <div id="taskCharProgressBar" style="height: 100%; background: linear-gradient(90deg, #7c3aed, #a855f7); border-radius: 10px; width: 0%; transition: width 0.3s;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 人物设定结果容器 -->
+      <div id="taskCharResult" hidden class="task-card-glow" style="background: var(--du-panel-solid); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 14px; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid rgba(124, 58, 237, 0.15); padding-bottom: 8px;">
+          <strong style="font-size: 14px; color: var(--du-ink);">已生成的 AI 人物卡池档案</strong>
+          <div style="display: flex; gap: 8px;">
+            <button id="copyCharBtn" type="button" style="font-size: 11px; color: #7c3aed; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.2); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">复制纯文本</button>
+            <button id="applyCharBtn" type="button" style="font-size: 11px; color: #fff; background: linear-gradient(135deg, #7c3aed, #a855f7); border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);">写入世界设定人物志</button>
+          </div>
+        </div>
+        <div id="taskCharContent" style="font-size: 13px; line-height: 1.8; color: var(--du-ink); white-space: pre-wrap; max-height: 360px; overflow-y: auto; padding-right: 6px;"></div>
+      </div>
+
+      <!-- 大纲生成器（两步法） -->
+      <div class="task-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">
+          <strong style="font-size: 14px; color: var(--du-ink); display: flex; align-items: center; gap: 6px;">双步骤大纲精密合成器</strong>
+          <span style="font-size: 10px; color: #10b981; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); padding: 2px 8px; border-radius: 4px; font-weight: 700;">大纲模型对齐机制</span>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">核心故事脉络构想（将整合人物卡池）</label>
+          <textarea id="taskBrainstorm" rows="3" placeholder="描述你期望的剧情走向或核心矛盾，AI 会智能吸收人物志与世界规则进行对齐输出。留空则由 AI 自由演算..." style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 13px; padding: 10px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; background: var(--du-bg); color: var(--du-ink); font-family: inherit; line-height: 1.5; outline: none;"></textarea>
+        </div>
+
+        <button id="generateOutlineBtn" type="button" class="task-btn-green" style="width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h-2"/><path d="M17.8 11.8L19 13"/><path d="M15 9h0.01"/><path d="M17.8 6.2L19 5"/><path d="M12.2 6.2L11 5"/><path d="M12.2 11.8L11 13"/><path d="M10 20l-4-4 10-10 4 4z"/></svg>
+          一键生成双步骤精密大纲
+        </button>
+
+        <div id="taskOutlineProgress" hidden style="margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span id="taskOutlineProgressStep" style="font-size: 12px; color: #10b981; font-weight: 700;">正在生成大纲阶段一...</span>
+            <span id="taskOutlineProgressPct" style="font-size: 11px; color: var(--du-muted); font-weight: 600;">50%</span>
+          </div>
+          <div style="height: 6px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; overflow: hidden;">
+            <div id="taskOutlineProgressBar" style="height: 100%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 10px; width: 50%; transition: width 0.5s;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第一步结果 -->
+      <div id="taskStep1Result" hidden class="task-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--du-line); padding-bottom: 8px;">
+          <strong style="font-size: 14px; color: var(--du-ink);">步骤一：核心背景与大主线设定</strong>
+          <button id="copySettingBtn" type="button" style="font-size: 11px; color: #10b981; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">复制主线文本</button>
+        </div>
+        <div id="taskStep1Content" style="font-size: 13px; line-height: 1.8; color: var(--du-ink); white-space: pre-wrap; max-height: 300px; overflow-y: auto; padding-right: 6px;"></div>
+      </div>
+
+      <!-- 第二步结果 -->
+      <div id="taskStep2Result" hidden class="task-card-glow" style="background: var(--du-panel-solid); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid rgba(16, 185, 129, 0.15); padding-bottom: 8px;">
+          <strong style="font-size: 14px; color: var(--du-ink);">步骤二：细分章节故事大纲</strong>
+          <div style="display: flex; gap: 8px;">
+            <button id="copyOutlineBtn" type="button" style="font-size: 11px; color: #10b981; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">复制章节大纲</button>
+            <button id="applyOutlineBtn" type="button" style="font-size: 11px; color: #fff; background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);">写入小说正文大纲</button>
+          </div>
+        </div>
+        <div id="taskStep2Content" style="font-size: 13px; line-height: 1.8; color: var(--du-ink); white-space: pre-wrap; max-height: 480px; overflow-y: auto; padding-right: 6px;"></div>
+      </div>
+
+    </div>
+
+    <!-- 右侧：Roadmap与系统看板 (340px) -->
+    <aside class="task-layout-sidebar">
+      
+      <!-- 任务进度里程碑 -->
+      <div class="task-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
+        <strong style="font-size: 14px; color: var(--du-ink); display: block; margin-bottom: 18px; border-bottom: 1px solid var(--du-line); padding-bottom: 8px;">写作流水线生命周期</strong>
+        
+        <div class="task-roadmap-visual">
+          <div class="task-milestone-step">
+            <div id="milestone1Icon" class="milestone-indicator">1</div>
+            <div class="milestone-body">
+              <div class="milestone-title">设定小说基础信息</div>
+              <div class="milestone-desc">定义核心类型、目标章节数与字数</div>
+            </div>
+          </div>
+          <div class="task-milestone-step">
+            <div id="milestone2Icon" class="milestone-indicator">2</div>
+            <div class="milestone-body">
+              <div class="milestone-title">锁定人物志与规则集</div>
+              <div class="milestone-desc">构建登场群像，确立逻辑铁律底线</div>
+            </div>
+          </div>
+          <div class="task-milestone-step">
+            <div id="milestone3Icon" class="milestone-indicator">3</div>
+            <div class="milestone-body">
+              <div class="milestone-title">生成精密章节大纲</div>
+              <div class="milestone-desc">AI 自动演绎生成双步骤大纲并注入</div>
+            </div>
+          </div>
+          <div class="task-milestone-step">
+            <div id="milestone4Icon" class="milestone-indicator">4</div>
+            <div class="milestone-body">
+              <div id="milestone4Text" class="milestone-title">分章撰写故事正文</div>
+              <div class="milestone-desc">断点续传机制保活，一键自动撰写</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 指标监控面板 -->
+      <div class="task-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 20px;">
+        <strong style="font-size: 14px; color: var(--du-ink); display: block; margin-bottom: 14px; border-bottom: 1px solid var(--du-line); padding-bottom: 8px;">AI 运作与服务器指标</strong>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="task-monitor-row"><span class="monitor-label">引擎负载状态</span><span class="monitor-value" style="color: #10b981; display: flex; align-items: center; gap: 5px;"><span class="monitor-dot"></span>系统就绪</span></div>
+          <div class="task-monitor-row"><span class="monitor-label">API 保活状态</span><span class="monitor-value" style="color: #10b981;">Online</span></div>
+          <div class="task-monitor-row"><span class="monitor-label">大纲温度阈值</span><span class="monitor-value">0.7 (温和创构)</span></div>
+          <div class="task-monitor-row"><span class="monitor-label">单次上下文容量</span><span class="monitor-value">128K Tokens</span></div>
+          <div class="task-monitor-row"><span class="monitor-label">分章节并发线程</span><span class="monitor-value">1 (强时序校验)</span></div>
+        </div>
+
+        <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 8px; margin-top: 16px; font-size: 11px; line-height: 1.5; color: var(--du-muted);">
+          <strong>温馨小提示</strong>：大纲生成将重写原有的章节描述。在开始生成正文前，请务必保证大纲已成功应用到小说编辑器中。
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+</div>
+
+<style>
+.task-layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; margin-top: 16px; }
+.task-meta-tag { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--du-line); padding: 6px 12px; border-radius: 8px; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 68px; }
+.task-meta-tag span:first-child { font-weight: 900; color: var(--du-ink); }
+.task-number-widget { background: var(--du-bg); border: 1px solid var(--du-line-strong); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+.task-number-widget .widget-label { font-size: 10px; font-weight: 800; color: var(--du-muted); text-transform: uppercase; }
+.task-number-widget input { width: 100%; border: none; background: transparent; color: var(--du-ink); font-size: 14px; font-weight: 700; text-align: center; outline: none; }
+.task-btn-purple { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
+.task-btn-purple:hover { filter: brightness(1.1); transform: translateY(-0.5px); }
+.task-btn-green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25); }
+.task-btn-green:hover { filter: brightness(1.1); transform: translateY(-0.5px); }
+.task-roadmap-visual { position: relative; padding-left: 14px; }
+.task-roadmap-visual::before { content: ''; position: absolute; left: 13px; top: 12px; bottom: 12px; width: 2px; background: var(--du-line-strong); }
+.task-milestone-step { display: flex; gap: 16px; align-items: flex-start; padding-bottom: 24px; position: relative; }
+.task-milestone-step:last-child { padding-bottom: 0; }
+.milestone-indicator { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--du-line-strong); background: var(--du-panel-solid); color: var(--du-muted); font-size: 11px; font-weight: 900; display: grid; place-items: center; flex-shrink: 0; z-index: 2; transition: all 0.3s; }
+.milestone-body { flex: 1; }
+.milestone-title { font-size: 13px; font-weight: 800; color: var(--du-muted); transition: color 0.3s; }
+.milestone-desc { font-size: 11px; color: var(--du-muted); margin-top: 3px; line-height: 1.4; }
+.task-milestone-step.active .milestone-indicator { border-color: #10b981; background: #10b981; color: #fff; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+.task-milestone-step.active .milestone-title { color: var(--du-ink); }
+.task-monitor-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+.task-monitor-row:last-child { border-bottom: none; padding-bottom: 0; }
+.monitor-label { color: var(--du-muted); }
+.monitor-value { font-weight: 700; color: var(--du-ink); }
+.task-pulse-dot, .monitor-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; position: relative; }
+.task-pulse-dot::after, .monitor-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 1px solid #10b981; animation: taskPulse 1.8s infinite; }
+@keyframes taskPulse { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(2.4); opacity: 0; } }
+.task-card-glow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); }
+@media (max-width: 900px) { .task-layout-grid { grid-template-columns: 1fr; } }
+</style>

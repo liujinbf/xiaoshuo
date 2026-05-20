@@ -1,0 +1,46 @@
+<form id="serialForm" class="control-form serial-creator-panel">
+  <div class="panel-title"><span>连</span><h3>创建新连载</h3></div>
+  <div class="creator-form-fields">
+    <div class="field-group">
+      <label for="serialTitle">连载标题</label>
+      <input id="serialTitle" type="text" placeholder="雨巷尽头的灯">
+    </div>
+    <div class="field-group">
+      <label for="serialGenre">连载类型</label>
+      <select id="serialGenre">
+        <option value="history">历史错位爽文</option>
+        <option value="rules">规则怪谈脑洞</option>
+        <option value="suspense" selected>悬疑反转</option>
+        <option value="revenge">婚恋复仇</option>
+        <option value="heroine">大女主爽文</option>
+        <option value="family">世情家庭</option>
+        <option value="folklore">中式志怪</option>
+        <option value="workplace">职场内幕</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label for="serialOutline">连载大纲</label>
+      <textarea id="serialOutline" rows="4" placeholder="在此输入连载的全局故事大纲与骨架走向..."></textarea>
+    </div>
+    <div class="field-group">
+      <label for="serialCharacters">核心人设</label>
+      <textarea id="serialCharacters" rows="4" placeholder="在此设定主角、反派及重要配角的名字与性格..."></textarea>
+    </div>
+    <div class="form-row length-config" style="display: flex; gap: 10px; background: rgba(74, 67, 55, 0.03); padding: 10px; border-radius: 8px; border: 1px solid rgba(74,67,55,0.06); margin-bottom: 12px;">
+      <div class="config-item" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+        <label style="font-size:11px; font-weight:700;">单章字数</label>
+        <input id="serialChapterLength" type="number" value="2500" min="800" step="100">
+      </div>
+      <div class="config-item" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+        <label style="font-size:11px; font-weight:700;">目标章数</label>
+        <input id="serialTargetChapters" type="number" value="10" min="1" step="1">
+      </div>
+    </div>
+    <button id="createNovelBtn" class="primary-action serial-create-btn" type="button" style="width: 100%;">创建新连载</button>
+  </div>
+</form>
+
+<section class="history-panel serial-list-panel" style="margin-top: 12px;">
+  <div class="history-heading"><h3>我的连载库</h3></div>
+  <div id="serialNovelList" class="serial-novel-list"></div>
+</section>

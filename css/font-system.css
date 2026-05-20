@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;600;700;900&family=ZCOOL+XiaoWei&display=swap');
+
 /*
   全局中文字体系统
-  目标：把设计稿里的思源宋体气质打包进项目，浏览器版和桌面版都稳定一致。
+  目标：把设计稿里的思源宋体气质打包进项目，浏览器版 and 桌面版都稳定一致。
 */
 @font-face {
   font-family: "Story Serif CN";
@@ -60,7 +62,7 @@
 }
 
 :root {
-  --font-serif-cn: "Story Serif CN", "Source Han Serif SC", "思源宋体", "Noto Serif SC", "Songti SC", "SimSun", "宋体", serif;
+  --font-serif-cn: "Noto Serif SC", "Story Serif CN", "Source Han Serif SC", "思源宋体", "Songti SC", "SimSun", "宋体", serif;
   --font-ui-cn: var(--font-serif-cn);
   --font-mono-cn: "Cascadia Mono", "Consolas", "Courier New", monospace;
 }
@@ -134,4 +136,21 @@ pre,
 kbd,
 samp {
   font-family: var(--font-mono-cn) !important;
+}
+
+/* 极致国风字体个性化细节微调 */
+.desktop-rail-logo,
+.desktop-rail-quote p,
+.desktop-rail-quote strong,
+.desktop-app-icon {
+  font-family: "Ma Shan Zheng", cursive !important;
+}
+
+.panel-title h3,
+.panel-title h2,
+.editor-toolbar .tb-select,
+.desktop-project-select,
+#editorChapterTitle,
+.desktop-save-state {
+  font-family: "ZCOOL XiaoWei", serif !important;
 }

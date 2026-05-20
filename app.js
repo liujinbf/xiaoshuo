@@ -124,6 +124,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // 7.5 主题与备注变动联动常识库检测
+  const themeInput = document.querySelector("#theme");
+  const notesInput = document.querySelector("#storyNotes");
+  function triggerSubjectKnowledgeUpdate() {
+    const combined = `${themeInput?.value || ""} ${notesInput?.value || ""}`;
+    if (typeof window.refreshSubjectKnowledgeDebounced === "function") {
+      window.refreshSubjectKnowledgeDebounced(combined);
+    }
+  }
+  if (themeInput) themeInput.addEventListener("input", triggerSubjectKnowledgeUpdate);
+  if (notesInput) notesInput.addEventListener("input", triggerSubjectKnowledgeUpdate);
+  window.triggerSubjectKnowledgeUpdate = triggerSubjectKnowledgeUpdate;
+
   // 8. 检查一致性
   safeListen("#checkConsistencyBtn", "click", () => {
     if (!window.currentPlan) {
@@ -219,8 +232,29 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
+  // 10.5 真实的设置按钮：平滑直达模型配置与展开
+  safeListen("#settingsBtn", "click", () => {
+    const details = document.querySelector(".model-advanced");
+    if (details) {
+      details.open = true;
+    }
+    const modelPanel = document.querySelector(".desktop-model-enhanced");
+    if (modelPanel) {
+      modelPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      modelPanel.style.transition = "box-shadow 0.4s ease, border-color 0.4s ease, transform 0.4s ease";
+      modelPanel.style.boxShadow = "0 0 20px rgba(23, 107, 84, 0.45)";
+      modelPanel.style.borderColor = "var(--du-green)";
+      modelPanel.style.transform = "scale(1.015)";
+      setTimeout(() => {
+        modelPanel.style.boxShadow = "";
+        modelPanel.style.borderColor = "";
+        modelPanel.style.transform = "";
+      }, 1200);
+    }
+  });
+
   // 11. 支付相关
-  safeListen("#upgradeBtn", "click", () => {
+  safeListen("#quotaUpgradeBtn", "click", () => {
     if (typeof openBillingModal === "function") openBillingModal();
   });
   safeListen("#closeBillingBtn", "click", () => {
@@ -255,6 +289,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof renderBilling === "function") renderBilling();
   if (typeof renderHistory === "function") renderHistory();
   if (typeof window.syncProjectChrome === "function") window.syncProjectChrome(window.currentPlan);
+  if (typeof window.triggerSubjectKnowledgeUpdate === "function") {
+    window.triggerSubjectKnowledgeUpdate();
+  }
 
   safeListen("#historyList", "click", (event) => {
     const item = event.target.closest("[data-project-id]");

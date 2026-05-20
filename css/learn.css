@@ -38,7 +38,7 @@
 }
 
 /* 小标题 (Eyebrow) */
-.eyebrow {
+#panelLearn .eyebrow {
   font-size: 11px !important;
   font-weight: 700 !important;
   letter-spacing: 0.12em !important;
@@ -67,13 +67,13 @@
 }
 
 /* 表单字段容器 */
-.field-group {
+#panelLearn .field-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.field-group label {
+#panelLearn .field-group label {
   font-size: 12px !important;
   font-weight: 700 !important;
   color: var(--du-ink, #2e2a22) !important;
@@ -316,7 +316,7 @@
 }
 
 /* 已存写作模型卡片 */
-.knowledge-card {
+#panelLearn .knowledge-card {
   background: #ffffff !important;
   border: 1px solid rgba(46, 42, 34, 0.1) !important;
   border-radius: 12px !important;
@@ -324,10 +324,134 @@
   box-shadow: 0 4px 16px rgba(47, 40, 28, 0.02) !important;
   transition: all 0.2s ease !important;
 }
-.knowledge-card:hover {
+#panelLearn .knowledge-card:hover {
   transform: translateY(-2px) !important;
   border-color: rgba(139, 92, 246, 0.24) !important;
   box-shadow: 0 8px 24px rgba(139, 92, 246, 0.06) !important;
+}
+
+#panelLearn .knowledge-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#panelLearn .knowledge-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#panelLearn .knowledge-card-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  background: rgba(100, 116, 139, 0.12);
+}
+
+#panelLearn .knowledge-card-tag.primary {
+  color: #8b5cf6;
+  border-color: rgba(139, 92, 246, 0.2);
+  background: rgba(139, 92, 246, 0.12);
+}
+
+#panelLearn .knowledge-card-tag.system {
+  color: #0f9f72;
+  border-color: rgba(16, 185, 129, 0.22);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+#panelLearn .knowledge-card-tag.private {
+  color: #2563eb;
+  border-color: rgba(59, 130, 246, 0.22);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+#panelLearn .knowledge-card-id,
+#panelLearn .knowledge-lock,
+#panelLearn .knowledge-delete-btn {
+  color: var(--du-muted, #7c7870);
+  font-size: 11px;
+}
+
+#panelLearn .knowledge-delete-btn,
+#panelLearn .danger-inline-btn {
+  border: 1px solid rgba(190, 54, 54, 0.22);
+  border-radius: 6px;
+  background: rgba(190, 54, 54, 0.08);
+  color: #be3636;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#panelLearn .knowledge-delete-btn {
+  padding: 3px 8px;
+}
+
+#panelLearn .danger-inline-btn {
+  margin-left: 10px;
+  padding: 4px 10px;
+}
+
+#panelLearn .knowledge-delete-btn:hover,
+#panelLearn .danger-inline-btn:hover {
+  background: rgba(190, 54, 54, 0.14);
+  border-color: rgba(190, 54, 54, 0.34);
+}
+
+#panelLearn .knowledge-card h4 {
+  margin: 0 0 10px;
+  color: var(--du-ink, #2e2a22);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+#panelLearn .knowledge-card-body {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(46, 42, 34, 0.1);
+  border-radius: 8px;
+  background: #fdfcf9;
+  color: #4a463c;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+#panelLearn .knowledge-card-body strong {
+  color: var(--du-ink, #2e2a22);
+}
+
+#panelLearn .knowledge-card-quote {
+  display: -webkit-box;
+  margin: 10px 0 0;
+  overflow: hidden;
+  color: var(--du-muted, #7c7870);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+#panelLearn .knowledge-card-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(46, 42, 34, 0.1);
+  color: var(--du-muted, #7c7870);
+  font-size: 11px;
 }
 
 /* 一致性检查按钮样式 */

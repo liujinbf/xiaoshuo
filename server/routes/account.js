@@ -18,10 +18,17 @@ export async function handleAccountRoutes(request, response, url, helpers) {
   if (url.pathname === "/api/account" && request.method === "GET") {
     const userId = getUserId(request, {}, url);
     if (!userId) { sendJson(response, 401, { ok: false, message: "请先登录" }); return true; }
-    let account = await getUserAccount(userId);
-    if (!account) account = normalizeAccount(null, userId);
-    else account = normalizeAccount(account, userId);
-    await saveUserAccount(userId, account);
+    const existing = await getUserAccount(userId);
+    const account = normalizeAccount(existing, userId);
+
+    // OPT-03: 只在状态实际变化时写库，避免每次 GET 都产生无效写操作
+    const needsWrite = !existing                                    // 首次创建
+      || existing.day !== account.day                               // 日期切换，需重置用量
+      || existing.tier !== account.tier                             // 会员状态降级
+      || existing.trialEndsAt !== account.trialEndsAt;             // trial 过期清空
+    if (needsWrite) {
+      await saveUserAccount(userId, account);
+    }
     
     const projects = await getUserProjects(userId);
     const orders = await getOrders(userId);

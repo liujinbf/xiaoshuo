@@ -1,4 +1,4 @@
-﻿/* 左侧参数面板 */
+/* 左侧参数面板 */
 .control-panel {
   position: relative;
   top: auto;
@@ -198,8 +198,8 @@ output {
 
 .desktop-inspector .billing-panel {
   position: relative;
-  min-height: 168px;
 }
+
 
 .desktop-model-enhanced {
   padding-bottom: 12px !important;
@@ -229,8 +229,8 @@ output {
   font-size: 11px;
 }
 
-.desktop-model-enhanced .model-heading > *,
-.desktop-quota-card .billing-heading > * {
+.desktop-model-enhanced .model-heading>*,
+.desktop-quota-card .billing-heading>* {
   margin: 0;
 }
 
@@ -309,60 +309,15 @@ output {
   display: none;
 }
 
-.desktop-model-enhanced #modelConfigStatus {
-  display: none;
-}
+/* 旧的 modelConfigStatus 隐藏规则已移除 — 由 model-config-panel.css 接管 */
 
-.desktop-model-enhanced .button-row {
-  grid-template-columns: 1fr 46px;
-  margin-top: 5px;
-}
-
-.desktop-model-enhanced #saveModelConfigBtn,
-.desktop-model-enhanced #clearModelConfigBtn {
-  min-height: 28px;
-  padding: 4px 8px;
-  font-size: 12px;
-}
-
-.desktop-inspector .quota-list {
+.desktop-inspector .billing-panel {
   position: relative;
-  padding-left: 94px;
-  min-height: 70px;
+  padding-bottom: 6px !important;
 }
 
-.desktop-inspector .quota-list::before {
-  content: "68%\A 已使用";
-  white-space: pre;
-  display: grid;
-  position: absolute;
-  left: 0;
-  top: 2px;
-  width: 66px;
-  height: 66px;
-  place-items: center;
-  color: var(--du-green);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at center, var(--du-panel-solid) 0 55%, transparent 56%),
-    conic-gradient(var(--du-green) 0 245deg, rgba(23, 107, 84, 0.13) 246deg 360deg);
-  font-size: 15px;
-  font-weight: 900;
-  line-height: 1.35;
-  text-align: center;
-  box-shadow: inset 0 0 0 1px rgba(23, 107, 84, 0.08);
-}
-
-.desktop-inspector .quota-list::after {
-  content: "";
-  position: absolute;
-  left: 9px;
-  top: 11px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--du-panel-solid);
-  z-index: -1;
+.billing-heading {
+  margin-bottom: 10px;
 }
 
 .quota-bar {
@@ -550,9 +505,11 @@ output {
   align-items: start;
 }
 
-.result-grid > * {
+.result-grid>* {
   grid-column: 1 !important;
   grid-row: auto !important;
 }
 
-.result-panel,
+.result-panel {
+  grid-column: 1 / -1 !important;
+}

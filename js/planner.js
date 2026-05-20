@@ -1,21 +1,21 @@
-// ⚠️ 本文件已超过建议行数，请在下次功能迭代时拆分
 // ============================================================
-// 模块: planner.js — 故事方案生成逻辑 (buildXxx / scoreXxx)
-// 渲染部分已拆分至 planner-render.js
+// 模块: planner.js — 故事方案生成逻辑（纯数据层）
+// 渲染逻辑位于 planner-render.js，投稿包逻辑位于 planner-submission.js
 // ============================================================
 
 function buildHook(input, profile) {
   const role = pick(profile.roles);
   const secret = pick(profile.secrets);
   const P = input.viewpoint === "first" ? "我" : `那个${role}`;
-  const her = input.viewpoint === "first" ? "我" : "她";
   const theme = sentenceTheme(input.theme);
   const source = `${input.title || ""} ${input.theme || ""} ${input.notes || ""}`;
   const evidenceWords = ["死亡通知", "尸检报告", "通话记录", "监控截图", "指纹", "录音", "账本", "合同", "照片", "短信", "规则纸条", "转账记录"];
   const evidence = evidenceWords.find((word) => source.includes(word)) || "那份证据";
+
   if (input.genre === "suspense") {
     return `${P}把${evidence}摊开时，死者家属还在重复同一句话：“他不可能在现场。”`;
   }
+
   const matchedHook = Array.isArray(input.matchedInspirations) ? input.matchedInspirations[0]?.hook : "";
   if (matchedHook && !matchedHook.includes("【异常线索】")) {
     return matchedHook
@@ -24,15 +24,14 @@ function buildHook(input, profile) {
       .slice(0, 120);
   }
 
-  const hooks = [
+  return pick([
     `${P}把${evidence}推到桌子中央时，对面的人终于不说话了。`,
     `“你最好别签。”${P}盯着最后一行名字，忽然明白${secret}。`,
     `${P}没有接那支笔，只把${evidence}翻到第二页：“这句话，你们谁来解释？”`,
     `门外的脚步声停下时，${P}刚好看见${evidence}上多出来的那一行字。`,
     `${P}把录音开到最大声。第一句话响起时，所有人都看向了门口。`,
-    `签字笔悬在纸上，${P}忽然停住。那一页最底下的名字，不该出现在这里。`,
-  ];
-  return pick(hooks);
+    `签字笔悬在纸上，${P}忽然停住。那一页最底下的名字，不该出现在这里。`
+  ]);
 }
 
 function buildOutline(input, profile) {
@@ -61,9 +60,8 @@ function buildOutline(input, profile) {
   });
 }
 
-function buildDraft(input, profile, hook) {
+function buildDraft(input, profile) {
   const person = input.viewpoint === "first" ? "我" : "她";
-  const theme = sentenceTheme(input.theme);
   const source = `${input.title || ""} ${input.theme || ""} ${input.notes || ""}`;
   const sceneMap = {
     history: ["朝堂", "军帐", "城门"],
@@ -80,8 +78,11 @@ function buildDraft(input, profile, hook) {
     .split(/[，。！？、；：\s]+/)
     .map((item) => item.trim())
     .filter((item) => item.length >= 2);
-  const evidence = evidenceWords.find((word) => source.includes(word)) || noteParts.find((item) => /报告|记录|通知|账本|合同|录音|照片|短信|证据|监控/.test(item)) || "那份关键记录";
-  const scene = noteParts.find((item) => /口|室|厅|店|院|局|门|桌|车|村|家/.test(item)) || pick(sceneMap[input.genre] || sceneMap.suspense);
+  const evidence = evidenceWords.find((word) => source.includes(word))
+    || noteParts.find((item) => /报告|记录|通知|账本|合同|录音|照片|短信|证据|监控/.test(item))
+    || "那份关键记录";
+  const scene = noteParts.find((item) => /口|室|厅|店|院|局|门|桌|车|村|家/.test(item))
+    || pick(sceneMap[input.genre] || sceneMap.suspense);
   const pressure = input.genre === "family"
     ? "亲戚们都等着我先低头"
     : input.genre === "workplace"
@@ -101,7 +102,7 @@ function buildDraft(input, profile, hook) {
     `房间里安静了几秒。有人咳了一声，有人低头看手机。${person}这才意识到，这件事不是谁记错了，而是有人希望所有人都只看见他们准备好的那一部分。`,
     `“你最好想清楚再说。”对面的人压低声音。`,
     `${person}抬头看着他，把${evidence}推到桌子中央：“我想得很清楚。现在开始，我们按时间线一件一件对。”`,
-    `第一处破绽，就藏在他们最笃定的那句话里。`
+    "第一处破绽，就藏在他们最笃定的那句话里。"
   ];
 }
 
@@ -118,6 +119,7 @@ function buildCharacters(input, profile) {
     rules: "利用规则漏洞进行绞杀的诡异存在",
     workplace: "垄断资源和话语权的上司或竞争对手"
   };
+
   return [
     {
       name: protagonist,
@@ -160,97 +162,6 @@ function buildMarketBeats(input, profile) {
   ];
 }
 
-function buildSubmissionPack(input, profile, titles, scores, marketBeats) {
-  const scoreMap = Object.fromEntries(scores);
-  const primaryTitle = titles[0];
-  const paidBeat = marketBeats.find((item) => item.title === "付费卡点") || marketBeats[1];
-  const dramaBeat = marketBeats.find((item) => item.title === "短剧化卖点") || marketBeats[2];
-  const monetizationScore = Math.round((scoreMap["开篇钩子"] + scoreMap["盐选适配"] + scoreMap["短剧潜力"]) / 3);
-
-  const loglines = {
-    history: `当包含“${input.theme}”的异象降临，现代信息与古代皇权正面交锋，掀起一场改写大历史的降维打击。`,
-    rules: `一份违背常识的诡异守则，一个被谎言与污染笼罩的死局，主角必须在“${input.theme}”的绝境中寻得一线生机。`,
-    suspense: `一起由“${input.theme}”牵引出的陈年旧案，每个人的证词都完美无缺，而那份被修改的致命物证才是破局关键。`,
-    revenge: `经历过亲密关系的背叛与公开羞辱后，主角带着关于“${input.theme}”的致命底牌，开启一场合法且致命的夺产复仇。`,
-    heroine: `在被世俗偏见与家族势力联手排挤后，主角用关于“${input.theme}”的顶级商业底牌，完成对权势阶层的华丽降维逆袭。`,
-    family: `以“${input.theme}”为导火索，撕开看似温情脉脉的家庭关系下，最真实、最刺痛的偏心与利益争夺。`,
-    folklore: `祠堂雨夜的灯影，枯井下的怨声，关于“${input.theme}”的民俗禁忌背后，隐藏着一桩被全村联手掩盖了数十年的血债真相。`,
-    workplace: `身处被无良资本与潜规则压制的底层，主角凭借一份关于“${input.theme}”的硬核合规证据，向职场霸凌者发起致命一击。`
-  };
-
-  const synopses = {
-    history: `现代信息骤然传入古代，引来满朝震动与既得利益阶层的疯狂反扑。主角利用领先千年的现代知识与系统底牌，层层破局，在封建帝王与世家大族面前完成最硬核的科技救国打脸。`,
-    rules: `主角无意间卷入充满诡异规则的禁忌空间，身边的规则与熟人皆不可信。中段在违规边缘试探、利用逻辑悖论瓦解规则的死锁，高潮处反向布局、破除污染源，揭示出关于规则源头的惊人反转。`,
-    suspense: `主角被卷入一桩离奇谜案，面对层层伪装的口供与刻意布置的现场。中段通过微小破绽撕开谎言，反套路引蛇出洞，在高潮公开对峙中实现证据、身份的双重反转，指明意想不到的真凶。`,
-    revenge: `主角遭遇伴侣与第三者的无耻联合背叛，资产与名誉位列深渊。主角表面隐忍麻痹对手，暗中进行周密的财务与证据收集，最终在关键时刻公开亮出底牌，让背叛者付出名声与金钱的双重沉痛代价。`,
-    heroine: `主角在公开场合遭遇轻视与排挤，被剥夺应得利益。她隐忍潜伏，以极低姿态精准收集对手漏洞，暗中布局整盘商战。高潮处身份与股权强势爆开，降维打击所有看客，重建全新秩序。`,
-    family: `一件看似微不足道的家庭纠纷，彻底引爆了长期积累的重男轻女与资产不公。亲戚的站队与父母的偏袒将主角逼至绝境，主角清醒斩断道德绑架，亮出证据并做出不再牺牲的决裂选择，痛快夺回尊严。`,
-    folklore: `主角回到阴冷封闭的乡土古镇，遭遇一系列诡异莫测的民俗禁忌与仪式。随着调查深入，发现村民口中的“神惩”其实是掩盖多年前罪恶的遮羞布。高潮处主角打破陈规，揭露人性伪装，逼出当年真相。`,
-    workplace: `主角在边缘岗位发现惊人的贪腐或造假数据，触碰利益链后惨遭停职与封杀。主角暗中联合同盟，利用无可辩驳的证据链与监管部门合规力量进行降维打击，当众送罪魁首入狱，彻底整顿职场。`
-  };
-
-  const audienceMap = {
-    suspense: "偏爱反转推理、细节回收和结尾冲击的悬疑读者",
-    revenge: "对亲密关系背叛、离婚翻盘和情绪宣泄敏感的女性读者",
-    heroine: "喜欢强主角、身份反转和事业线翻盘的爽文读者",
-    family: "关注家庭不公、现实困境和关系边界的都市读者",
-    folklore: "喜欢民俗悬疑、乡土禁忌和旧案真相的故事读者",
-    history: "喜欢信息差降维打击、改变历史遗憾的历史脑洞读者",
-    rules: "热爱逻辑推理、惊悚氛围和打破常规的怪谈读者",
-    workplace: "对职场霸凌感同身受、渴望打破潜规则逆袭的都市读者"
-  };
-
-  return {
-    score: monetizationScore,
-    positioning: [
-      {
-        label: "目标读者",
-        text: audienceMap[input.genre] || audienceMap.suspense
-      },
-      {
-        label: "付费承诺",
-        text: `用“${input.theme}”制造强冲突，前半段让主角陷入劣势，后半段用证据反击完成${profile.label}爽点。`
-      },
-      {
-        label: "编辑卖点",
-        text: `题材明确、人物关系集中、卡点清楚；${paidBeat.text}`
-      }
-    ],
-    pitch: {
-      title: primaryTitle,
-      logline: loglines[input.genre] || loglines.suspense,
-      synopsis: synopses[input.genre] || synopses.suspense,
-      editorNote: `建议先投 ${input.length <= 10000 ? "8000 字左右完整短篇" : "上下篇连载样章"}，标题保留强事件词，正文每 600-900 字推进一次证据或关系变化。`
-    },
-    routes: [
-      {
-        name: "盐选/盐言投稿",
-        speed: "中速",
-        revenue: "稿费或买断",
-        action: "先完成 3000 字样章、完整大纲和结尾反转说明。"
-      },
-      {
-        name: "短剧样稿包",
-        speed: "较快",
-        revenue: "样稿售卖或改编沟通",
-        action: dramaBeat.text
-      },
-      {
-        name: "模板商品化",
-        speed: "最快",
-        revenue: "售卖选题卡、证据链表和改稿清单",
-        action: "把标题、钩子、证据链和分集节拍拆成可复用模板。"
-      }
-    ],
-    checklist: [
-      "前 300 字必须出现公开冲突或异常证据。",
-      "付费卡点前只揭开一半真相，保留反击问题。",
-      "结尾回收至少 2 条伏笔，避免只靠口头解释翻盘。",
-      "投稿前准备 80 字简介、300 字梗概和完整结局说明。"
-    ]
-  };
-}
-
 function buildEvidenceChain(input, profile) {
   const secret = pick(profile.secrets, 6);
   const core = compactTheme(input.theme);
@@ -272,21 +183,21 @@ function buildEvidenceChain(input, profile) {
       clue: selectedClues[0],
       appears: "前 800 字",
       purpose: `让读者意识到“${core}”不是偶然事件，而是被设计过的局。`,
-      payoff: `高潮前回收，证明第一层真相只是对抗者抛出的假答案。`
+      payoff: "高潮前回收，证明第一层真相只是对抗者抛出的假答案。"
     },
     {
       stage: "误导证据",
       clue: selectedClues[1],
       appears: "付费卡点前",
       purpose: "把嫌疑引向一个看似合理的人，制造读者判断偏差。",
-      payoff: `中段反转时揭示它只证明了时间线被篡改，不能证明真正动机。`
+      payoff: "中段反转时揭示它只证明了时间线被篡改，不能证明真正动机。"
     },
     {
       stage: "情绪证物",
       clue: selectedClues[2],
       appears: "第一次反击后",
       purpose: "把证据和亲密关系绑在一起，让主角的反击不只是赢输，而是止损。",
-      payoff: `公开对峙时成为压垮对抗者心理防线的最后一击。`
+      payoff: "公开对峙时成为压垮对抗者心理防线的最后一击。"
     },
     {
       stage: "终局底牌",
@@ -445,31 +356,4 @@ function buildPlan(input) {
     proposalPack,
     prompt
   };
-}
-
-// ── 从 app.js 迁入：题材预设与标签云联动更新 ──
-// app.js 仅调用此函数，不持有业务逻辑
-function updateGenrePresets(genre, autoRandomTheme = true) {
-  const themeInput = document.querySelector("#theme");
-  const tagCloud = document.querySelector("#tagCloud");
-
-  if (themeInput && typeof inspirationPool !== "undefined" && typeof pick === "function") {
-    const pool = inspirationPool[genre];
-    if (pool && pool.length > 0 && autoRandomTheme) {
-      themeInput.value = pick(pool);
-    }
-  }
-
-  if (tagCloud && typeof genreTags !== "undefined") {
-    const tags = genreTags[genre] || [];
-    tagCloud.innerHTML = "";
-    tags.forEach((tag, idx) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = idx < 2 ? "tag active" : "tag";
-      btn.dataset.tag = tag;
-      btn.textContent = tag;
-      tagCloud.appendChild(btn);
-    });
-  }
 }

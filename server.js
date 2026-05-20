@@ -10,6 +10,7 @@ import { handleAuthRoutes } from "./server/routes/auth.js";
 import { handlePayRoutes } from "./server/routes/pay.js";
 import { handleAdminRoutes } from "./server/routes/admin.js";
 import { handleInspirationsRoutes } from "./server/routes/inspirations.js";
+import { handleKnowledgeRoutes } from "./server/routes/knowledge.js";
 import { callOpenAI } from "./server/utils/prompts.js";
 import { retrieveKnowledgeForDraft } from "./server/utils/knowledge-retrieval.js";
 import { clientIp, throttle } from "./server/utils/security.js";
@@ -35,7 +36,7 @@ const mimeTypes = {
 };
 
 const allowedStaticFiles = new Set(["/", "/index.html", "/admin.html", "/app.js"]);
-const allowedStaticPrefixes = ["/css/", "/js/", "/images/", "/assets/fonts/"];
+const allowedStaticPrefixes = ["/css/", "/js/", "/images/", "/assets/fonts/", "/templates/"];
 
 function isStaticPathAllowed(pathname) {
   if (allowedStaticFiles.has(pathname)) return true;
@@ -190,6 +191,130 @@ async function handleApi(request, response, url) {
     return;
   }
 
+  if (url.pathname === "/api/models" && request.method === "POST") {
+    try {
+      const payload = await readJson(request);
+      const { baseUrl, apiKey } = payload;
+
+      const finalBaseUrl = (baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+      const finalApiKey = apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
+
+      const isPlaceholder = !finalApiKey || finalApiKey === "sk-your-api-key" || finalApiKey.includes("your-api-key");
+      if (isPlaceholder) {
+        // ⚠️ 不返回任何假模型名，让客户端知道需要配置 key
+        sendJson(response, 200, {
+          ok: false,
+          message: "未配置 API Key，请先填写并保存您的 API Key，再点击刷新列表",
+          source: "no-key"
+        });
+        return;
+      }
+
+      let fetchUrl = finalBaseUrl;
+      if (!fetchUrl.endsWith("/v1") && !fetchUrl.endsWith("/v1/")) {
+        fetchUrl = `${fetchUrl}/v1`;
+      }
+      fetchUrl = `${fetchUrl}/models`;
+
+      let res = await fetch(fetchUrl, {
+        headers: {
+          Authorization: `Bearer ${finalApiKey}`
+        },
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!res.ok) {
+        const altUrl = `${finalBaseUrl}/models`;
+        res = await fetch(altUrl, {
+          headers: {
+            Authorization: `Bearer ${finalApiKey}`
+          },
+          signal: AbortSignal.timeout(10000)
+        });
+      }
+
+      if (!res.ok) {
+        throw new Error(`获取模型列表失败，状态码: ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data && Array.isArray(data.data)) {
+        const models = data.data.map((item) => item.id).filter(Boolean);
+        if (models.length === 0) throw new Error("该供应商 API 返回了空的模型列表");
+        sendJson(response, 200, { ok: true, models, source: "api" });
+      } else {
+        throw new Error("返回的数据格式不符合 OpenAI 规范（缺少 data 数组）");
+      }
+    } catch (error) {
+      // ⚠️ 重要：失败时绝不返回任何假模型名，只返回错误原因
+      // 客户端应保留已知的有效模型，而不是被假名污染
+      sendJson(response, 200, {
+        ok: false,
+        message: error.message || "联网获取模型失败",
+        source: "error"
+      });
+    }
+    return;
+  }
+
+  if (url.pathname === "/api/test-connection" && request.method === "POST") {
+    try {
+      const payload = await readJson(request);
+      const { baseUrl, apiKey, model } = payload;
+
+      const finalBaseUrl = (baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+      const finalApiKey = apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
+      const finalModel = model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
+
+      const isPlaceholder = !finalApiKey || finalApiKey === "sk-your-api-key" || finalApiKey.includes("your-api-key");
+      if (isPlaceholder) {
+        sendJson(response, 200, {
+          ok: true,
+          message: "（本地沙箱模拟成功）已成功验证本地内置的本地模型规则，离线模式可用！"
+        });
+        return;
+      }
+
+      let fetchUrl = finalBaseUrl;
+      if (!fetchUrl.endsWith("/v1") && !fetchUrl.endsWith("/v1/")) {
+        fetchUrl = `${fetchUrl}/v1`;
+      }
+      fetchUrl = `${fetchUrl}/chat/completions`;
+
+      const res = await fetch(fetchUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${finalApiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: finalModel,
+          messages: [{ role: "user", content: "ping" }],
+          max_tokens: 5,
+          temperature: 0.1
+        }),
+        signal: AbortSignal.timeout(8000)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData?.error?.message || `HTTP 错误码: ${res.status}`;
+        throw new Error(errMsg);
+      }
+
+      sendJson(response, 200, {
+        ok: true,
+        message: "连接成功！当前选中的大模型服务正常响应，您可以开始放心进行创作。"
+      });
+    } catch (error) {
+      sendJson(response, 200, {
+        ok: false,
+        message: error.message || "请求超时或网络未连接"
+      });
+    }
+    return;
+  }
+
   if (await handleAuthRoutes(request, response, url, { sendJson, readJson })) {
     return;
   }
@@ -272,6 +397,10 @@ async function handleApi(request, response, url) {
   }
 
   if (await handleInspirationsRoutes(request, response, url, { sendJson, readJson, getUserId })) {
+    return;
+  }
+
+  if (await handleKnowledgeRoutes(request, response, url, { sendJson, readJson, getUserId })) {
     return;
   }
 

@@ -1,0 +1,599 @@
+/* ================================================================
+   desktop-ui-widgets.css — 桌面版高级微件、动效与一致性高亮升级层
+   ================================================================ */
+
+/* 会员弹窗跟随新方向，保留高级感，强化色彩对比度 */
+#billingModal.modal-backdrop {
+  background: rgba(46, 42, 34, 0.54) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.billing-modal {
+  background: linear-gradient(165deg, #fffcf7 0%, #f7f1e3 100%) !important;
+  border-color: var(--du-line-strong) !important;
+  box-shadow: 
+    0 24px 72px rgba(47, 40, 28, 0.22),
+    0 0 0 1px rgba(23, 107, 84, 0.06) !important;
+}
+
+/* 顶部皇冠徽章色彩强化 */
+.billing-crown {
+  color: #c27803 !important;
+  background: rgba(217, 119, 6, 0.08) !important;
+  border-color: rgba(217, 119, 6, 0.32) !important;
+}
+
+.billing-head h2,
+.price-amount,
+.price-num,
+.price-unit,
+.pitch-title,
+.route-card .r-name,
+.proposal-card .p-text {
+  color: var(--du-ink) !important;
+}
+
+.billing-subtitle,
+.price-features li,
+.price-card-badge,
+.pay-methods-label,
+.price-period,
+.trial-link,
+.order-qr-tip {
+  color: var(--du-muted) !important;
+}
+
+/* 支付方式标题特殊加深与强化 */
+.pay-methods-label {
+  color: var(--du-ink) !important;
+  font-weight: 700 !important;
+  opacity: 0.85 !important;
+}
+
+/* 价格单位周期后缀字色加深，确保时间一目了然 */
+.price-period {
+  color: var(--du-muted) !important;
+  font-weight: 600 !important;
+  opacity: 0.9 !important;
+}
+
+/* 试用链接字色加深与引导强化 */
+.trial-link {
+  color: var(--du-ink) !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  opacity: 0.8 !important;
+}
+
+.trial-link:hover {
+  opacity: 1 !important;
+}
+
+/* 加强非 Pro 属性列表的文字可读性 */
+.price-features li {
+  color: #4a463c !important;
+  font-weight: 500;
+}
+
+/* 普通卡片与功能面板 */
+.price-card,
+.order-result-area,
+.pay-method-chip {
+  background: rgba(255, 252, 245, 0.9) !important;
+  border-color: var(--du-line) !important;
+  color: var(--du-ink) !important;
+}
+
+/* 支付方式单选框选中态样式强化 */
+.pay-method-chip.selected {
+  background: var(--du-green-soft) !important;
+  border-color: rgba(23, 107, 84, 0.45) !important;
+  color: var(--du-green) !important;
+}
+
+/* 普通卡片底部的立刻开通按钮 — 彻底解决隐形文字 Bug */
+.price-btn {
+  background: rgba(46, 42, 34, 0.06) !important;
+  border: 1px solid rgba(46, 42, 34, 0.16) !important;
+  color: var(--du-ink) !important;
+  transition: all 0.2s ease;
+}
+.price-btn:hover {
+  background: rgba(46, 42, 34, 0.12) !important;
+  border-color: rgba(46, 42, 34, 0.24) !important;
+  color: var(--du-ink) !important;
+}
+
+.price-card-pro {
+  background: var(--du-green-soft) !important;
+  border-color: rgba(23, 107, 84, 0.36) !important;
+}
+
+/* 年度 Pro 推荐特色卡片列表项目 */
+.price-card-pro .price-features li {
+  color: var(--du-ink) !important;
+  font-weight: 600;
+}
+
+/* 订单详情面板背景及数据行高对比度优化 */
+.order-result-area {
+  background: #fdfaf2 !important;
+  border: 1px solid rgba(46, 42, 34, 0.12) !important;
+}
+
+.order-result-row {
+  color: #615c52 !important;
+  border-bottom-color: rgba(46, 42, 34, 0.08) !important;
+}
+
+.order-result-row strong {
+  color: var(--du-ink) !important;
+  font-weight: 700;
+}
+
+.order-result-row .order-id {
+  color: #7a766e !important;
+}
+
+.price-btn-pro,
+.order-pay-btn {
+  background: linear-gradient(135deg, var(--du-green), var(--du-green-2)) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+.price-btn-pro:hover,
+.order-pay-btn:hover {
+  background: linear-gradient(135deg, #268c71, #136b56) !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 1380px) {
+  .desktop-toolbar {
+    padding-left: 118px; /* Rail 112px + 6px边距 */
+    grid-template-columns: 230px auto auto 1fr auto auto;
+    gap: 12px;
+  }
+
+  .app-shell {
+    grid-template-columns: 112px 252px minmax(480px, 1fr) 278px;
+  }
+
+  .result-grid {
+    grid-template-columns: minmax(500px, 1fr);
+  }
+}
+
+@media (max-width: 1180px) {
+  body {
+    overflow: auto;
+  }
+
+  .desktop-toolbar {
+    padding-left: 12px;
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .desktop-toolbar-spacer,
+  .desktop-database-button,
+  .desktop-settings-button {
+    display: none;
+  }
+
+  .app-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .desktop-rail {
+    display: none;
+  }
+
+  .control-panel {
+    max-height: none;
+  }
+
+  .result-grid,
+  .serial-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .desktop-inspector {
+    border-left: 0;
+    border-top: 1px solid var(--du-line);
+  }
+
+  .main-result,
+  .result-grid > .result-panel:nth-of-type(2),
+  .result-grid > .result-panel:nth-of-type(3),
+  .result-grid > .result-panel:nth-of-type(4),
+  .result-grid > .result-panel:nth-of-type(5),
+  .result-grid > .result-panel:nth-of-type(6),
+  .result-grid > .result-panel:nth-of-type(7),
+  .result-grid > .result-panel:nth-of-type(8),
+  .score-panel,
+  .monetization-panel {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+/* 学科常识卡片与一致性卡片微动效与磨砂感升级 */
+@keyframes kbFadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.consistency-item {
+  animation: kbFadeInScale 0.38s cubic-bezier(0.23, 1, 0.32, 1) both;
+  transition: all 0.22s ease-in-out;
+  backdrop-filter: blur(6px);
+}
+
+.consistency-item:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 4px 16px rgba(46, 42, 34, 0.08);
+}
+
+/* ================================================================
+   记忆手记便签卡片、今日配额双层环圈、Slider 与一致性检查升级层
+   ================================================================ */
+
+/* 记忆卡片便签纸化重塑 */
+.desktop-memory-panel .asset-list {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 12px !important;
+  overflow-x: auto !important;
+  padding: 8px 4px 12px 4px !important;
+  scrollbar-width: thin !important;
+}
+
+.desktop-memory-panel .asset-item {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 160px !important;
+  max-width: 200px !important;
+  min-height: 150px !important;
+  padding: 14px 16px !important;
+  
+  /* 仿古旧便签：温润的淡米黄与淡粉黄微弱斜向渐变 */
+  background: linear-gradient(135deg, #fffdf2 0%, #faf5e6 100%) !important;
+  
+  /* 精致虚线外边框 */
+  border: 1px dashed rgba(139, 122, 94, 0.45) !important;
+  border-radius: 4px !important;
+  
+  /* 拼贴感阴影 */
+  box-shadow: 
+    2px 2px 8px rgba(50, 42, 33, 0.05),
+    inset 0 0 20px rgba(255, 255, 255, 0.4) !important;
+  
+  position: relative !important;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  overflow: hidden !important;
+}
+
+.desktop-memory-panel .asset-item:hover {
+  transform: translateY(-4px) rotate(0.5deg) !important;
+  box-shadow: 4px 8px 18px rgba(50, 42, 33, 0.1) !important;
+  border-color: #176f56 !important;
+}
+
+.desktop-memory-panel .asset-item strong {
+  font-family: var(--font-serif-cn) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #176f56 !important;
+  border-bottom: 1px dashed rgba(23, 111, 86, 0.2) !important;
+  padding-bottom: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+.desktop-memory-panel .asset-item p {
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+  color: #5a5245 !important;
+  margin: 4px 0 auto 0 !important;
+  flex: 1 !important;
+}
+
+/* 底部标签应用高雅的莫兰迪灰绿/灰黄底色 */
+.desktop-memory-panel .asset-item em {
+  align-self: flex-start !important;
+  padding: 3px 10px !important;
+  color: #fffdf7 !important;
+  background: #7d8e82 !important; /* 莫兰迪灰绿 */
+  border-radius: 3px !important;
+  font-style: normal !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  margin-top: 8px !important;
+  letter-spacing: 0.05em !important;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 赋予不同的莫兰迪色谱 */
+.desktop-memory-panel .asset-item:nth-child(2n) em {
+  background: #8e837d !important; /* 莫兰迪灰褐 */
+}
+.desktop-memory-panel .asset-item:nth-child(3n) em {
+  background: #878c7d !important; /* 莫兰迪灰黄 */
+}
+.desktop-memory-panel .asset-item:nth-child(4n) em {
+  background: #7d888e !important; /* 莫兰迪灰蓝 */
+}
+
+/* 今日配额圆环配合横向布局（圆环左、数据右） */
+.billing-panel .quota-ring-wrap svg {
+  display: block !important;
+  margin: 0 !important; /* 清除旧居中边距，改由 quota-ring-wrap 控制 */
+}
+
+.billing-panel .quota-ring-wrap svg circle:first-of-type {
+  stroke: rgba(74, 67, 55, 0.06) !important;
+  stroke-width: 4px !important;
+}
+
+#quotaArc {
+  stroke: #176f56 !important;
+  stroke-linecap: round !important;
+  filter: drop-shadow(0 0 3px rgba(23, 111, 86, 0.25)) !important;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* #quotaPct 由 .quota-ring-wrap #quotaPct (position:absolute + flex) 接管 */
+#quotaPct {
+  font-family: "ZCOOL XiaoWei", serif !important;
+  font-weight: 800 !important;
+  color: #176f56 !important;
+  margin: 0 !important;
+}
+
+
+/* 模型配置 Slider 精细度微调 */
+.desktop-model-tuning label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  font-size: 12px !important;
+  color: #6f685d !important;
+  margin-bottom: 12px !important;
+  font-weight: 600 !important;
+}
+
+.desktop-model-tuning output {
+  font-family: var(--font-serif-cn) !important;
+  font-weight: 700 !important;
+  color: #176f56 !important;
+  font-size: 13px !important;
+  margin-left: auto !important;
+  margin-top: -18px !important;
+}
+
+.desktop-model-tuning input[type="range"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 100% !important;
+  height: 3px !important; /* 单像素极细线条 */
+  background: rgba(74, 67, 55, 0.12) !important;
+  border-radius: 2px !important;
+  outline: none !important;
+  margin: 6px 0 !important;
+}
+
+.desktop-model-tuning input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px !important;
+  background: rgba(74, 67, 55, 0.12) !important;
+}
+
+.desktop-model-tuning input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+  background: #176f56 !important;
+  cursor: pointer !important;
+  border: 1.5px solid #fffdf7 !important;
+  box-shadow: 0 1px 4px rgba(23, 111, 86, 0.4) !important;
+  margin-top: -3.5px !important; /* 使 thumb 垂直居中 */
+  transition: transform 0.1s ease !important;
+}
+
+.desktop-model-tuning input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.25) !important;
+}
+
+/* 一致性检查状态行精致升级 */
+.desktop-check-row {
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-family: var(--font-serif-cn) !important;
+  margin-bottom: 6px !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  transition: all 0.2s ease !important;
+}
+
+.desktop-check-row.pass {
+  background: rgba(23, 111, 86, 0.08) !important;
+  border-color: rgba(23, 111, 86, 0.25) !important;
+}
+
+.desktop-check-row.pass span {
+  color: #176f56 !important;
+  font-weight: 600 !important;
+}
+
+.desktop-check-row.pass strong {
+  color: #176f56 !important;
+  font-size: 12px !important;
+}
+
+.desktop-check-row.pass strong::before {
+  content: "✅ " !important;
+}
+
+.desktop-check-row.warn {
+  background: rgba(185, 135, 46, 0.09) !important;
+  border-color: rgba(185, 135, 46, 0.28) !important;
+}
+
+.desktop-check-row.warn span {
+  color: #b9872e !important;
+  font-weight: 600 !important;
+}
+
+.desktop-check-row.warn strong {
+  color: #b9872e !important;
+  font-size: 12px !important;
+}
+
+.desktop-check-row.warn strong::before {
+  content: "⚠️ " !important;
+}
+
+/* ================================================================
+   新增组件：配额横向布局 / 状态栏扩展 / 运行检查按钮
+   ================================================================ */
+
+/* 今日配额横向布局 */
+.quota-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 8px;
+}
+
+.quota-ring-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+}
+
+.quota-ring-wrap svg {
+  display: block !important;
+  position: static !important; /* 防止其他文件将SVG改为absolute脱离flex流 */
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+.quota-ring-wrap #quotaPct {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: "ZCOOL XiaoWei", serif !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #176f56 !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
+
+.quota-data {
+  flex: 1;
+  min-width: 0;
+}
+
+.quota-data .status-row,
+.billing-panel .status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 11px;
+  color: var(--du-muted);
+  border-bottom: 1px dashed rgba(74, 67, 55, 0.08);
+}
+
+.quota-data .status-row:last-child,
+.billing-panel .status-row:last-child {
+  border-bottom: none;
+}
+
+.quota-data .status-row span:last-child,
+.billing-panel .status-row span:last-child {
+  color: var(--du-ink);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+/* 编辑器状态栏扩展：自动保存时间 */
+.statusbar-save-time {
+  margin-left: auto;
+  white-space: nowrap;
+  color: #9b958b;
+  font-size: 11px;
+}
+
+/* 编辑器状态栏扩展：全屏展开按钮 */
+.statusbar-expand-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--du-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.statusbar-expand-btn:hover {
+  background: rgba(74, 67, 55, 0.06);
+  border-color: var(--du-line);
+  color: var(--du-ink);
+}
+
+/* Inspector 一致性检查面板"运行检查"按钮 */
+.inspector-run-check-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 30px;
+  margin-top: 8px;
+  padding: 0 10px;
+  color: var(--du-ink);
+  background: rgba(255, 252, 245, 0.86);
+  border: 1px solid var(--du-line);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.inspector-run-check-btn:hover {
+  background: var(--du-green-soft);
+  border-color: rgba(23, 111, 86, 0.3);
+  color: var(--du-green);
+}
+
+.inspector-run-check-btn svg {
+  flex-shrink: 0;
+  transition: transform 0.5s ease;
+}
+
+.inspector-run-check-btn:active svg {
+  transform: rotate(360deg);
+}
+

@@ -1,0 +1,44 @@
+<div class="serial-workspace-wrapper" style="width: 100%; max-width: 900px; margin: 0 auto; padding: 20px 0;">
+  <div id="serialEmptyState" class="result-panel" style="padding: 40px; text-align: center; background: var(--du-paper); border-radius: var(--du-radius); border: 1px solid var(--du-line);">
+    <p style="color: var(--du-muted); font-size: 14px; margin: 0;">选择或创建一部连载开始。</p>
+  </div>
+  
+  <section id="serialWorkspace" class="result-panel" hidden style="background: var(--du-paper); border-radius: var(--du-radius); border: 1px solid var(--du-line); padding: 24px;">
+    <div class="panel-title" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="panel-icon" style="background: var(--du-green); color: white; width: 24px; height: 24px; border-radius: 4px; display: inline-grid; place-items: center; font-size: 12px; font-weight: 800;">章</span>
+        <h3 id="serialWsTitle" style="font-size: 18px; font-weight: 800; margin: 0;">未选择连载</h3>
+      </div>
+      <small id="serialProgressBadge" class="plan-badge" style="background: var(--du-green-soft); color: var(--du-green); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; border: 1px solid rgba(23,111,86,0.15);"></small>
+    </div>
+    
+    <div id="serialSummaryBar" style="background: rgba(74, 67, 55, 0.03); border: 1px solid var(--du-line); border-radius: 6px; padding: 12px 16px; font-size: 13px; line-height: 1.6; margin-bottom: 20px;" hidden>
+      <strong style="color: var(--du-green);">最新记忆：</strong>
+      <span id="serialLastSummary" style="color: var(--du-ink);"></span>
+    </div>
+    
+    <div class="micro-actions" style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button id="generateChapterBtn" class="primary-action serial-gen-btn" type="button" style="flex: 1; min-height: 40px; font-weight: 700;">单章铸造</button>
+      <button id="batchGenerateBtn" class="ghost-action" type="button" style="flex: 1; min-height: 40px;">批量全自动铸造</button>
+      <button id="exportSerialBtn" class="ghost-action" type="button" style="padding: 0 16px;">导出全文</button>
+      <button id="exportScriptBtn" class="ghost-action" type="button" style="padding: 0 16px;">导出短剧脚本</button>
+    </div>
+    
+    <!-- AI 铸造进度与步骤展示卡片 -->
+    <div id="serialGenProgressCard" class="serial-gen-progress-card" hidden style="background: rgba(23, 111, 86, 0.04); border: 1px solid rgba(23, 111, 86, 0.16); border-radius: 8px; padding: 16px; margin-bottom: 24px; backdrop-filter: blur(10px);">
+      <div class="progress-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div class="progress-card-title" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--du-green);">
+          <span class="pulse-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--du-green); box-shadow: 0 0 8px var(--du-green); animation: pulse 1.5s infinite;"></span>
+          <span>AI 正在精细铸造中...</span>
+        </div>
+        <span id="serialGenProgressPct" class="progress-card-pct" style="font-size: 13px; font-weight: 800; color: var(--du-green);">0%</span>
+      </div>
+      <div class="progress-bar-track" style="height: 6px; background: rgba(74, 67, 55, 0.08); border-radius: 3px; overflow: hidden; margin-bottom: 10px;">
+        <div id="serialGenProgressBarFill" class="progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #176f56, #2d9d7b); border-radius: 3px; transition: width 0.3s ease;"></div>
+      </div>
+      <div id="serialGenProgressStep" class="progress-card-step" style="font-size: 12px; color: var(--du-muted);">正在初始化铸造引擎...</div>
+    </div>
+
+    <div id="serialChapterList" class="serial-chapter-list" style="display: flex; flex-direction: column; gap: 14px;"></div>
+  </section>
+</div>

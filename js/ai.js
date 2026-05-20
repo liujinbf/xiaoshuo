@@ -80,28 +80,35 @@ function setAiLoading(isLoading, label = "AI 生成正文") {
   }
 
   if (isLoading) {
-    wrap?.classList.add("loading");
+    wrap?.classList.add("loading", "ai-generating");
     if (fill) {
       fill.style.width = "0%";
-      // 模拟进度：前 10 秒跑向 90%
+      // 模拟步进滑行：前段快，后段接近极限时减速悬停，保障极佳等待体验
       let progress = 0;
       clearInterval(aiProgressTimer);
       aiProgressTimer = setInterval(() => {
-        progress += (90 - progress) * 0.1;
+        if (progress < 40) {
+          progress += Math.floor(Math.random() * 6) + 3;
+        } else if (progress < 75) {
+          progress += Math.floor(Math.random() * 3) + 1;
+        } else if (progress < 96) {
+          progress += 0.5;
+        }
+        progress = Math.min(96, progress);
         fill.style.width = progress + "%";
-      }, 500);
+      }, 300);
     }
   } else {
     clearInterval(aiProgressTimer);
     if (fill) {
       fill.style.width = "100%";
       setTimeout(() => {
-        wrap?.classList.remove("loading");
+        wrap?.classList.remove("loading", "ai-generating");
         // 如果没有正文内容，则重置为 0，如果有则保持 100% (代表完成)
         if (!document.querySelector("#draftEditor")?.value) {
             fill.style.width = "0%";
         }
-      }, 500);
+      }, 800);
     }
   }
 }

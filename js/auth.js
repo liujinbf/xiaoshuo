@@ -79,19 +79,30 @@ function renderUserInfoBar() {
   const nameEl = document.getElementById("userInfoName");
   const adminLink = document.getElementById("adminLink");
   const authActionBtn = document.getElementById("logoutBtn");
+  const railAdminBtn = document.getElementById("railAdminBtn");
+  const tabAdmin = document.getElementById("tabAdmin");
+
   if (!nameEl) return;
   if (!authUser) {
     nameEl.textContent = "本地模式";
     if (authActionBtn) authActionBtn.textContent = "登录";
     if (adminLink) adminLink.style.display = "none";
+    if (railAdminBtn) railAdminBtn.style.display = "none";
+    if (tabAdmin) tabAdmin.style.display = "none";
     return;
   }
   nameEl.textContent = `👤 ${authUser.username}`;
   if (authActionBtn) authActionBtn.textContent = "退出";
   // 同时兼容新版 role 字段和旧版仅凭 username 判定
   const isAdmin = authUser.role === "admin" || authUser.username === "admin";
-  if (adminLink && isAdmin) {
-    adminLink.style.display = "inline";
+  if (isAdmin) {
+    if (adminLink) adminLink.style.display = "inline";
+    if (railAdminBtn) railAdminBtn.style.display = "flex";
+    if (tabAdmin) tabAdmin.style.display = "inline-block";
+  } else {
+    if (adminLink) adminLink.style.display = "none";
+    if (railAdminBtn) railAdminBtn.style.display = "none";
+    if (tabAdmin) tabAdmin.style.display = "none";
   }
 }
 
@@ -110,6 +121,10 @@ function logout() {
   if (authActionBtn) authActionBtn.textContent = "登录";
   const adminLink = document.getElementById("adminLink");
   if (adminLink) adminLink.style.display = "none";
+  const railAdminBtn = document.getElementById("railAdminBtn");
+  if (railAdminBtn) railAdminBtn.style.display = "none";
+  const tabAdmin = document.getElementById("tabAdmin");
+  if (tabAdmin) tabAdmin.style.display = "none";
 }
 
 function showLoginModal() {

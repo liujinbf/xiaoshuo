@@ -193,11 +193,100 @@ button {
   font-size: 20px;
 }
 
+.desktop-upgrade-button {
+  display: inline-flex;
+  min-height: 30px; /* 顶部工具栏适配 30px 高度 */
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  color: #8a6525 !important;
+  background: rgba(181, 138, 67, 0.08) !important;
+  border: 1px solid rgba(181, 138, 67, 0.35) !important;
+  border-radius: var(--du-radius);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  white-space: nowrap;
+}
+
+.desktop-upgrade-button:hover {
+  background: rgba(181, 138, 67, 0.16) !important;
+  border-color: rgba(181, 138, 67, 0.6) !important;
+  transform: translateY(-1px);
+}
+
+.desktop-upgrade-button:active {
+  background: rgba(181, 138, 67, 0.04) !important;
+  transform: translateY(0);
+}
+
+.premium-upgrade-action {
+  flex: 1.3;
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  color: #8a6525 !important;
+  background: rgba(181, 138, 67, 0.08) !important;
+  border: 1px solid rgba(181, 138, 67, 0.35) !important;
+  border-radius: var(--du-radius);
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  white-space: nowrap;
+}
+
+.premium-upgrade-action:hover {
+  background: rgba(181, 138, 67, 0.16) !important;
+  border-color: rgba(181, 138, 67, 0.6) !important;
+  transform: translateY(-1px);
+}
+
+.premium-upgrade-action:active {
+  background: rgba(181, 138, 67, 0.04) !important;
+  transform: translateY(0);
+}
+
+/* 升级按钮的内联皇冠 SVG 专属样式，强力防止巨型 SVG 的全局污染，并且让色彩与文字呼应 */
+.desktop-upgrade-button svg,
+.premium-upgrade-action svg {
+  width: 13px !important;
+  height: 13px !important;
+  stroke: #8a6525 !important;
+  fill: rgba(181, 138, 67, 0.25) !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+}
+
+
+
 .app-shell {
   display: grid;
   grid-template-columns: 164px 340px minmax(560px, 1fr) 300px;
   height: calc(100vh - 104px);
   min-height: 0;
+}
+
+/* 优化布局：当处于任务设定、世界设定、系统后台时，隐藏控制面板并重置网格列宽，消除 340px 留白并扩大工作区 */
+body.layout-task .control-panel,
+body.layout-world .control-panel,
+body.layout-admin .control-panel {
+  display: none !important;
+}
+
+body.layout-task .app-shell,
+body.layout-world .app-shell,
+body.layout-admin .app-shell {
+  grid-template-columns: 196px minmax(760px, 1fr) 350px !important;
 }
 
 .desktop-rail {

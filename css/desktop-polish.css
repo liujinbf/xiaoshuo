@@ -199,38 +199,19 @@
   min-height: 24px;
 }
 
+/* billing-panel 布局由 desktop-ui-widgets.css 的 .quota-body flex 接管，polish 层只做视觉修层 */
 .desktop-inspector .billing-panel {
-  min-height: 136px;
-  overflow: hidden;
+  overflow: visible; /* 不裁剪，让 flex 内容自然展开 */
 }
 
-.billing-panel svg {
-  position: absolute;
-  grid-column: auto !important;
-  grid-row: auto !important;
-  top: 46px;
-  left: 17px;
-  width: 72px;
-  height: 72px;
-  margin: 0;
-}
+/* SVG 大小由 desktop-ui-widgets.css 控制，不需覆盖 */
 
 .billing-panel #billingNotice,
 .billing-panel #trialBtn {
   display: none;
 }
 
-#quotaPct {
-  position: absolute;
-  grid-column: auto !important;
-  grid-row: auto !important;
-  top: 46px;
-  left: 17px;
-  width: 72px;
-  height: 72px;
-  margin: 0;
-  font-size: 18px;
-}
+/* #quotaPct 由 .quota-ring-wrap #quotaPct 规则（widgets.css !important）模拟渲染 */
 
 .billing-panel .status-row {
   min-height: 19px;
@@ -304,6 +285,7 @@
   max-height: 46px;
   overflow: hidden;
   padding: 7px 10px !important;
+  margin-top: 0; /* 覆盖 base.css .sync-panel { margin-top: 26px } */
 }
 
 .sync-heading h2 {
@@ -344,3 +326,721 @@
     min-height: 24px;
   }
 }
+
+/* 设计稿桌面对齐：收掉左侧重复登录层，让左侧 rail 承担主导航。 */
+#userInfoBar {
+  display: none !important;
+}
+
+#panelShort {
+  padding: 0 10px 14px !important;
+}
+
+.workspace-tabs {
+  display: flex !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+  width: 100% !important;
+  height: 52px !important;
+  align-items: flex-end !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 9px 12px 0 !important;
+  border-bottom: 1px solid var(--du-line) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 252, 245, 0.78) !important;
+  backdrop-filter: blur(14px) !important;
+  box-sizing: border-box !important;
+}
+
+.workspace-tabs .tab-btn {
+  min-height: 42px !important;
+  padding: 0 22px !important;
+  color: #4f514b !important;
+  border: 1px solid var(--du-line) !important;
+  border-bottom: 0 !important;
+  border-radius: 8px 8px 0 0 !important;
+  background: rgba(255, 252, 245, 0.82) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+.workspace-tabs .tab-btn.active {
+  color: var(--du-green) !important;
+  background: var(--du-panel) !important;
+  box-shadow: inset 0 -2px 0 var(--du-green) !important;
+}
+
+.workspace-tabs #tabLearn {
+  display: none !important;
+}
+
+.workspace-tabs-more {
+  margin-left: auto !important;
+  align-self: center !important;
+}
+
+.desktop-editor-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.52), rgba(255, 252, 245, 0.2) 44%, rgba(255, 255, 255, 0.46)),
+    var(--du-panel) !important;
+  border-color: var(--du-line) !important;
+}
+
+.desktop-editor-panel .panel-title {
+  order: 3 !important;
+  min-height: 74px !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  padding: 14px 16px 8px !important;
+  border-bottom: 0 !important;
+  background: #fffdf7 !important;
+}
+
+.desktop-editor-panel .panel-title h3 {
+  color: var(--du-ink) !important;
+  font-size: 20px !important;
+  letter-spacing: 0 !important;
+  gap: 10px !important;
+}
+
+.desktop-editor-panel .panel-title h3 .ch-name {
+  color: var(--du-ink) !important;
+}
+
+.desktop-editor-panel .panel-title h3 .editor-action-tag,
+.editor-action-tag {
+  display: none !important;
+}
+
+.desktop-editor-panel .panel-title::after {
+  width: 92px !important;
+  height: 1px !important;
+  margin: 0 auto !important;
+  border: 0 !important;
+  background: rgba(120, 94, 54, 0.68) !important;
+  opacity: 1 !important;
+}
+
+.desktop-chapter-strip {
+  order: 1 !important;
+  height: 40px !important;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border-radius: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid var(--du-line) !important;
+  background: rgba(255, 252, 245, 0.72) !important;
+}
+
+.editor-toolbar {
+  order: 2 !important;
+  min-height: 40px !important;
+  margin: 0 !important;
+  border-width: 0 0 1px !important;
+  border-radius: 0 !important;
+}
+
+#draftEditor.draft-editor {
+  order: 4 !important;
+  height: clamp(318px, calc(100vh - 690px), 374px) !important;
+  min-height: 318px !important;
+  margin: 0 16px !important;
+  padding: 14px clamp(58px, 7vw, 92px) 26px !important;
+  resize: none !important;
+  border: 1px solid var(--du-line) !important;
+  border-top: 0 !important;
+  border-radius: 8px !important;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(181, 138, 67, 0.07), transparent 42%),
+    #fffdf7 !important;
+  background-image:
+    radial-gradient(circle at 50% 16%, rgba(181, 138, 67, 0.07), transparent 42%) !important;
+  font-size: 18px !important;
+  line-height: 2 !important;
+  letter-spacing: 0 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 30px rgba(65, 55, 38, 0.05) !important;
+}
+
+.desktop-editor-statusbar {
+  order: 5 !important;
+}
+
+/* 左侧按设计稿的信息优先级排序：核心设定 -> 大纲 -> 备注 -> 高级参数。 */
+.control-form .form-title {
+  order: 1;
+}
+
+.control-form .field-group:has(#storyTitle) {
+  order: 2;
+}
+
+.control-form .field-group:has(#genre) {
+  order: 3;
+}
+
+.control-form .field-group:has(#theme) {
+  order: 4;
+}
+
+.control-form .field-group:has(#storyTopic) {
+  order: 5;
+}
+
+.control-form .outline-field {
+  order: 6;
+}
+
+.control-form .field-group:has(#storyNotes) {
+  order: 7;
+}
+
+.control-form .field-group:has(#viewpoint),
+.control-form .field-group:has(#ending),
+.control-form .field-group:has(#length),
+.control-form .field-group:has(#intensity),
+.control-form .field-group:has(#tagCloud) {
+  order: 8;
+}
+
+.control-form .button-row {
+  order: 9;
+}
+
+/* 右侧信息栏压缩到设计稿的首屏密度。 */
+.desktop-inspector {
+  gap: 8px !important;
+  padding: 12px 12px 14px !important;
+}
+
+.desktop-inspector .billing-panel,
+.desktop-inspector .model-panel,
+.desktop-inspector .sync-panel,
+.desktop-inspector .history-panel,
+.desktop-inspector .desktop-inspector-card,
+.desktop-generation-card {
+  padding: 10px 12px !important;
+}
+
+.desktop-model-enhanced .model-heading,
+.desktop-inspector .panel-title {
+  min-height: 24px !important;
+  margin-bottom: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+.desktop-inspector select,
+.desktop-inspector input[type="text"],
+.desktop-inspector input[type="number"] {
+  min-height: 34px !important;
+}
+
+.desktop-model-tuning {
+  gap: 4px !important;
+  margin: 4px 0 2px !important;
+}
+
+.desktop-model-tuning label {
+  gap: 2px !important;
+  margin-bottom: 8px !important;
+}
+
+.desktop-model-tuning output {
+  margin-top: -16px !important;
+}
+
+.quota-body {
+  margin: 4px 0 6px !important;
+}
+
+.quota-ring-wrap {
+  width: 86px !important;
+  height: 86px !important;
+}
+
+.desktop-generation-card .status-row,
+.desktop-inspector .status-row {
+  min-height: 18px !important;
+  margin: 2px 0 !important;
+}
+
+.desktop-generation-card .ghost-action {
+  min-height: 28px !important;
+}
+
+.desktop-memory-panel .asset-list {
+  min-height: 168px !important;
+  padding-bottom: 8px !important;
+  gap: 10px !important;
+}
+
+.desktop-memory-panel .asset-item,
+.desktop-memory-panel .asset-card {
+  height: 168px !important;
+  min-height: 168px !important;
+  max-height: 168px !important;
+  padding: 13px 14px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(74, 67, 55, 0.18) !important;
+  border-radius: 7px !important;
+  background: rgba(255, 252, 245, 0.84) !important;
+  box-shadow: none !important;
+}
+
+.desktop-memory-panel .asset-item:first-child,
+.desktop-memory-panel .asset-card:first-child {
+  border-color: var(--du-green) !important;
+  box-shadow: inset 0 0 0 1px rgba(23, 111, 86, 0.22) !important;
+}
+
+.desktop-memory-panel .asset-item strong,
+.desktop-memory-panel .asset-card strong {
+  color: #1f5f4c !important;
+  border-bottom: 1px solid rgba(23, 111, 86, 0.14) !important;
+  padding-bottom: 5px !important;
+}
+
+.desktop-memory-panel .asset-item p,
+.desktop-memory-panel .asset-card p {
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+.desktop-memory-panel .asset-item em,
+.desktop-memory-panel .memory-tags {
+  margin-top: 6px !important;
+}
+
+.desktop-memory-panel .asset-item em,
+.desktop-memory-panel .memory-tags span {
+  color: #fffdf7 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: #7c887e !important;
+}
+
+.desktop-model-enhanced {
+  max-height: none !important;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+}
+
+.desktop-model-enhanced .field-group {
+  margin-bottom: 5px !important;
+}
+
+.desktop-model-tuning input[type="range"] {
+  margin: 4px 0 !important;
+}
+
+.model-advanced {
+  margin-top: 4px !important;
+}
+
+.desktop-model-enhanced {
+  padding-bottom: 8px !important;
+}
+
+.desktop-model-enhanced .model-heading {
+  min-height: 22px !important;
+}
+
+.desktop-model-enhanced select {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.desktop-model-tuning label {
+  margin-bottom: 6px !important;
+}
+
+.model-advanced summary {
+  min-height: 22px !important;
+}
+
+/* 右侧检查器深度对齐设计稿：统一卡片、表单、配额与状态密度。 */
+.desktop-inspector {
+  gap: 12px !important;
+  padding: 12px !important;
+  background: rgba(255, 252, 245, 0.58) !important;
+}
+
+.desktop-inspector section,
+.desktop-inspector .model-panel,
+.desktop-inspector .billing-panel,
+.desktop-generation-card,
+.desktop-inspector .desktop-inspector-card {
+  margin: 0 !important;
+  padding: 14px 14px 13px !important;
+  border: 1px solid rgba(74, 67, 55, 0.16) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 252, 245, 0.94) !important;
+  box-shadow: 0 8px 22px rgba(61, 52, 38, 0.045) !important;
+  flex-shrink: 0 !important;
+}
+
+.desktop-model-enhanced {
+  min-height: 304px !important;
+  padding: 12px 14px 12px !important;
+}
+
+.desktop-model-enhanced .model-heading,
+.billing-heading,
+.desktop-generation-card h3,
+.desktop-inspector-card h3 {
+  display: flex !important;
+  min-height: 28px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 0 8px !important;
+  padding: 0 0 8px !important;
+  border-bottom: 1px solid rgba(74, 67, 55, 0.14) !important;
+}
+
+.desktop-model-enhanced .model-heading h2,
+.billing-heading h2,
+.desktop-generation-card h3,
+.desktop-inspector-card h3 {
+  flex: 1 !important;
+  margin: 0 !important;
+  color: #231f1a !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+.desktop-model-enhanced .model-heading::before,
+.billing-heading::before,
+.desktop-generation-card h3::before,
+.desktop-inspector-card h3::before {
+  content: "⚙" !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+  border: 1px solid rgba(23, 111, 86, 0.24) !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  color: var(--du-green) !important;
+  background: rgba(23, 111, 86, 0.05) !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+
+.desktop-model-enhanced .model-heading::after {
+  content: "⚙" !important;
+  color: #5b594f !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+}
+
+.desktop-model-enhanced .field-group {
+  gap: 5px !important;
+  margin: 0 0 8px !important;
+}
+
+.desktop-model-enhanced label,
+.billing-panel .status-row span:first-child,
+.desktop-generation-card .status-row span:first-child {
+  color: #6d675e !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+#modelName {
+  width: 100% !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 32px 0 12px !important;
+  color: #2d2922 !important;
+  border: 1px solid rgba(74, 67, 55, 0.18) !important;
+  border-radius: 7px !important;
+  background-color: rgba(255, 253, 248, 0.96) !important;
+  font-family: var(--font-serif-cn) !important;
+  font-size: 13px !important;
+  line-height: 34px !important;
+}
+
+#modelName option {
+  color: #2d2922 !important;
+  background: #fffdf8 !important;
+}
+
+.desktop-model-tuning {
+  display: grid !important;
+  gap: 8px !important;
+  margin: 6px 0 6px !important;
+}
+
+.desktop-model-tuning label {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  gap: 5px 10px !important;
+  margin: 0 !important;
+  color: #6d675e !important;
+}
+
+.desktop-model-tuning output {
+  min-width: 48px !important;
+  margin: 0 !important;
+  padding: 3px 8px !important;
+  color: var(--du-green) !important;
+  border: 1px solid rgba(74, 67, 55, 0.14) !important;
+  border-radius: 6px !important;
+  background: rgba(255, 253, 248, 0.92) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+}
+
+.desktop-model-tuning input[type="range"] {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  height: 12px !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+.desktop-model-tuning input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(90deg, var(--du-green) 0 var(--range-pct, 0%), rgba(74, 67, 55, 0.13) var(--range-pct, 0%) 100%) !important;
+}
+
+.desktop-model-tuning input[type="range"]::-webkit-slider-thumb {
+  width: 12px !important;
+  height: 12px !important;
+  margin-top: -4px !important;
+  border: 2px solid #fffdf8 !important;
+  background: var(--du-green) !important;
+  box-shadow: 0 1px 6px rgba(23, 111, 86, 0.28) !important;
+}
+
+.model-advanced {
+  margin-top: 7px !important;
+  border-top: 1px solid rgba(74, 67, 55, 0.14) !important;
+}
+
+.model-advanced summary {
+  min-height: 26px !important;
+  color: #6d675e !important;
+  font-size: 12px !important;
+}
+
+.billing-panel {
+  min-height: auto !important;
+  flex-shrink: 0 !important;
+}
+
+.billing-heading h2 {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.plan-badge {
+  margin-left: 2px !important;
+  padding: 4px 9px !important;
+  color: var(--du-green) !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(23, 111, 86, 0.12) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.quota-body {
+  display: grid !important;
+  grid-template-columns: 104px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin: 8px 0 2px !important;
+}
+
+.quota-ring-wrap {
+  width: 96px !important;
+  height: 96px !important;
+  justify-self: center !important;
+}
+
+.quota-ring-wrap #quotaPct {
+  font-size: 20px !important;
+}
+
+.quota-data {
+  min-width: 0 !important;
+}
+
+.quota-data .status-row,
+.billing-panel .status-row {
+  display: grid !important;
+  grid-template-columns: minmax(62px, auto) 1fr !important;
+  gap: 10px !important;
+  min-height: 22px !important;
+  padding: 1px 0 !important;
+  border-bottom: 1px dashed rgba(74, 67, 55, 0.08) !important;
+  font-size: 12px !important;
+}
+
+.quota-data .status-row span:last-child,
+.billing-panel .status-row span:last-child {
+  justify-self: end !important;
+  color: #4a4036 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.desktop-generation-card {
+  display: block !important;
+  min-height: 204px !important;
+  overflow: hidden !important;
+}
+
+.desktop-generation-card .status-row {
+  display: grid !important;
+  grid-template-columns: 78px 1fr !important;
+  min-height: 20px !important;
+  gap: 10px !important;
+  margin: 2px 0 !important;
+}
+
+.desktop-generation-card .status-row > :last-child {
+  justify-self: start !important;
+  text-align: left !important;
+  color: #5d544a !important;
+}
+
+.desktop-generation-card .ghost-action {
+  min-height: 31px !important;
+  margin-top: 8px !important;
+  border-radius: 7px !important;
+}
+
+.api-status.offline {
+  color: #9b958b !important;
+  border-color: transparent !important;
+  background: transparent !important;
+}
+
+/* ===== AI 进度条与流光视觉系统 ===== */
+.serial-gen-progress-card {
+  margin: 16px 0;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(23, 111, 86, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(23, 111, 86, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideDownIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDownIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.progress-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--du-green);
+  font-size: 14px;
+}
+
+/* 呼吸红绿脉冲圆点 */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--du-green);
+  border-radius: 50%;
+  position: relative;
+}
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--du-green);
+  animation: pulseExpand 1.5s infinite ease-out;
+}
+
+@keyframes pulseExpand {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.progress-card-pct {
+  font-weight: 800;
+  font-family: monospace;
+  font-size: 15px;
+  color: var(--du-green);
+}
+
+.progress-bar-track {
+  height: 8px;
+  background: rgba(23, 111, 86, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 渐变流光呼吸填充条 */
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #176f56, #3ab08f, #176f56);
+  background-size: 200% 100%;
+  border-radius: inherit;
+  transition: width 0.2s cubic-bezier(0.1, 0.8, 0.2, 1);
+  animation: shimmerFlow 1.6s infinite linear;
+}
+
+@keyframes shimmerFlow {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.progress-card-step {
+  font-size: 12px;
+  color: var(--du-muted);
+  line-height: 1.5;
+  min-height: 18px;
+  transition: color 0.2s;
+}
+
+/* 短篇字数进度条的 AI 呼吸态 */
+.draft-progress-wrap.ai-generating {
+  height: 6px;
+  background: rgba(74, 67, 55, 0.08);
+}
+.draft-progress-wrap.ai-generating .draft-progress-fill {
+  background: linear-gradient(90deg, #176f56, #b9872e, #176f56) !important;
+  background-size: 200% 100% !important;
+  animation: shimmerFlow 1.6s infinite linear !important;
+}
+

@@ -1,0 +1,93 @@
+<section id="chapterReader" class="desktop-reader" hidden>
+  <button id="closeReaderBtn" class="ghost-action" type="button">关闭</button>
+  <h2 id="chapterReaderLabel"></h2>
+  <div id="chapterReaderBody" class="desktop-reader-body"></div>
+</section>
+
+<section id="billingModal" class="modal-backdrop" hidden>
+  <div class="billing-modal">
+    <!-- 顶部光晕装饰 -->
+    <div class="billing-glow"></div>
+
+    <!-- 关闭按钮 -->
+    <button id="closeBillingBtn" class="billing-close" type="button" aria-label="关闭">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/>
+      </svg>
+    </button>
+
+    <!-- 标题区 -->
+    <div class="billing-head">
+      <div class="billing-crown">✦ CREATOR PRO ✦</div>
+      <h2>解锁无限创作潜能</h2>
+      <p class="billing-subtitle">专业级 AI 写作助理，助您创作每一部传世之作</p>
+    </div>
+
+    <!-- 价格卡片 -->
+    <div class="pricing-grid">
+      <!-- 月度卡 -->
+      <div class="price-card" data-plan="monthly">
+        <span class="price-card-badge">月度订阅</span>
+        <div class="price-amount">
+          <span class="price-unit">¥</span>
+          <b class="price-num">29</b>
+          <span class="price-period">/ 月</span>
+        </div>
+        <ul class="price-features">
+          <li>✓ 无限 AI 生成次数</li>
+          <li>✓ 高级模型访问</li>
+          <li>✓ 优先技术支持</li>
+        </ul>
+        <button class="price-btn" data-plan-order="monthly" type="button">购买月度</button>
+      </div>
+
+      <!-- 年度卡（推荐） -->
+      <div class="price-card price-card-pro" data-plan="yearly">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="price-card-badge">年度订阅</span>
+          <span class="price-card-badge pro-badge">🔥 推荐</span>
+        </div>
+        <div class="price-amount">
+          <span class="price-unit">¥</span>
+          <b class="price-num">199</b>
+          <span class="price-period">/ 年</span>
+        </div>
+        <div class="price-save">相当于 ¥16.6/月，省 58%</div>
+        <ul class="price-features">
+          <li>✓ 月度所有权益</li>
+          <li>✓ 批量章节生成</li>
+          <li>✓ 专属创作模板库</li>
+          <li>✓ 人物/世界设定云同步</li>
+        </ul>
+        <button class="price-btn price-btn-pro" data-plan-order="yearly" type="button">立即购买年度</button>
+      </div>
+    </div>
+
+    <!-- 支付方式 -->
+    <div class="pay-methods-wrap">
+      <div class="pay-methods-label">选择支付方式</div>
+      <div id="paymentMethodsRadios" class="pay-methods-list"></div>
+    </div>
+
+    <!-- 订单结果 -->
+    <div id="orderDraft" class="order-result-area"></div>
+
+    <!-- 试用入口 -->
+    <div class="billing-trial-row">
+      <button id="trialModalBtn" class="trial-link" type="button">← 先免费体验 7 天试用版</button>
+    </div>
+  </div>
+</section>
+
+<section id="authModal" class="modal-backdrop" style="display:none">
+  <div class="billing-modal">
+    <div class="modal-header"><h2>登录</h2></div>
+    <input id="authUsername" type="text" placeholder="用户名">
+    <input id="authPassword" type="password" placeholder="密码">
+    <div class="micro-actions">
+      <button id="authLoginBtn" class="primary-action" type="button">登录</button>
+      <button id="authRegisterBtn" class="ghost-action" type="button">注册</button>
+      <button id="authLocalModeBtn" class="ghost-action" type="button">继续本地模式</button>
+    </div>
+  </div>
+</section>

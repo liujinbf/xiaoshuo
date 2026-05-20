@@ -1,5 +1,6 @@
 import {
-  getUserNovels, saveNovel, deleteNovel
+  getUserNovels, saveNovel, deleteNovel,
+  saveChapterEmbedding, deleteChapterEmbeddings
 } from "../utils/db.js";
 import crypto from "node:crypto";
 import {
@@ -7,9 +8,15 @@ import {
   buildChapterUserPrompt,
   buildChapterMemoryPrompt,
   buildChapterPolishSystemPrompt,
-  buildChapterPolishUserPrompt
+  buildChapterPolishUserPrompt,
+  buildOutlineStep1Prompt,
+  buildOutlineStep2Prompt,
+  buildCharacterGenPrompt
 } from "../utils/prompts.js";
+import { fetchEmbedding, cosineSimilarity, extractChatText } from "../utils/vector.js";
 import { retrieveKnowledgeForDraft } from "../utils/knowledge-retrieval.js";
+import { retrieveSubjectKnowledge } from "../utils/knowledge-retrieval-service.js";
+
 
 function parseChapterMemory(rawText) {
   const raw = String(rawText || "").trim().replace(/^```json\s*|\s*```$/g, "");
@@ -61,16 +68,46 @@ async function polishChapterContent({ baseUrl, apiKey, modelName, chapterContent
         ],
         max_tokens: 4200,
         temperature: 0.55
-      })
+      }),
+      signal: AbortSignal.timeout(35000)
     });
     const polishData = await polishRes.json();
     if (!polishRes.ok) return chapterContent;
-    const polished = (polishData?.choices?.[0]?.message?.content || "").trim();
+    const polished = extractChatText(polishData);
     return polished || chapterContent;
   } catch {
     return chapterContent;
   }
 }
+
+/**
+ * 提取章节摘要结构化记忆
+ * @returns {Promise<{memory: object, summary: string}>}
+ */
+async function extractChapterMemory({ baseUrl, apiKey, modelName, chapterContent }) {
+  try {
+    const sumRes = await fetch(`${baseUrl}/v1/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: "system", content: buildChapterMemoryPrompt() },
+          { role: "user", content: chapterContent }
+        ],
+        max_tokens: 600,
+        temperature: 0.3
+      }),
+      signal: AbortSignal.timeout(25000)
+    });
+    const sumData = await sumRes.json();
+    const memory = parseChapterMemory(extractChatText(sumData));
+    return { memory, summary: memory.summary };
+  } catch {
+    return { memory: null, summary: "" };
+  }
+}
+
 
 export async function handleNovelRoutes(request, response, url, helpers) {
   const { sendJson, readJson, getUserId, fetchEmbedding, cosineSimilarity } = helpers;
@@ -118,7 +155,139 @@ export async function handleNovelRoutes(request, response, url, helpers) {
     if (!userId) { sendJson(response, 401, { ok: false, message: "请先登录" }); return true; }
     
     await deleteNovel(userId, novelId);
+    // 联动清理向量嵌入，防止孤儿数据累积
+    await deleteChapterEmbeddings(novelId).catch(() => {});
     sendJson(response, 200, { ok: true });
+    return true;
+  }
+
+  // ─── POST /api/novels/:id/characters/generate — AI 自动生成人物设定（v4.0）───
+  const genCharMatch = url.pathname.match(/^\/api\/novels\/([^/]+)\/characters\/generate$/);
+  if (genCharMatch && request.method === "POST") {
+    const novelId = genCharMatch[1];
+    try {
+      const payload = await readJson(request);
+      const userId = getUserId(request, payload, url);
+      if (!userId) { sendJson(response, 401, { ok: false, message: "请先登录" }); return true; }
+
+      const cfg = payload.modelConfig || {};
+      const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
+      const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+      const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
+      if (!apiKey) { sendJson(response, 412, { ok: false, message: "缺少 API Key" }); return true; }
+
+      const userNovels = await getUserNovels(userId);
+      const novel = userNovels.find(n => n.id === novelId);
+      if (!novel) { sendJson(response, 404, { ok: false, message: "小说不存在" }); return true; }
+
+      const charRes = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: modelName,
+          messages: [{ role: "user", content: buildCharacterGenPrompt({
+            title: novel.title,
+            genre: novel.genre,
+            style: payload.style || "",
+            brainstorm: payload.brainstorm || "",
+            characterCount: payload.characterCount || {}
+          }) }],
+          max_tokens: 5000,
+          temperature: 0.9   // 人物创意最高
+        }),
+        signal: AbortSignal.timeout(90000)
+      });
+      const charData = await charRes.json();
+      if (!charRes.ok) throw new Error(charData?.error?.message || "人物生成失败");
+      const characters = extractChatText(charData);
+
+      // 将生成的人物设定存回小说记录
+      novel.generatedCharacters = characters;
+      novel.updatedAt = new Date().toISOString();
+      await saveNovel(userId, novel);
+
+      sendJson(response, 200, { ok: true, characters, message: "人物设定生成完成" });
+    } catch (error) {
+      sendJson(response, error.statusCode || 500, { ok: false, message: error.message });
+    }
+    return true;
+  }
+
+  // ─── POST /api/novels/:id/outline/generate — 两步大纲生成（🆕）───
+  const genOutlineMatch = url.pathname.match(/^\/api\/novels\/([^/]+)\/outline\/generate$/);
+  if (genOutlineMatch && request.method === "POST") {
+    const novelId = genOutlineMatch[1];
+    try {
+      const payload = await readJson(request);
+      const userId = getUserId(request, payload, url);
+      if (!userId) { sendJson(response, 401, { ok: false, message: "请先登录" }); return true; }
+
+      const cfg = payload.modelConfig || {};
+      const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
+      const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
+      const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
+      if (!apiKey) { sendJson(response, 412, { ok: false, message: "缺少 API Key" }); return true; }
+
+      const userNovels = await getUserNovels(userId);
+      const novel = userNovels.find(n => n.id === novelId);
+      if (!novel) { sendJson(response, 404, { ok: false, message: "小说不存在" }); return true; }
+
+      const params = {
+        title: novel.title,
+        genre: novel.genre,
+        targetChapters: novel.targetChapters || 10,
+        chapterLength: novel.chapterLength || 2000,
+        brainstorm: payload.brainstorm || novel.outline || "",
+        characters: novel.characters || novel.generatedCharacters || ""
+      };
+
+      // 第一步：核心设定（temperature 0.85，创意优先）
+      const step1Res = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: modelName,
+          messages: [{ role: "user", content: buildOutlineStep1Prompt(params) }],
+          max_tokens: 3000,
+          temperature: 0.85
+        }),
+        signal: AbortSignal.timeout(60000)
+      });
+      const step1Data = await step1Res.json();
+      if (!step1Res.ok) throw new Error(step1Data?.error?.message || "第一步大纲生成失败");
+      const step1Result = extractChatText(step1Data);
+
+      // 第二步：章节大纲（temperature 0.7，结构优先）
+      const step2Res = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: modelName,
+          messages: [{ role: "user", content: buildOutlineStep2Prompt(params, step1Result) }],
+          max_tokens: 4000,
+          temperature: 0.7
+        }),
+        signal: AbortSignal.timeout(90000)
+      });
+      const step2Data = await step2Res.json();
+      if (!step2Res.ok) throw new Error(step2Data?.error?.message || "第二步大纲生成失败");
+      const step2Result = extractChatText(step2Data);
+
+      // 把生成的大纲存回小说记录
+      novel.generatedSetting = step1Result;
+      novel.generatedOutline = step2Result;
+      novel.updatedAt = new Date().toISOString();
+      await saveNovel(userId, novel);
+
+      sendJson(response, 200, {
+        ok: true,
+        setting: step1Result,
+        chapterOutlines: step2Result,
+        message: "大纲生成完成，请确认后复制到小说大纲字段"
+      });
+    } catch (error) {
+      sendJson(response, error.statusCode || 500, { ok: false, message: error.message });
+    }
     return true;
   }
 
@@ -142,25 +311,30 @@ export async function handleNovelRoutes(request, response, url, helpers) {
       const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
       if (!apiKey) { sendJson(response, 412, { ok: false, message: "缺少 API Key，请在模型配置面板填写" }); return true; }
 
-      // --- 1. 向量记忆召回 ---
+      // --- 1. 向量记忆召回（从独立表读取） ---
       let relevantMemory = "";
       if (novel.chapters.length >= 2) {
-        const lastChapter = novel.chapters[novel.chapters.length - 1];
-        if (lastChapter.summaryEmbedding) {
-          const scoredChapters = novel.chapters
-            .slice(0, -1) // 排除自己
-            .map(ch => ({
-              chapter: ch,
-              score: cosineSimilarity(lastChapter.summaryEmbedding, ch.summaryEmbedding)
-            }))
-            .filter(item => item.score > 0.6) // 相似度阈值
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 2); // 取 Top 2
-            
-          if (scoredChapters.length > 0) {
-            relevantMemory = scoredChapters.map(sc => `第${sc.chapter.index}章：${formatMemoryForRecall(sc.chapter)}`).join("\n");
+        try {
+          const { getChapterEmbeddings } = await import("../utils/db.js");
+          const allEmbeddings = await getChapterEmbeddings(novel.id);
+          const embMap = Object.fromEntries(allEmbeddings.map(e => [e.chapterIndex, e.embedding]));
+          const lastChapter = novel.chapters[novel.chapters.length - 1];
+          const lastEmb = embMap[lastChapter.index];
+          if (lastEmb) {
+            const scoredChapters = novel.chapters
+              .slice(0, -1)
+              .map(ch => ({
+                chapter: ch,
+                score: cosineSimilarity(lastEmb, embMap[ch.index])
+              }))
+              .filter(item => item.score > 0.6)
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 2);
+            if (scoredChapters.length > 0) {
+              relevantMemory = scoredChapters.map(sc => `第${sc.chapter.index}章：${formatMemoryForRecall(sc.chapter)}`).join("\n");
+            }
           }
-        }
+        } catch { /* 容错，向量召回不阻断生成 */ }
       }
 
       // --- 1.5 召回本地素材库策略 (RAG) ---
@@ -186,6 +360,13 @@ export async function handleNovelRoutes(request, response, url, helpers) {
         }
       });
 
+      // --- 1.6 召回学科公开知识库 (历史、物理、化学等) ---
+      const combinedText = `${novel.title} ${novel.outline} ${novel.characters}`;
+      const matchedSubjectKnowledge = await retrieveSubjectKnowledge({
+        text: combinedText,
+        limit: 3
+      });
+
       // --- 2. 生成章节正文 ---
       const contentRes = await fetch(`${baseUrl}/v1/chat/completions`, {
         method: "POST",
@@ -194,54 +375,41 @@ export async function handleNovelRoutes(request, response, url, helpers) {
           model: modelName,
           messages: [
             { role: "system", content: buildChapterSystemPrompt() },
-            { role: "user", content: buildChapterUserPrompt(novel, relevantMemory, matchedInspirations) }
+            { role: "user", content: buildChapterUserPrompt(novel, relevantMemory, matchedInspirations, matchedSubjectKnowledge) }
           ],
           max_tokens: 4000,
-          temperature: 0.78
-        })
+          temperature: 0.88,
+          frequency_penalty: 0.3,
+          presence_penalty: 0.1
+        }),
+        signal: AbortSignal.timeout(60000)
       });
       const contentData = await contentRes.json();
-      if (!contentRes.ok) throw new Error(contentData?.error?.message || `AI 请求失败（${contentRes.status}）`);
-      let chapterContent = (contentData?.choices?.[0]?.message?.content || "").trim();
+      if (!contentRes.ok) throw new Error(extractChatText(contentData) || contentData?.error?.message || `AI 请求失败（${contentRes.status}）`);
+      let chapterContent = extractChatText(contentData);
       if (!chapterContent) throw new Error("AI 返回内容为空");
-      chapterContent = await polishChapterContent({ baseUrl, apiKey, modelName, chapterContent });
 
-      // --- 3. 提取摘要与向量特征 ---
-      let summary = "";
-      let memory = null;
-      let summaryEmbedding = null;
-      try {
-        const sumRes = await fetch(`${baseUrl}/v1/chat/completions`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: modelName,
-            messages: [
-              { role: "system", content: buildChapterMemoryPrompt() },
-              { role: "user", content: chapterContent }
-            ],
-            max_tokens: 600,
-            temperature: 0.3
-          })
-        });
-        const sumData = await sumRes.json();
-        memory = parseChapterMemory(sumData?.choices?.[0]?.message?.content || "");
-        summary = memory.summary;
-        
-        if (summary) {
-           summaryEmbedding = await fetchEmbedding(summary, baseUrl, apiKey);
-        }
-      } catch (_) { /* 容错 */ }
-      if (!memory) {
-        memory = { summary, openThreads: [], newFacts: [], characterUpdates: [], continuityChecks: [], nextHook: "" };
+      // --- 3. 润色 + 摘要提取 并行执行 ---
+      const [polishedContent, { memory, summary }] = await Promise.all([
+        polishChapterContent({ baseUrl, apiKey, modelName, chapterContent }),
+        extractChapterMemory({ baseUrl, apiKey, modelName, chapterContent })
+      ]);
+      chapterContent = polishedContent;
+      const finalMemory = memory || { summary, openThreads: [], newFacts: [], characterUpdates: [], continuityChecks: [], nextHook: "" };
+
+      // --- 4. 生成并单独存储嵌入向量 ---
+      if (summary) {
+        fetchEmbedding(summary, baseUrl, apiKey).then(emb => {
+          if (emb) saveChapterEmbedding(novel.id, novel.chapters.length + 1, emb).catch(() => {});
+        }).catch(() => {});
       }
 
       const chapter = {
         index: novel.chapters.length + 1,
         content: chapterContent,
         summary,
-        memory,
-        summaryEmbedding,
+        memory: finalMemory,
+        // summaryEmbedding 已迁移至 chapter_embeddings 表，不再存入 JSON
         wordCount: chapterContent.replace(/\s/g, "").length,
         createdAt: new Date().toISOString()
       };

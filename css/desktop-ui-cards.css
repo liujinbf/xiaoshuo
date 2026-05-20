@@ -1,3 +1,4 @@
+/* ⚠️ 本文件已超过建议行数，请在下次功能迭代时拆分 */
 /* ================================================================
    desktop-ui-components.css — 桌面版设计稿：卡片、面板、组件元素
    ================================================================ */
@@ -423,220 +424,55 @@
   font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
 }
 
-/* 会员弹窗跟随新方向，保留高级感 */
-/* 会员弹窗跟随新方向，保留高级感，强化色彩对比度 */
-#billingModal.modal-backdrop {
-  background: rgba(46, 42, 34, 0.54) !important;
-  backdrop-filter: blur(10px) !important;
-}
+/* ================================================================
+   记忆卡片语义颜色系统（由 data-type 属性驱动）
+   人物→翠绿  场景/地标→木棕  线索/证→青蓝  其他→默认莫兰迪灰
+   ================================================================ */
 
-.billing-modal {
-  background: linear-gradient(165deg, #fffcf7 0%, #f7f1e3 100%) !important;
-  border-color: var(--du-line-strong) !important;
-  box-shadow: 
-    0 24px 72px rgba(47, 40, 28, 0.22),
-    0 0 0 1px rgba(23, 107, 84, 0.06) !important;
-}
-
-/* 顶部皇冠徽章色彩强化 */
-.billing-crown {
-  color: #c27803 !important;
-  background: rgba(217, 119, 6, 0.08) !important;
-  border-color: rgba(217, 119, 6, 0.32) !important;
-}
-
-.billing-head h2,
-.price-amount,
-.price-num,
-.price-unit,
-.pitch-title,
-.route-card .r-name,
-.proposal-card .p-text {
-  color: var(--du-ink) !important;
-}
-
-.billing-subtitle,
-.price-features li,
-.price-card-badge,
-.pay-methods-label,
-.price-period,
-.trial-link,
-.order-qr-tip {
-  color: var(--du-muted) !important;
-}
-
-/* 支付方式标题特殊加深与强化 */
-.pay-methods-label {
-  color: var(--du-ink) !important;
-  font-weight: 700 !important;
-  opacity: 0.85 !important;
-}
-
-/* 价格单位周期后缀字色加深，确保时间一目了然 */
-.price-period {
-  color: var(--du-muted) !important;
-  font-weight: 600 !important;
-  opacity: 0.9 !important;
-}
-
-/* 试用链接字色加深与引导强化 */
-.trial-link {
-  color: var(--du-ink) !important;
-  font-weight: 700 !important;
-  text-decoration: underline !important;
-  opacity: 0.8 !important;
-}
-
-.trial-link:hover {
-  opacity: 1 !important;
-}
-
-/* 加强非 Pro 属性列表的文字可读性 */
-.price-features li {
-  color: #4a463c !important;
-  font-weight: 500;
-}
-
-/* 普通卡片与功能面板 */
-.price-card,
-.order-result-area,
-.pay-method-chip {
-  background: rgba(255, 252, 245, 0.9) !important;
-  border-color: var(--du-line) !important;
-  color: var(--du-ink) !important;
-}
-
-/* 支付方式单选框选中态样式强化 */
-.pay-method-chip.selected {
-  background: var(--du-green-soft) !important;
-  border-color: rgba(23, 107, 84, 0.45) !important;
-  color: var(--du-green) !important;
-}
-
-/* 普通卡片底部的立刻开通按钮 — 彻底解决隐形文字 Bug */
-.price-btn {
-  background: rgba(46, 42, 34, 0.06) !important;
-  border: 1px solid rgba(46, 42, 34, 0.16) !important;
-  color: var(--du-ink) !important;
-  transition: all 0.2s ease;
-}
-.price-btn:hover {
-  background: rgba(46, 42, 34, 0.12) !important;
-  border-color: rgba(46, 42, 34, 0.24) !important;
-  color: var(--du-ink) !important;
-}
-
-.price-card-pro {
-  background: var(--du-green-soft) !important;
-  border-color: rgba(23, 107, 84, 0.36) !important;
-}
-
-/* 年度 Pro 推荐特色卡片列表项目 */
-.price-card-pro .price-features li {
-  color: var(--du-ink) !important;
+.asset-item.memory-card em {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 3px 10px;
+  color: #fffdf7;
+  border-radius: 3px;
+  font-style: normal;
+  font-size: 10px;
   font-weight: 600;
+  margin-top: 8px;
+  letter-spacing: 0.05em;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.08);
+  background: #7d8e82; /* 默认莫兰迪灰绿 */
 }
 
-/* 订单详情面板背景及数据行高对比度优化 */
-.order-result-area {
-  background: #fdfaf2 !important;
-  border: 1px solid rgba(46, 42, 34, 0.12) !important;
+/* 人物类（主角/配角/反派/守护者等含"角"字） */
+.asset-item.memory-card[data-type*="角"] em,
+.asset-item.memory-card[data-type*="人物"] em {
+  background: #5a8a6e !important;
 }
 
-.order-result-row {
-  color: #615c52 !important;
-  border-bottom-color: rgba(46, 42, 34, 0.08) !important;
+/* 场景/地标类 */
+.asset-item.memory-card[data-type="场景"] em,
+.asset-item.memory-card[data-type*="地"] em,
+.asset-item.memory-card[data-type*="场所"] em {
+  background: #8a6e5a !important;
 }
 
-.order-result-row strong {
-  color: var(--du-ink) !important;
-  font-weight: 700;
+/* 线索/证据类 */
+.asset-item.memory-card[data-type*="线索"] em,
+.asset-item.memory-card[data-type*="证"] em,
+.asset-item.memory-card[data-type*="费"] em {
+  background: #5a6e8a !important;
 }
 
-.order-result-row .order-id {
-  color: #7a766e !important;
+/* 第一张卡片（主角）特别标记 */
+.asset-item.memory-card:first-child em {
+  background: #176f56 !important;
+  box-shadow: 0 2px 6px rgba(23, 111, 86, 0.28) !important;
 }
 
-.price-btn-pro,
-.order-pay-btn {
-  background: linear-gradient(135deg, var(--du-green), var(--du-green-2)) !important;
-  color: #ffffff !important;
-  border: none !important;
-}
-.price-btn-pro:hover,
-.order-pay-btn:hover {
-  background: linear-gradient(135deg, #268c71, #136b56) !important;
-  color: #ffffff !important;
-}
-
-@media (max-width: 1380px) {
-  .desktop-toolbar {
-    padding-left: 188px;
-    grid-template-columns: 230px auto auto 1fr auto auto;
-    gap: 12px;
-  }
-
-  .app-shell {
-    grid-template-columns: 150px 310px minmax(500px, 1fr) 280px;
-  }
-
-  .result-grid {
-    grid-template-columns: minmax(500px, 1fr);
-  }
-}
-
-@media (max-width: 1180px) {
-  body {
-    overflow: auto;
-  }
-
-  .desktop-toolbar {
-    padding-left: 12px;
-    grid-template-columns: 1fr;
-    height: auto;
-  }
-
-  .desktop-toolbar-spacer,
-  .desktop-database-button,
-  .desktop-settings-button {
-    display: none;
-  }
-
-  .app-shell {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
-
-  .desktop-rail {
-    display: none;
-  }
-
-  .control-panel {
-    max-height: none;
-  }
-
-  .result-grid,
-  .serial-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .desktop-inspector {
-    border-left: 0;
-    border-top: 1px solid var(--du-line);
-  }
-
-  .main-result,
-  .result-grid > .result-panel:nth-of-type(2),
-  .result-grid > .result-panel:nth-of-type(3),
-  .result-grid > .result-panel:nth-of-type(4),
-  .result-grid > .result-panel:nth-of-type(5),
-  .result-grid > .result-panel:nth-of-type(6),
-  .result-grid > .result-panel:nth-of-type(7),
-  .result-grid > .result-panel:nth-of-type(8),
-  .score-panel,
-  .monetization-panel {
-    grid-column: auto;
-    grid-row: auto;
-  }
+.asset-item.memory-card .memory-meta {
+  font-size: 11px;
+  color: #7a7268;
+  margin: 2px 0;
 }
 

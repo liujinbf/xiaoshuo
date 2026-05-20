@@ -1,0 +1,75 @@
+<form id="storyForm" class="control-form">
+  <div class="panel-title form-title"><span>目</span><h3>短篇方案</h3><button id="randomBtn" class="mini-icon" type="button" title="随机灵感">⟳</button></div>
+  <div class="field-group">
+    <label for="storyTitle">标题</label>
+    <input id="storyTitle" name="storyTitle" type="text" placeholder="雨巷尽头的灯">
+  </div>
+  <div class="field-group">
+    <label for="genre">类型</label>
+    <select id="genre" name="genre">
+      <option value="history">历史错位爽文</option>
+      <option value="rules">规则怪谈脑洞</option>
+      <option value="suspense" selected>悬疑反转</option>
+      <option value="revenge">婚恋复仇</option>
+      <option value="heroine">大女主爽文</option>
+      <option value="family">世情家庭</option>
+      <option value="folklore">中式志怪</option>
+      <option value="workplace">职场内幕</option>
+    </select>
+  </div>
+  <div class="field-group">
+    <label for="theme">一句话概述</label>
+    <textarea id="theme" name="theme" rows="3" placeholder="在一条即将拆迁的老街巷里，一盏常年亮着的灯，照亮了两个迷失的灵魂。"></textarea>
+  </div>
+  <div class="field-group">
+    <label for="storyTopic">主题</label>
+    <input id="storyTopic" name="storyTopic" type="text" placeholder="告别与重逢，记忆与新生">
+  </div>
+  <div class="field-group">
+    <label for="viewpoint">视角</label>
+    <select id="viewpoint" name="viewpoint">
+      <option value="first" selected>第一人称</option>
+      <option value="third">第三人称</option>
+    </select>
+  </div>
+  <div class="field-group">
+    <label for="ending">结尾</label>
+    <select id="ending" name="ending">
+      <option value="twist" selected>二次反转</option>
+      <option value="he">爽感收束</option>
+      <option value="be">遗憾余味</option>
+      <option value="open">开放结局</option>
+    </select>
+  </div>
+  <div class="field-group">
+    <label class="range-label" for="length">目标字数 <output id="lengthOutput">8000 字</output></label>
+    <input id="length" name="length" type="range" min="3000" max="30000" step="500" value="8000">
+  </div>
+  <div class="field-group">
+    <label class="range-label" for="intensity">冲突强度 <output id="intensityOutput">7 / 10</output></label>
+    <input id="intensity" name="intensity" type="range" min="1" max="10" step="1" value="7">
+  </div>
+  <div class="field-group">
+    <span class="section-label">标签</span>
+    <div id="tagCloud" class="tag-cloud"></div>
+    <div id="genreChips" class="tag-cloud hidden-soft"></div>
+  </div>
+  <div class="field-group outline-field">
+    <div class="section-label row-between"><span>大纲结构</span><span class="soft-count">自动生成</span></div>
+    <div id="leftOutlineList" class="left-outline-list"></div>
+  </div>
+  <div class="field-group">
+    <label for="storyNotes">灵感备注</label>
+    <textarea id="storyNotes" name="storyNotes" rows="5" maxlength="500" placeholder="老街、雨夜、旧书店、手写信、木质台灯。"></textarea>
+    <small class="note-counter">0/500</small>
+  </div>
+  <div class="button-row">
+    <button class="primary-action" type="submit">生成方案</button>
+    <button class="icon-action" type="button" title="刷新">⟳</button>
+  </div>
+</form>
+
+<section class="history-panel">
+  <div class="history-heading"><h3>本地草稿</h3></div>
+  <div id="historyList"></div>
+</section>

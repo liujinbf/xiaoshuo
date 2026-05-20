@@ -1,0 +1,32 @@
+<form id="learnForm" class="control-form learn-input-panel">
+  <div class="panel-title"><span>析</span><h3>爆款原文输入</h3></div>
+  <div class="creator-form-fields">
+    <div class="field-group">
+      <label for="learnGenre">原文类型</label>
+      <select id="learnGenre" class="lp-select" style="width:100%; box-sizing:border-box;">
+        <option value="suspense" selected>🔍 悬疑反转</option>
+        <option value="revenge">💔 婚恋复仇</option>
+        <option value="history">⚔️ 历史错位爽文</option>
+        <option value="rules">🧩 规则怪谈脑洞</option>
+        <option value="heroine">👑 大女主爽文</option>
+        <option value="family">🏠 世情家庭</option>
+        <option value="folklore">🐉 中式志怪</option>
+        <option value="workplace">💼 职场内幕</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label>导入原文文件 <span class="lp-label-hint">（.txt，UTF-8）</span></label>
+      <label class="lp-file-zone" for="learnImportTxt" style="display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed var(--du-line); border-radius:8px; padding:16px; cursor:pointer; text-align:center; transition:border-color 0.2s;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span id="learnImportLabel" style="font-size:12px; color:var(--du-muted);">选择文件 / 拖放至此</span>
+        <input id="learnImportTxt" type="file" accept=".txt" style="display:none">
+      </label>
+    </div>
+    <div class="field-group">
+      <label for="learnRawText">粘贴原文内容 <span class="lp-label-hint">（200字以上）</span></label>
+      <textarea id="learnRawText" class="lp-textarea" rows="8" placeholder="将爆款小说或优秀短文粘贴在此，由AI深度提取基因。"></textarea>
+      <div class="lp-char-count" style="text-align: right; font-size: 11px; color: #b0a898; margin-top: 4px;"><span id="learnCharCount">0</span> 字</div>
+    </div>
+    <button id="startLearnBtn" class="lp-btn-primary primary-action" type="button" style="width: 100%; margin-top: 10px;">让 AI 开始拆解学习</button>
+  </div>
+</form>

@@ -66,10 +66,11 @@
 ├── admin.html                 # 管理后台页面
 ├── app.js                     # 前端主入口：事件监听与初始化
 ├── server.js                  # 服务端入口：环境加载、静态文件、API 分发
-├── css/
-│   ├── design-system.css
-│   ├── design-patch.css
-│   └── billing-pro.css
+├── css/                       # 样式表目录
+│   ├── design-system.css      # 核心设计系统与设计词层
+│   ├── billing-pro.css        # 会员 Pro 价格页样式
+│   ├── desktop-ui-*.css       # 桌面版内层 UI 样式
+│   └── *.css                  # 其他组件与页面样式
 ├── js/
 │   ├── auth.js                # 登录、JWT 注入、云端同步
 │   ├── constants.js           # 存储键、配额、模型预设
@@ -77,25 +78,36 @@
 │   ├── utils.js               # 前端通用工具
 │   ├── planner-titles.js      # 盐言故事标题生成
 │   ├── planner-format.js      # 提案包格式化
-│   ├── planner.js             # 短篇方案生成与渲染
+│   ├── planner.js             # 短篇方案生成（纯数据，无 DOM 操作）
+│   ├── planner-render.js      # 短篇方案 UI 渲染与 DOM 交互
 │   ├── planner-history-strategy.js # 历史错位赛道专属策略
 │   ├── ai.js                  # AI 状态、生成请求、一致性检查
 │   ├── billing.js             # 会员配额与支付入口
 │   ├── projects.js            # 草稿历史与本地存储
-│   └── serial.js              # 连载铸造
+│   ├── serial-render.js       # 连载模块 UI 渲染
+│   ├── serial.js              # 连载铸造（章节生成/记忆机制/阅读器）
+│   ├── learning.js            # 爆款拆解学习器（RAG 知识库管理）
+│   ├── desktop-ui.js          # 桌面版 UI 交互
+│   └── admin.js               # 管理后台页面逻辑
 ├── server/
 │   ├── routes/
 │   │   ├── account.js         # 账户、草稿、订单接口
 │   │   ├── admin.js           # 管理后台接口
 │   │   ├── auth.js            # 注册、登录、同步接口
-│   │   ├── novels.js          # 连载接口
-│   │   └── pay.js             # 支付接口
+│   │   ├── novels.js          # 连载接口（章节生成/向量记忆）
+│   │   ├── pay.js             # 支付接口
+│   │   └── inspirations.js    # 爆款拆解学习库接口
 │   └── utils/
-│       ├── db.js              # SQLite 初始化、账号、项目、同步快照等数据访问
+│       ├── db.js              # SQLite 数据访问层（包含向量表）
+│       ├── db-init.js         # 数据库初始化 + WAL 模式 + 结构迁移
+│       ├── vector.js          # 向量工具（fetchEmbedding/cosineSimilarity/extractChatText）
+│       ├── prompts.js         # 连载 Prompt 与 AI 调用封装
+│       ├── draft-prompts.js   # 单篇正文 Prompt 与 AI 调用
+│       ├── knowledge-retrieval.js # RAG 证层局部素材库召回
 │       ├── payment.js         # 支付网关封装
-│       └── prompts.js         # Prompt 与 AI 调用封装
+│       └── security.js        # IP 限流工具
 ├── data/                      # 运行时数据目录，已在 .gitignore 中忽略
-├── DEVELOPMENT_RULES.md       # 开发规则
+├── DEVELOPMENT_RULES.md       # 开发规则（v1.2.0）
 ├── .env.example               # 环境变量模板
 └── package.json
 ```
@@ -222,8 +234,8 @@ APP_URL=http://127.0.0.1:4173
 
 ## 已知限制与下一步
 
-1. `js/planner.js` 已完成标题生成拆分，后续建议继续拆出渲染和一致性检查模块。
-2. 支付宝/微信官方支付仍是骨架实现，上线前必须完成 SDK 接入、验签和金额校验。
-3. SQLite 当前大量使用 JSON 文本字段，后续如需统计、审计和后台运营，应逐步结构化核心字段。
-4. 旧版 `store.json` 迁移逻辑保留在 `server/utils/db.js`，独立 `store.js` 残留已移除。
-5. 默认 `JWT_SECRET` 仅适合本地开发，部署前必须改为强随机密钥。
+1. 支付宝/微信官方支付仍是骨架实现，上线前必须完成 SDK 接入、验签和金额校验。
+2. SQLite 当前大量使用 JSON 文本字段，后续如需统计、审计和后台运营，应逐步结构化核心字段。
+3. 限流在进程重启后清零（内存 Map），多实例或频繁重启场景需进化到 Redis 或 SQLite 持久化限流。
+4. 默认 `JWT_SECRET` 仅适合本地开发，部署前必须改为强随机密钥。
+5. 向量索引（RAG）目前为关键词打分召回，未来可升级为真正的语义向量检索（已备好向量工具基础设施）。

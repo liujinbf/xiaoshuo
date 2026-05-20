@@ -1,0 +1,366 @@
+<div class="world-panel-wrapper" style="width: 96%; max-width: 1360px; margin: 0 auto; padding: 20px 0;">
+
+  <!-- 页面顶部标题及概述 -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px solid var(--du-line); padding-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: grid; place-items: center; color: #fff; font-size: 18px; font-weight: 900; flex-shrink: 0; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);">世</span>
+      <div>
+        <h2 style="font-size: 20px; font-weight: 900; margin: 0; color: var(--du-ink); font-family: 'Noto Serif SC', serif;">世界设定构建舱</h2>
+        <p style="font-size: 12px; color: var(--du-muted); margin: 3px 0 0;">管理核心世界观体系、人物卡池与历史脉络，为 AI 创作提供强力上下文约束</p>
+      </div>
+    </div>
+    <div style="font-size: 11px; color: var(--du-muted); background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.15); padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px;">
+      <span class="world-pulse-dot"></span>
+      <span>设定与小说生成器实时同步中</span>
+    </div>
+  </div>
+
+  <!-- 主体流式双栏网格 -->
+  <div class="world-layout-grid">
+
+    <!-- 左侧：设定目录导航树 (220px) -->
+    <aside class="world-nav-sidebar">
+      <div style="font-size: 10px; font-weight: 700; color: var(--du-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; padding-left: 10px;">设定索引</div>
+      <div class="world-tabs-list">
+        <button class="world-tab-btn active" data-world-tab="characters" type="button">
+          <span class="tab-icon">&#128100;</span>
+          <span class="tab-text">人物卡片池</span>
+        </button>
+        <button class="world-tab-btn" data-world-tab="worldview" type="button">
+          <span class="tab-icon">&#127758;</span>
+          <span class="tab-text">背景世界观</span>
+        </button>
+        <button class="world-tab-btn" data-world-tab="rules" type="button">
+          <span class="tab-icon">&#128220;</span>
+          <span class="tab-text">逻辑规则链</span>
+        </button>
+        <button class="world-tab-btn" data-world-tab="timeline" type="button">
+          <span class="tab-icon">&#128336;</span>
+          <span class="tab-text">故事时间脉络</span>
+        </button>
+      </div>
+      
+      <div class="world-sidebar-decor">
+        <div style="font-size: 11px; line-height: 1.5; color: var(--du-muted); font-style: italic; opacity: 0.85;">"构建出严丝合缝的世界，文字才有无可辩驳的真实。"</div>
+      </div>
+    </aside>
+
+    <!-- 右侧：主要内容操作区 (1fr) -->
+    <main class="world-main-content">
+
+      <!-- 1. 人物设定 PANEL -->
+      <div id="worldTabCharacters" class="world-tab-panel">
+        <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start;">
+          
+          <!-- 左侧：添加人物表单卡 -->
+          <div class="world-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 20px; position: sticky; top: 80px;">
+            <strong style="font-size: 14px; color: var(--du-ink); display: block; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 8px;">+ 登场人物入籍</strong>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div>
+                <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">姓名</label>
+                <input id="charName" type="text" placeholder="如：林笑笑" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink);">
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">角色定位</label>
+                <div style="position: relative;">
+                  <select id="charRole" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); appearance: none; cursor: pointer;">
+                    <option value="protagonist">主角 (女主)</option>
+                    <option value="love">感情线 (男主/配偶)</option>
+                    <option value="antagonist">反派 (对立面)</option>
+                    <option value="mentor">导师/智囊</option>
+                    <option value="supporting">配角/工具人</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">核心动机与秘密</label>
+                <textarea id="charMotive" rows="3" placeholder="这个角色的真实意图是什么？隐藏了什么秘密？（AI 生成冲突的关键）" style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 13px; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; background: var(--du-bg); color: var(--du-ink); font-family: inherit; line-height: 1.5; outline: none;"></textarea>
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">外貌与标志特征 (可选)</label>
+                <textarea id="charAppearance" rows="2" placeholder="衣着风格、神态、习惯动作、标志性口头禅..." style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 13px; padding: 9px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; background: var(--du-bg); color: var(--du-ink); font-family: inherit; line-height: 1.5; outline: none;"></textarea>
+              </div>
+              <button id="addCharBtn" type="button" style="width: 100%; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: all 0.2s;">
+                将角色写入设定
+              </button>
+            </div>
+          </div>
+
+          <!-- 右侧：人物卡片网格列表 -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--du-ink); display: flex; align-items: center; justify-content: space-between;">
+              <span>登场群像卡池</span>
+              <span id="charPoolCount" style="font-size: 11px; font-weight: normal; color: var(--du-muted);"></span>
+            </div>
+            <div id="characterCards" class="character-cards-grid">
+              <div style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; background: var(--du-panel-solid); border: 1px dashed var(--du-line-strong); border-radius: 12px; color: var(--du-muted); font-size: 13px;">
+                暂无人物入籍，请在左侧填写并添加登场人物
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- 2. 世界观 PANEL -->
+      <div id="worldTabWorldview" class="world-tab-panel" hidden>
+        <div class="world-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 24px;">
+          <strong style="font-size: 15px; color: var(--du-ink); display: block; margin-bottom: 20px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">宏大背景世界观设定</strong>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">时代背景 / 科技高度</label>
+              <input id="worldEra" type="text" placeholder="如：当代都市 / 赛博朋克 / 古代修仙 / 架空西方奇幻" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink);">
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">核心活动舞台 / 焦点地点</label>
+              <input id="worldLocation" type="text" placeholder="如：京城顾家府邸 / 荒废的地下实验基地" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; font-size: 13px; background: var(--du-bg); color: var(--du-ink);">
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">社会阶层与权力斗争背景</label>
+            <textarea id="worldSociety" rows="4" placeholder="故事中存在哪些阶级或势力？谁掌握了社会话语权？主角处于怎样的斗争漩涡中？" style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 13px; padding: 10px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; background: var(--du-bg); color: var(--du-ink); font-family: inherit; line-height: 1.6; outline: none;"></textarea>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">特殊底层逻辑与超自然法则 (如有)</label>
+            <textarea id="worldSpecial" rows="4" placeholder="例如：穿越重生的时空闭环法则、修仙的灵根等级与心魔设定、财阀掌控信息素的社会常识等..." style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 13px; padding: 10px 12px; border: 1px solid var(--du-line-strong); border-radius: 8px; background: var(--du-bg); color: var(--du-ink); font-family: inherit; line-height: 1.6; outline: none;"></textarea>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <button id="saveWorldviewBtn" type="button" style="padding: 10px 28px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2); transition: all 0.2s;">
+              保存世界观配置
+            </button>
+            <div id="worldviewSaved" hidden style="font-size: 13px; color: #10b981; font-weight: 600; display: flex; align-items: center; gap: 6px; animation: worldFadeIn 0.3s ease-out;">
+              <span>设定已锁定！AI 撰写正文时将自动遵循该大背景设定。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 规则体系 PANEL -->
+      <div id="worldTabRules" class="world-tab-panel" hidden>
+        <div class="world-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 24px;">
+          <div style="border-bottom: 1px solid var(--du-line); padding-bottom: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong style="font-size: 15px; color: var(--du-ink); display: block;">逻辑约束铁律</strong>
+              <p style="font-size: 12px; color: var(--du-muted); margin: 3px 0 0;">硬性规定故事中"必须发生"或"严禁出现"的行为，从逻辑层面杜绝 AI 写崩或 OOC</p>
+            </div>
+            <button id="addRuleBtn" type="button" style="padding: 6px 14px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 6px; font-size: 12px; font-weight: 700; color: #3b82f6; cursor: pointer; transition: all 0.2s;">
+              + 新增规则条目
+            </button>
+          </div>
+
+          <div id="rulesContainer" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+            <div class="rule-item" style="display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.02); padding: 8px; border-radius: 8px; border: 1px solid var(--du-line);">
+              <select class="rule-type" style="padding: 7px 10px; border: 1px solid var(--du-line-strong); border-radius: 6px; font-size: 12px; background: var(--du-bg); color: var(--du-ink); width: 100px; flex-shrink: 0; outline: none;">
+                <option value="must">必须遵循</option>
+                <option value="cannot">绝对禁止</option>
+                <option value="fact">设定事实</option>
+              </select>
+              <input type="text" class="rule-content" placeholder="输入具体的逻辑制约限制，如：男主对女主的怀疑度在前五章绝不能低于80%" style="flex: 1; padding: 7px 12px; border: 1px solid var(--du-line-strong); border-radius: 6px; font-size: 13px; background: var(--du-bg); color: var(--du-ink); outline: none;">
+              <button class="remove-rule-btn" type="button" style="padding: 7px 10px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px; font-size: 12px; color: #ef4444; cursor: pointer; flex-shrink: 0; transition: all 0.2s;">x</button>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <button id="saveRulesBtn" type="button" style="padding: 10px 28px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2); transition: all 0.2s;">
+              锁定规则库
+            </button>
+            <div id="rulesSaved" hidden style="font-size: 13px; color: #10b981; font-weight: 600; animation: worldFadeIn 0.3s ease-out;">
+              <span>规则库锁定成功，AI 生成各章节时将进行强制一致性对齐。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 时间线 PANEL -->
+      <div id="worldTabTimeline" class="world-tab-panel" hidden>
+        <div class="world-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 24px;">
+          <div style="border-bottom: 1px solid var(--du-line); padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong style="font-size: 15px; color: var(--du-ink); display: block;">故事时间大纪元脉络</strong>
+              <p style="font-size: 12px; color: var(--du-muted); margin: 3px 0 0;">锁定关键剧情节点顺序，理清多线叙事的时空关联（本面板数据已关联自动存盘）</p>
+            </div>
+            <button id="addTimelineBtn" type="button" style="padding: 6px 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 6px; font-size: 12px; font-weight: 700; color: #10b981; cursor: pointer; transition: all 0.2s;">
+              + 添加时间节点
+            </button>
+          </div>
+
+          <div class="timeline-visual-track">
+            <div id="timelineContainer" style="display: flex; flex-direction: column; gap: 0; width: 100%;">
+              <div style="padding: 48px; text-align: center; border: 1px dashed var(--du-line-strong); border-radius: 8px; color: var(--du-muted); font-size: 13px; width: 100%;">
+                时间脉络尚空，点击右上角「添加时间节点」勾勒纪元故事。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+</div>
+
+<style>
+.world-layout-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-top: 16px;
+}
+.world-nav-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 80px;
+}
+.world-tabs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.world-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--du-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease-out;
+}
+.world-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--du-ink);
+}
+.world-tab-btn.active {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.05);
+}
+.world-sidebar-decor {
+  margin-top: 24px;
+  padding: 14px;
+  border-radius: 8px;
+  border-left: 2px solid rgba(59, 130, 246, 0.3);
+  background: rgba(255, 255, 255, 0.01);
+}
+.character-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+.character-card {
+  background: var(--du-panel-solid);
+  border: 1px solid var(--du-line);
+  border-radius: 12px;
+  padding: 18px;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.character-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.character-card .char-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2.5px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+.char-badge.protagonist { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.char-badge.love        { background: rgba(236, 72, 153, 0.12); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.2); }
+.char-badge.antagonist  { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.char-badge.mentor      { background: rgba(59, 130, 246, 0.12); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+.char-badge.supporting  { background: rgba(148, 163, 184, 0.12); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
+.timeline-visual-track {
+  position: relative;
+  padding-left: 20px;
+}
+.timeline-visual-track::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: linear-gradient(180deg, #10b981 0%, rgba(16, 185, 129, 0.1) 100%);
+}
+.timeline-node {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding-bottom: 24px;
+  position: relative;
+  width: 100%;
+}
+.timeline-node::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid var(--du-panel-solid);
+  position: absolute;
+  left: -20px;
+  top: 10px;
+  box-shadow: 0 0 8px #10b981;
+}
+.world-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3b82f6;
+  position: relative;
+}
+.world-pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid #3b82f6;
+  animation: worldPulse 1.8s infinite;
+}
+@keyframes worldPulse {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes worldFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.world-card-glow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+@media (max-width: 960px) {
+  .world-layout-grid {
+    grid-template-columns: 1fr;
+  }
+  .world-nav-sidebar {
+    position: static;
+  }
+  .world-tabs-list {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+}
+</style>
