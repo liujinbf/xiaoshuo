@@ -10,21 +10,27 @@ function buildHook(input, profile) {
   const P = input.viewpoint === "first" ? "我" : `那个${role}`;
   const her = input.viewpoint === "first" ? "我" : "她";
   const theme = sentenceTheme(input.theme);
-  if (input.genre === "suspense" && /死亡通知|失踪男友|手机/.test(input.theme)) {
-    return "我是在失踪男友的旧手机里，看见自己的死亡通知的。通知时间写着明天上午九点十七分，而发件人，是我三天前刚报失踪的男友。";
+  const source = `${input.title || ""} ${input.theme || ""} ${input.notes || ""}`;
+  const evidenceWords = ["死亡通知", "尸检报告", "通话记录", "监控截图", "指纹", "录音", "账本", "合同", "照片", "短信", "规则纸条", "转账记录"];
+  const evidence = evidenceWords.find((word) => source.includes(word)) || "那份证据";
+  if (input.genre === "suspense") {
+    return `${P}把${evidence}摊开时，死者家属还在重复同一句话：“他不可能在现场。”`;
   }
   const matchedHook = Array.isArray(input.matchedInspirations) ? input.matchedInspirations[0]?.hook : "";
-  if (matchedHook) {
-    return `${P}没有先解释来龙去脉，只把最要命的证据摆到桌上。关于“${theme}”，所有人都以为自己只是在旁观，直到那条线索指向了他们。`;
+  if (matchedHook && !matchedHook.includes("【异常线索】")) {
+    return matchedHook
+      .replace(/【主角】/g, P)
+      .replace(/【秘密】|【事件】|【异常线索】/g, theme)
+      .slice(0, 120);
   }
 
   const hooks = [
-    `${P}第一次意识到事情不对，是在“${theme}”被证实的那一刻。所有人都等着看${her}崩溃，只有${her}知道，${secret}。`,
-    `那天${her}发现${secret}时，手里还拿着刚泡好的茶。茶凉了，“${theme}”这件事，却开始烫手了。`,
-    `“你以为我不知道？”${P}把手机屏幕扣在桌上。关于“${theme}”，${her}知道的，比他们以为的多得多。`,
-    `${P}把那份记录推到桌子中央时，对面的人终于不说话了。关于“${theme}”，最先露出破绽的不是证据，而是他们突然变白的脸。`,
-    `${P}没有先争辩，只把录音开到最大声。第一句话响起时，所有人都看向门口，因为“${theme}”里最不该出现的那个人来了。`,
-    `签字笔悬在纸上，${P}忽然停住。那一页最底下多出来的名字，让“${theme}”从一场误会变成了有人提前布好的局。`,
+    `${P}把${evidence}推到桌子中央时，对面的人终于不说话了。`,
+    `“你最好别签。”${P}盯着最后一行名字，忽然明白${secret}。`,
+    `${P}没有接那支笔，只把${evidence}翻到第二页：“这句话，你们谁来解释？”`,
+    `门外的脚步声停下时，${P}刚好看见${evidence}上多出来的那一行字。`,
+    `${P}把录音开到最大声。第一句话响起时，所有人都看向了门口。`,
+    `签字笔悬在纸上，${P}忽然停住。那一页最底下的名字，不该出现在这里。`,
   ];
   return pick(hooks);
 }
@@ -57,64 +63,46 @@ function buildOutline(input, profile) {
 
 function buildDraft(input, profile, hook) {
   const person = input.viewpoint === "first" ? "我" : "她";
-  const other = input.viewpoint === "first" ? "他们" : "那些人";
-  const secret = pick(profile.secrets);
   const theme = sentenceTheme(input.theme);
-  const core = compactTheme(input.theme);
-  const evidence = pick(profile.secrets, 3);
-  const matched = Array.isArray(input.matchedInspirations) ? input.matchedInspirations[0] : null;
-  const knowledgeRhythm = matched
-    ? `${person}没有把事情从头讲起。最危险的事实已经摆在眼前，剩下的每一个细节，都只是把人往更深的地方推。`
-    : "";
-  const genreOpenings = {
-    history: [
-      `${person}把屏幕举起来时，殿里静得只剩烛火噼啪作响。天幕上的字一行行往下滚，写的不是神谕，而是这个王朝后来会付出的代价。`,
-      `第一个反应过来的不是皇帝，而是跪在最前面的老臣。他猛地抬头，像是想把“${core}”这几个字从天上抠下来。`
-    ],
-    rules: [
-      `${person}第一次看见那条规则，是在手机电量只剩百分之七的时候。屏幕没有联网，却弹出一行红字：不要相信第二次响起的门铃。`,
-      `门铃偏偏在这时响了两次。第一次很轻，像有人试探；第二次贴着门缝，声音近得不像在门外。`
-    ],
-    suspense: [
-      `${person}是在失踪男友的旧手机里，看见那条死亡通知的。通知栏只有一行字：明天上午九点十七分，${person}将被确认死亡。`,
-      `手机没有插卡，也没有连网。可那条消息下面，附着一张照片：照片里的${person}站在医院太平间门口，身上穿着今天早上刚换的外套。`
-    ],
-    revenge: [
-      `${person}没有在看到证据的那一刻哭出来。屏幕上那段视频只有三十七秒，却足够把一段婚姻撕开一个干净的口子。`,
-      `${other}以为沉默是认输。可${person}知道，真正能让背叛者疼的，从来不是争吵，是证据按顺序落在桌上的声音。`
-    ],
-    heroine: [
-      `${person}走进会议室时，所有人都以为她是来道歉的。投影屏上还停着那份逼她退场的文件，签名栏空着，像一个早就准备好的羞辱。`,
-      `${person}拉开椅子坐下，没有碰那支笔。她只是把另一份文件推过去，封面上写着四个字：债权转让。`
-    ],
-    family: [
-      `${person}听见母亲说“都是一家人”时，忽然笑了一下。餐桌上每个人都低着头，只有那本账本摊在中间，把这些年的偏心写得清清楚楚。`,
-      `${other}劝${person}别计较。可他们忘了，最伤人的从来不是少分一点钱，而是所有人都默认${person}应该让。`
-    ],
-    folklore: [
-      `${person}回村那晚，雨一直没停。祖祠门口挂着一盏白灯笼，灯油顺着竹骨往下滴，像有人在黑暗里慢慢流血。`,
-      `老人们说那是规矩，外来人不能问，年轻人不能碰。可${person}偏偏在灯笼底下，看见了母亲失踪那年留下的红绳。`
-    ],
-    workplace: [
-      `${person}发现那组异常数据时，办公室已经只剩打印机还亮着灯。报表上的数字被改得很干净，干净到像有人提前知道审计会查哪一列。`,
-      `${other}第二天就让${person}签离职交接。理由写得冠冕堂皇，可附件里少了一份最关键的底稿。`
-    ]
+  const source = `${input.title || ""} ${input.theme || ""} ${input.notes || ""}`;
+  const sceneMap = {
+    history: ["朝堂", "军帐", "城门"],
+    rules: ["电梯口", "宿舍门外", "便利店"],
+    suspense: ["派出所接警台", "医院走廊", "监控室"],
+    revenge: ["婚房客厅", "酒店走廊", "民政局门口"],
+    heroine: ["会议室", "签约现场", "董事会门口"],
+    family: ["餐桌旁", "病房门口", "酒店前台"],
+    folklore: ["祖祠门口", "雨夜村口", "旧宅堂屋"],
+    workplace: ["会议室", "深夜办公室", "审计现场"]
   };
-  const openings = genreOpenings[input.genre] || genreOpenings.suspense;
+  const evidenceWords = ["死亡通知", "尸检报告", "通话记录", "监控截图", "录音", "账本", "合同", "照片", "短信", "规则纸条", "转账记录"];
+  const noteParts = String(input.notes || "")
+    .split(/[，。！？、；：\s]+/)
+    .map((item) => item.trim())
+    .filter((item) => item.length >= 2);
+  const evidence = evidenceWords.find((word) => source.includes(word)) || noteParts.find((item) => /报告|记录|通知|账本|合同|录音|照片|短信|证据|监控/.test(item)) || "那份关键记录";
+  const scene = noteParts.find((item) => /口|室|厅|店|院|局|门|桌|车|村|家/.test(item)) || pick(sceneMap[input.genre] || sceneMap.suspense);
+  const pressure = input.genre === "family"
+    ? "亲戚们都等着我先低头"
+    : input.genre === "workplace"
+      ? "主管把所有责任都推到我身上"
+      : input.genre === "revenge"
+        ? "对面的人笃定我不敢把证据摊开"
+        : "所有人的口供都严丝合缝地对上了";
+  const conflict = source.includes("指纹")
+    ? "死者颈部那枚指纹"
+    : source.includes("死亡时间")
+      ? "双重死亡时间"
+      : "关键时间点";
 
-  const firstParagraph = hook.includes("undefined") ? openings[0] : hook;
-  const skipFirstOpening = firstParagraph.includes("失踪男友的旧手机里") && openings[0].includes("失踪男友的旧手机里");
-  const body = [
-    firstParagraph,
-    ...(knowledgeRhythm ? [knowledgeRhythm] : []),
-    ...(skipFirstOpening ? [] : [openings[0]]),
-    openings[1],
-    `${person}把和“${theme}”有关的所有细节重新排了一遍，终于发现不对劲的地方：${evidence}。这不是巧合，是有人故意把答案放在最显眼的位置，等${person}自己走进去。`,
-    `${other}越是催促，${person}越不能慌。${person}先把原始记录备份，又把时间线写在纸上。每一个看似无关的细节，连起来以后，都指向同一个被藏起来的人。`,
-    `到傍晚时，${person}终于明白，自己面对的不是一场误会，而是一场提前排练好的围猎。可这一次，猎物已经看见了绳套。`,
-    `这不是终点。从这一刻起，${person}要做的不是解释自己为什么无辜，而是让布置这一切的人，亲口说出真相。`
+  return [
+    `${person}站在${scene}，手里攥着${evidence}。${pressure}，可纸上最关键的记录，偏偏和${conflict}对不上。`,
+    `对方说得很快，像是早就排练过。${person}没有打断，只把${evidence}翻到第二页，那里有一个被划掉又重新写上的名字。`,
+    `房间里安静了几秒。有人咳了一声，有人低头看手机。${person}这才意识到，这件事不是谁记错了，而是有人希望所有人都只看见他们准备好的那一部分。`,
+    `“你最好想清楚再说。”对面的人压低声音。`,
+    `${person}抬头看着他，把${evidence}推到桌子中央：“我想得很清楚。现在开始，我们按时间线一件一件对。”`,
+    `第一处破绽，就藏在他们最笃定的那句话里。`
   ];
-  return body.filter((item, index, list) => index === 0 || item !== list[index - 1]);
 }
 
 function buildCharacters(input, profile) {
@@ -388,8 +376,8 @@ function buildPrompt(input, profile, titles, hook, outline, characters, marketBe
 function normalizePlan(plan) {
   const input = plan.input;
   const profile = storyProfiles[input.genre] || plan.profile;
-  const hasBrokenText = (items) => Array.isArray(items) && items.some((item) => String(item).includes("undefined"));
-  const shouldRefreshTemplateText = !plan.schemaVersion || plan.schemaVersion < 5 || hasBrokenText(plan.outline) || hasBrokenText(plan.draft);
+  const hasBrokenText = (items) => Array.isArray(items) && items.some((item) => /undefined|没有先解释|最危险的事实|失踪男友的旧手机|真正的局|只是一个幌子/.test(String(item)));
+  const shouldRefreshTemplateText = !plan.schemaVersion || plan.schemaVersion < 6 || hasBrokenText(plan.outline) || hasBrokenText(plan.draft);
   const titles = shouldRefreshTemplateText ? buildTitles(input, profile) : plan.titles || buildTitles(input, profile);
   const hook = shouldRefreshTemplateText ? buildHook(input, profile) : plan.hook || buildHook(input, profile);
   const outline = plan.outline || buildOutline(input, profile);
@@ -405,7 +393,7 @@ function normalizePlan(plan) {
 
   return {
     ...plan,
-    schemaVersion: 5,
+    schemaVersion: 6,
     profile,
     titles,
     hook,
@@ -439,7 +427,7 @@ function buildPlan(input) {
   const prompt = buildPrompt(input, profile, titles, hook, outline, characters, marketBeats, evidenceChain, dramaEpisodes);
 
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
     createdAt: new Date().toISOString(),
     input,
