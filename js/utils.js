@@ -62,7 +62,10 @@ function collectInput() {
   }
   return {
     genre,
+    title: (data.get("storyTitle") || "").trim(),
     theme: (data.get("theme") || "").trim() || (pool.length > 0 ? pick(pool) : "关于秘密的故事"),
+    topic: (data.get("storyTopic") || "").trim(),
+    notes: (data.get("storyNotes") || "").trim(),
     viewpoint: data.get("viewpoint"),
     ending: data.get("ending"),
     length: Number(data.get("length") || 8000),
