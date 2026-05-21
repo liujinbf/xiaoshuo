@@ -1,12 +1,8 @@
 import { getAllKnowledge, saveKnowledge } from "./db.js";
-import { fetchEmbedding, cosineSimilarity, extractChatText } from "./vector.js";
+import { fetchEmbedding, cosineSimilarity } from "./vector.js";
 import { expandKnowledge } from "./knowledge-expansion-service.js";
-
-
-const getChatUrl = (baseUrl) => {
-  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
-  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
-};
+import { normalizeAiConfig, requestChatCompletion } from "./ai-client.js";
+import { parseAiJsonArray } from "./ai-json.js";
 
 // 全局内存常识索引缓存
 let cachedKnowledgeList = null;
@@ -50,37 +46,23 @@ async function getOrUpdateKnowledgeCache() {
 /**
  * 辅助函数：智能从文本中检测出潜在的历史人物、历史真实事件或科学物理化学专有常识词
  */
-async function detectEntitiesInText(text, apiKey, baseUrl, modelName) {
+async function detectEntitiesInText(text, modelConfig) {
   if (!text || text.trim().length < 5) return [];
   try {
     const systemPrompt = `你是一个网络小说常识实体提取专家。请从给定的文本（可能是小说题材、大纲或生成的段落）中，提取出【最核心的 1-2 个真实发生的历史朝代、历史著名人物、历史真实事件、或者核心科学/物理/化学客观常识概念】。
 例如，如果文本涉及唐朝朱雀街、李世民、玄武门之变、秦始皇、砒霜测毒、真空重力等，请精准把它们作为实体词提取出来。
 请直接输出一个合法的 JSON 数组，例如：["李世民", "玄武门之变"]。禁止使用 markdown 代码块包裹，也不要有任何前言后语。如果没有提取到，输出空数组：[]。`;
-    const res = await fetch(getChatUrl(baseUrl), {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text.slice(0, 1200) } // 取前 1200 字以防超出限制并保障速度
-        ],
-        temperature: 0.0,
-        max_tokens: 60
-      }),
-      signal: AbortSignal.timeout(8000)
+    const { text: responseText } = await requestChatCompletion({
+      modelConfig,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: text.slice(0, 1200) } // 取前 1200 字以防超出限制并保障速度
+      ],
+      temperature: 0.0,
+      maxTokens: 60,
+      timeoutMs: 8000
     });
-
-    if (!res.ok) return [];
-    const data = await res.json();
-    let responseText = extractChatText(data);
-    if (!responseText) return [];
-    
-    responseText = responseText.replace(/```json/gi, "").replace(/```/g, "").trim();
-    const parsed = JSON.parse(responseText);
+    const parsed = parseAiJsonArray(responseText);
     return Array.isArray(parsed) ? parsed.map(s => String(s).trim()).filter(Boolean) : [];
   } catch (e) {
     console.error("[Subject Knowledge Entity Detection] Error detecting entities:", e);
@@ -133,15 +115,12 @@ export async function retrieveSubjectKnowledge({ text = "", limit = 3, modelConf
     }
 
     // 3. 核心机制升级（🆕）：自动检测并联网获取缺席的相关历史/科学常识
-    const cfg = modelConfig || {};
-    const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-    const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-    const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
-    const hasApiKey = apiKey && apiKey !== "sk-your-api-key" && !apiKey.includes("your-api-key");
+    const aiConfig = normalizeAiConfig(modelConfig);
+    const { apiKey, baseUrl, hasApiKey } = aiConfig;
 
     if (hasApiKey && cleanText.length >= 6) {
       console.log(`[RAG Auto Expand] Analyzing text for potential history/science entities...`);
-      const detected = await detectEntitiesInText(cleanText, apiKey, baseUrl, modelName);
+      const detected = await detectEntitiesInText(cleanText, modelConfig);
       
       if (detected.length > 0) {
         console.log(`[RAG Auto Expand] Detected entities: ${JSON.stringify(detected)}`);

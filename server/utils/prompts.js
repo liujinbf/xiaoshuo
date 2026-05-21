@@ -4,14 +4,8 @@
 // ============================================================
 
 export { callOpenAI } from "./draft-prompts.js";
-import { extractChatText } from "./vector.js";
 import { formatKnowledgeForPrompt } from "./knowledge-retrieval-service.js";
-
-
-const getChatUrl = (baseUrl) => {
-  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
-  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
-};
+import { normalizeAiConfig, requestChatCompletion } from "./ai-client.js";
 
 
 // ─── System Prompt ──────────────────────────────────────────
@@ -402,29 +396,17 @@ function localMockScript(payload) {
 }
 
 export async function callOpenAIForScript(payload) {
-  const cfg = payload.modelConfig || {};
-  const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-  const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-  const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
+  const aiConfig = normalizeAiConfig(payload.modelConfig);
+  if (!aiConfig.hasApiKey) return localMockScript(payload);
 
-  const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
-  if (isPlaceholder) return localMockScript(payload);
-
-  const response = await fetch(getChatUrl(baseUrl), {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: modelName,
-      messages: [
-        { role: "system", content: buildScriptSystemPrompt() },
-        { role: "user", content: buildScriptUserPrompt(payload) }
-      ],
-      temperature: 0.65
-    }),
-    signal: AbortSignal.timeout(25000)
+  const { text } = await requestChatCompletion({
+    modelConfig: payload.modelConfig,
+    messages: [
+      { role: "system", content: buildScriptSystemPrompt() },
+      { role: "user", content: buildScriptUserPrompt(payload) }
+    ],
+    temperature: 0.65,
+    timeoutMs: 25000
   });
-
-  const data = await response.json();
-  if (!response.ok) throw new Error(data?.error?.message || "AI 请求失败");
-  return extractChatText(data);
+  return text;
 }

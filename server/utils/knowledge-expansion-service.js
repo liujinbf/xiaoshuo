@@ -1,9 +1,5 @@
-import { extractChatText } from "./vector.js";
-
-const getChatUrl = (baseUrl) => {
-  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
-  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
-};
+import { normalizeAiConfig, requestChatCompletion } from "./ai-client.js";
+import { parseAiJsonObject } from "./ai-json.js";
 
 /**
  * 自动扩充学科常识卡片
@@ -18,13 +14,8 @@ export async function expandKnowledge({ entity, modelConfig }) {
   }
 
   const cleanEntity = entity.trim();
-  const cfg = modelConfig || {};
-  const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-  const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-  const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
-
-  const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
-  if (isPlaceholder) {
+  const aiConfig = normalizeAiConfig(modelConfig);
+  if (!aiConfig.hasApiKey) {
     // 高仿真本地模拟数据兜底，防无 key 崩错
     return mockExpandKnowledge(cleanEntity);
   }
@@ -42,37 +33,16 @@ export async function expandKnowledge({ entity, modelConfig }) {
   const userPrompt = `要扩充的实体: ${cleanEntity}`;
 
   try {
-    const response = await fetch(getChatUrl(baseUrl), {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.3
-      }),
-      signal: AbortSignal.timeout(20000)
+    const { text } = await requestChatCompletion({
+      modelConfig,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.3,
+      timeoutMs: 20000
     });
-
-    if (!response.ok) {
-      throw new Error(`AI 服务请求失败（${response.status}）`);
-    }
-
-    const data = await response.json();
-    let text = extractChatText(data);
-    if (!text) {
-      throw new Error("AI 返回内容为空");
-    }
-
-    // 剔除 markdown 符号
-    text = text.replace(/```json/gi, "").replace(/```/g, "").trim();
-
-    const parsed = JSON.parse(text);
+    const parsed = parseAiJsonObject(text);
     if (!parsed.category || !parsed.entity || !parsed.content) {
       throw new Error("生成的常识数据格式不完整");
     }

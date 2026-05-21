@@ -1,7 +1,7 @@
 import "./server/utils/env.js";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { extname, join, normalize, resolve } from "node:path";
 import jwt from "jsonwebtoken";
 import { handleAccountRoutes } from "./server/routes/account.js";
@@ -16,6 +16,7 @@ import { callOpenAI } from "./server/utils/prompts.js";
 import { retrieveKnowledgeForDraft, retrieveHotTrendsForDraft } from "./server/utils/knowledge-retrieval.js";
 import { retrieveSubjectKnowledge } from "./server/utils/knowledge-retrieval-service.js";
 import { clientIp, throttle } from "./server/utils/security.js";
+import { getJwtSecret, warnIfDefaultJwtSecret } from "./server/utils/auth-config.js";
 
 const rootDir = resolve(".");
 
@@ -100,18 +101,35 @@ function normalizeAccount(account, userId) {
   return next;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "yanxuan-secret-key-123";
-if (!process.env.JWT_SECRET) {
-  console.warn("警告：当前使用默认 JWT_SECRET，仅适合本地开发。公网部署前必须在 .env 中配置强随机密钥。");
+const JWT_SECRET = getJwtSecret();
+warnIfDefaultJwtSecret();
+
+function isLoopbackRequest(request) {
+  const remoteAddress = request.socket?.remoteAddress || "";
+  const host = String(request.headers?.host || "");
+  return remoteAddress === "127.0.0.1"
+    || remoteAddress === "::1"
+    || remoteAddress === "::ffff:127.0.0.1"
+    || host.startsWith("127.0.0.1:")
+    || host.startsWith("localhost:");
+}
+
+function localFallbackUserId(payload, url) {
+  const candidates = [
+    typeof payload?.userId === "string" ? payload.userId.trim() : "",
+    url.searchParams.get("userId")?.trim() || ""
+  ];
+  return candidates.find((item) => /^local_[A-Za-z0-9_-]{8,}$/.test(item)) || "";
 }
 
 function getUserId(request, payload = {}, url = new URL("http://localhost")) {
   const auth = getUserAuth(request);
   if (auth && auth.userId) return auth.userId;
-  const bodyUserId = typeof payload?.userId === "string" ? payload.userId.trim() : "";
-  if (bodyUserId) return bodyUserId;
-  const queryUserId = url.searchParams.get("userId") || "";
-  if (queryUserId.trim()) return queryUserId.trim();
+  const hasAuthHeader = Boolean(request.headers?.authorization);
+  if (process.env.NODE_ENV === "production") return "";
+  if (hasAuthHeader || !isLoopbackRequest(request)) return "";
+  const fallbackUserId = localFallbackUserId(payload, url);
+  if (fallbackUserId) return fallbackUserId;
   return "";
 }
 

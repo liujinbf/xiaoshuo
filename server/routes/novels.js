@@ -13,21 +13,17 @@ import {
   buildOutlineStep2Prompt,
   buildCharacterGenPrompt
 } from "../utils/prompts.js";
-import { fetchEmbedding, cosineSimilarity, extractChatText } from "../utils/vector.js";
+import { fetchEmbedding, cosineSimilarity } from "../utils/vector.js";
 import { retrieveKnowledgeForDraft, retrieveHotTrendsForDraft } from "../utils/knowledge-retrieval.js";
 import { retrieveSubjectKnowledge } from "../utils/knowledge-retrieval-service.js";
-
-
-const getChatUrl = (baseUrl) => {
-  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
-  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
-};
+import { normalizeAiConfig, requestChatCompletion } from "../utils/ai-client.js";
+import { parseAiJsonObject } from "../utils/ai-json.js";
 
 
 function parseChapterMemory(rawText) {
   const raw = String(rawText || "").trim().replace(/^```json\s*|\s*```$/g, "");
   try {
-    const data = JSON.parse(raw);
+    const data = parseAiJsonObject(raw);
     return {
       summary: String(data.summary || "").trim().slice(0, 220),
       openThreads: Array.isArray(data.openThreads) ? data.openThreads.map(String).slice(0, 3) : [],
@@ -61,26 +57,19 @@ function formatMemoryForRecall(chapter) {
   return parts.join("；");
 }
 
-async function polishChapterContent({ baseUrl, apiKey, modelName, chapterContent }) {
+async function polishChapterContent({ modelConfig, chapterContent }) {
   try {
-    const polishRes = await fetch(getChatUrl(baseUrl), {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: buildChapterPolishSystemPrompt() },
-          { role: "user", content: buildChapterPolishUserPrompt(chapterContent) }
-        ],
-        max_tokens: 4200,
-        temperature: 0.55
-      }),
-      signal: AbortSignal.timeout(35000)
+    const { text } = await requestChatCompletion({
+      modelConfig,
+      messages: [
+        { role: "system", content: buildChapterPolishSystemPrompt() },
+        { role: "user", content: buildChapterPolishUserPrompt(chapterContent) }
+      ],
+      maxTokens: 4200,
+      temperature: 0.55,
+      timeoutMs: 35000
     });
-    const polishData = await polishRes.json();
-    if (!polishRes.ok) return chapterContent;
-    const polished = extractChatText(polishData);
-    return polished || chapterContent;
+    return text || chapterContent;
   } catch {
     return chapterContent;
   }
@@ -90,24 +79,19 @@ async function polishChapterContent({ baseUrl, apiKey, modelName, chapterContent
  * 提取章节摘要结构化记忆
  * @returns {Promise<{memory: object, summary: string}>}
  */
-async function extractChapterMemory({ baseUrl, apiKey, modelName, chapterContent }) {
+async function extractChapterMemory({ modelConfig, chapterContent }) {
   try {
-    const sumRes = await fetch(getChatUrl(baseUrl), {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: buildChapterMemoryPrompt() },
-          { role: "user", content: chapterContent }
-        ],
-        max_tokens: 600,
-        temperature: 0.3
-      }),
-      signal: AbortSignal.timeout(25000)
+    const { text } = await requestChatCompletion({
+      modelConfig,
+      messages: [
+        { role: "system", content: buildChapterMemoryPrompt() },
+        { role: "user", content: chapterContent }
+      ],
+      maxTokens: 600,
+      temperature: 0.3,
+      timeoutMs: 25000
     });
-    const sumData = await sumRes.json();
-    const memory = parseChapterMemory(extractChatText(sumData));
+    const memory = parseChapterMemory(text);
     return { memory, summary: memory.summary };
   } catch {
     return { memory: null, summary: "" };
@@ -339,36 +323,27 @@ export async function handleNovelRoutes(request, response, url, helpers) {
       const userId = getUserId(request, payload, url);
       if (!userId) { sendJson(response, 401, { ok: false, message: "请先登录" }); return true; }
 
-      const cfg = payload.modelConfig || {};
-      const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-      const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-      const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
-      if (!apiKey) { sendJson(response, 412, { ok: false, message: "缺少 API Key" }); return true; }
+      const modelConfig = payload.modelConfig || {};
+      const aiConfig = normalizeAiConfig(modelConfig);
+      if (!aiConfig.hasApiKey) { sendJson(response, 412, { ok: false, message: "缺少 API Key" }); return true; }
 
       const userNovels = await getUserNovels(userId);
       const novel = userNovels.find(n => n.id === novelId);
       if (!novel) { sendJson(response, 404, { ok: false, message: "小说不存在" }); return true; }
 
-      const charRes = await fetch(getChatUrl(baseUrl), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [{ role: "user", content: buildCharacterGenPrompt({
+      const { text: characters } = await requestChatCompletion({
+        modelConfig,
+        messages: [{ role: "user", content: buildCharacterGenPrompt({
             title: novel.title,
             genre: novel.genre,
             style: payload.style || "",
             brainstorm: payload.brainstorm || "",
             characterCount: payload.characterCount || {}
           }) }],
-          max_tokens: 5000,
-          temperature: 0.9   // 人物创意最高
-        }),
-        signal: AbortSignal.timeout(90000)
+        maxTokens: 5000,
+        temperature: 0.9, // 人物创意最高
+        timeoutMs: 90000
       });
-      const charData = await charRes.json();
-      if (!charRes.ok) throw new Error(charData?.error?.message || "人物生成失败");
-      const characters = extractChatText(charData);
 
       // 将生成的人物设定存回小说记录
       novel.generatedCharacters = characters;
@@ -392,11 +367,8 @@ export async function handleNovelRoutes(request, response, url, helpers) {
       const userId = getUserId(request, payload, url);
       if (!userId) { sendJson(response, 401, { ok: false, message: "请先登录" }); return true; }
 
-      const cfg = payload.modelConfig || {};
-      const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-      const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-      const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
-      if (!apiKey) { sendJson(response, 412, { ok: false, message: "缺少 API Key" }); return true; }
+      const modelConfig = payload.modelConfig || {};
+      const aiConfig = normalizeAiConfig(modelConfig);
 
       const userNovels = await getUserNovels(userId);
       const novel = userNovels.find(n => n.id === novelId);
@@ -439,8 +411,7 @@ export async function handleNovelRoutes(request, response, url, helpers) {
       };
 
       // 🆕 检测是否为占位符 API Key，若是则进行本地高仿真沙箱降级
-      const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
-      if (isPlaceholder) {
+      if (!aiConfig.hasApiKey) {
         const { setting, chapterOutlines } = localMockOutline(params);
         novel.generatedSetting = setting;
         novel.generatedOutline = chapterOutlines;
@@ -457,36 +428,22 @@ export async function handleNovelRoutes(request, response, url, helpers) {
       }
 
       // 第一步：核心设定（temperature 0.85，创意优先）
-      const step1Res = await fetch(getChatUrl(baseUrl), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [{ role: "user", content: buildOutlineStep1Prompt(params) }],
-          max_tokens: 3000,
-          temperature: 0.85
-        }),
-        signal: AbortSignal.timeout(60000)
+      const { text: step1Result } = await requestChatCompletion({
+        modelConfig,
+        messages: [{ role: "user", content: buildOutlineStep1Prompt(params) }],
+        maxTokens: 3000,
+        temperature: 0.85,
+        timeoutMs: 60000
       });
-      const step1Data = await step1Res.json();
-      if (!step1Res.ok) throw new Error(step1Data?.error?.message || "第一步大纲生成失败");
-      const step1Result = extractChatText(step1Data);
 
       // 第二步：章节大纲（temperature 0.7，结构优先）
-      const step2Res = await fetch(getChatUrl(baseUrl), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [{ role: "user", content: buildOutlineStep2Prompt(params, step1Result) }],
-          max_tokens: 4000,
-          temperature: 0.7
-        }),
-        signal: AbortSignal.timeout(90000)
+      const { text: step2Result } = await requestChatCompletion({
+        modelConfig,
+        messages: [{ role: "user", content: buildOutlineStep2Prompt(params, step1Result) }],
+        maxTokens: 4000,
+        temperature: 0.7,
+        timeoutMs: 90000
       });
-      const step2Data = await step2Res.json();
-      if (!step2Res.ok) throw new Error(step2Data?.error?.message || "第二步大纲生成失败");
-      const step2Result = extractChatText(step2Data);
 
       // 把生成的大纲存回小说记录
       novel.generatedSetting = step1Result;
@@ -521,11 +478,9 @@ export async function handleNovelRoutes(request, response, url, helpers) {
       if (!novel) { sendJson(response, 404, { ok: false, message: "小说不存在" }); return true; }
 
       // 解析模型配置
-      const cfg = payload.modelConfig || {};
-      const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-      const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-      const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
-      if (!apiKey) { sendJson(response, 412, { ok: false, message: "缺少 API Key，请在模型配置面板填写" }); return true; }
+      const modelConfig = payload.modelConfig || {};
+      const aiConfig = normalizeAiConfig(modelConfig);
+      if (!aiConfig.hasApiKey) { sendJson(response, 412, { ok: false, message: "缺少 API Key，请在模型配置面板填写" }); return true; }
 
       // --- 1. 向量记忆召回（从独立表读取） ---
       let relevantMemory = "";
@@ -580,42 +535,39 @@ export async function handleNovelRoutes(request, response, url, helpers) {
       const combinedText = `${novel.title} ${novel.outline} ${novel.characters}`;
       const matchedSubjectKnowledge = await retrieveSubjectKnowledge({
         text: combinedText,
-        limit: 3
+        limit: 3,
+        modelConfig
       });
 
       // --- 2. 生成章节正文 ---
-      const contentRes = await fetch(getChatUrl(baseUrl), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [
-            { role: "system", content: buildChapterSystemPrompt() },
-            { role: "user", content: buildChapterUserPrompt(novel, relevantMemory, matchedInspirations, matchedSubjectKnowledge) }
-          ],
-          max_tokens: 4000,
-          temperature: 0.88,
+      const { text: generatedContent } = await requestChatCompletion({
+        modelConfig,
+        messages: [
+          { role: "system", content: buildChapterSystemPrompt() },
+          { role: "user", content: buildChapterUserPrompt(novel, relevantMemory, matchedInspirations, matchedSubjectKnowledge) }
+        ],
+        maxTokens: 4000,
+        temperature: 0.88,
+        extraBody: {
           frequency_penalty: 0.3,
           presence_penalty: 0.1
-        }),
-        signal: AbortSignal.timeout(60000)
+        },
+        timeoutMs: 60000
       });
-      const contentData = await contentRes.json();
-      if (!contentRes.ok) throw new Error(extractChatText(contentData) || contentData?.error?.message || `AI 请求失败（${contentRes.status}）`);
-      let chapterContent = extractChatText(contentData);
+      let chapterContent = generatedContent;
       if (!chapterContent) throw new Error("AI 返回内容为空");
 
       // --- 3. 润色 + 摘要提取 并行执行 ---
       const [polishedContent, { memory, summary }] = await Promise.all([
-        polishChapterContent({ baseUrl, apiKey, modelName, chapterContent }),
-        extractChapterMemory({ baseUrl, apiKey, modelName, chapterContent })
+        polishChapterContent({ modelConfig, chapterContent }),
+        extractChapterMemory({ modelConfig, chapterContent })
       ]);
       chapterContent = polishedContent;
       const finalMemory = memory || { summary, openThreads: [], newFacts: [], characterUpdates: [], continuityChecks: [], nextHook: "" };
 
       // --- 4. 生成并单独存储嵌入向量 ---
       if (summary) {
-        fetchEmbedding(summary, baseUrl, apiKey).then(emb => {
+        fetchEmbedding(summary, aiConfig.baseUrl, aiConfig.apiKey).then(emb => {
           if (emb) saveChapterEmbedding(novel.id, novel.chapters.length + 1, emb).catch(() => {});
         }).catch(() => {});
       }

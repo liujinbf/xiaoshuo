@@ -1004,18 +1004,7 @@ function cleanAndParseJson(text) {
     });
     return JSON.parse(healed);
   } catch (err2) {
-    console.warn("[cleanAndParseJson] 高级自愈解析失败，启动终极 Function 降级解构...", err2);
-  }
-
-  // 5. 第三阶段：终极 Function 降级解构（绝对解困底牌，能完美兼容单引号、无引号键名等所有 JS 对象字面量语法）
-  try {
-    const obj = (new Function(`return (${clean})`))();
-    if (obj && typeof obj === "object") {
-      console.log("[cleanAndParseJson] 恭喜！通过终极 Function 评测器成功自愈解析 JSON 数据！");
-      return obj;
-    }
-  } catch (err3) {
-    console.error("[cleanAndParseJson] 所有 JSON 解析自愈阶段均宣告失败！", err3);
+    console.warn("[cleanAndParseJson] 高级自愈解析失败。为避免执行不可信模型输出，已拒绝 Function 降级解析。", err2);
   }
 
   throw new Error("AI 返回的数据不符合标准 JSON 格式且无法自动纠错");

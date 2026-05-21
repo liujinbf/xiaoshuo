@@ -1,10 +1,7 @@
 import { randomUUID } from "crypto";
 import { saveGenreTrend, getGenreTrends, getGenreTrendById, saveInspiration, clearGenreTrends } from "../utils/db.js";
-
-const getChatUrl = (baseUrl) => {
-  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
-  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
-};
+import { normalizeAiConfig, requestChatCompletion } from "../utils/ai-client.js";
+import { parseAiJsonObject } from "../utils/ai-json.js";
 
 // === 高仿真离线静态热门题材种子数据 (12 款，知乎/番茄平台代表作风格) ===
 const STATIC_TRENDS = [
@@ -424,18 +421,13 @@ export async function handleTrendsRoutes(request, response, url, { sendJson, rea
       const body = await readJson(request);
       const { modelConfig } = body;
 
-      const cfg = modelConfig || {};
-      const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-      const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-      const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
-
-      const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
+      const aiConfig = normalizeAiConfig(modelConfig);
       
       let collectedList = [];
       let isAiGenerated = false;
 
       // 智能判定：只有在非 placeholder 且网络通畅时，才调用 AI 大模型进行热门爆款趋势逆向合成
-      if (!isPlaceholder) {
+      if (aiConfig.hasApiKey) {
         try {
           const systemPrompt = `你是一个顶级的小说流行趋势数据分析师。请针对当前时间（${new Date().toISOString()}）分析并模拟 知乎盐选短篇故事 和 番茄小说 平台的当前最新热门题材趋势与爆款小说。
 请针对这两个平台，各生成 4 个最具当下市场流行特色的题材，并各自拟定一个极其逼真的爆款小说名字。
@@ -461,26 +453,18 @@ export async function handleTrendsRoutes(request, response, url, { sendJson, rea
   ]
 }`;
 
-          const apiResponse = await fetch(getChatUrl(baseUrl), {
-            method: "POST",
-            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: modelName,
-              messages: [{ role: "system", content: systemPrompt }],
-              max_tokens: 1500,
-              temperature: 0.7,
-              response_format: { type: "json_object" }
-            }),
-            signal: AbortSignal.timeout(45000)
+          const { text } = await requestChatCompletion({
+            modelConfig,
+            messages: [{ role: "system", content: systemPrompt }],
+            maxTokens: 1500,
+            temperature: 0.7,
+            responseFormat: { type: "json_object" },
+            timeoutMs: 45000
           });
-
-          const data = await apiResponse.json();
-          if (apiResponse.ok && data?.choices?.[0]?.message?.content) {
-            const parsed = JSON.parse(data.choices[0].message.content.trim());
-            if (Array.isArray(parsed.trends) && parsed.trends.length > 0) {
-              collectedList = parsed.trends;
-              isAiGenerated = true;
-            }
+          const parsed = parseAiJsonObject(text);
+          if (Array.isArray(parsed.trends) && parsed.trends.length > 0) {
+            collectedList = parsed.trends;
+            isAiGenerated = true;
           }
         } catch (apiErr) {
           console.warn(`[Trends API] AI 动态合成失败，触发高仿真沙箱降级机制: ${apiErr.message}`);
@@ -556,16 +540,11 @@ export async function handleTrendsRoutes(request, response, url, { sendJson, rea
       const parsedAnalysis = typeof trend.analysis === "string" ? JSON.parse(trend.analysis) : trend.analysis;
 
       // 2. 调用 AI 深度提炼指纹或进入高仿真模板匹配
-      const cfg = modelConfig || {};
-      const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-      const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-      const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
-
-      const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
+      const aiConfig = normalizeAiConfig(modelConfig);
       
       let inspirationData = null;
 
-      if (!isPlaceholder) {
+      if (aiConfig.hasApiKey) {
         try {
           const systemPrompt = `你是一名拥有十年经验的顶级网文拆解大师。我们将为你提供一个当前的流行热门题材：
 小说名字：《${trend.novel_title}》
@@ -596,33 +575,25 @@ export async function handleTrendsRoutes(request, response, url, { sendJson, rea
   }
 }`;
 
-          const apiResponse = await fetch(getChatUrl(baseUrl), {
-            method: "POST",
-            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: modelName,
-              messages: [{ role: "system", content: systemPrompt }],
-              max_tokens: 1500,
-              temperature: 0.5,
-              response_format: { type: "json_object" }
-            }),
-            signal: AbortSignal.timeout(45000)
+          const { text } = await requestChatCompletion({
+            modelConfig,
+            messages: [{ role: "system", content: systemPrompt }],
+            maxTokens: 1500,
+            temperature: 0.5,
+            responseFormat: { type: "json_object" },
+            timeoutMs: 45000
           });
-
-          const data = await apiResponse.json();
-          if (apiResponse.ok && data?.choices?.[0]?.message?.content) {
-            const parsed = JSON.parse(data.choices[0].message.content.trim());
-            inspirationData = {
-              id: `trend_convert_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-              user_id: userId,
-              genre: trend.mapped_genre,
-              theme: parsed.theme,
-              hook: parsed.hook,
-              outline: parsed.outline,
-              raw_text: `逆向工程还原的网文大纲基因库。取材自热门趋势小说《${trend.novel_title}》。\n分析要点：${parsed.rawSample || ""}`,
-              fingerprint: parsed.fingerprint
-            };
-          }
+          const parsed = parseAiJsonObject(text);
+          inspirationData = {
+            id: `trend_convert_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+            user_id: userId,
+            genre: trend.mapped_genre,
+            theme: parsed.theme,
+            hook: parsed.hook,
+            outline: parsed.outline,
+            raw_text: `逆向工程还原的网文大纲基因库。取材自热门趋势小说《${trend.novel_title}》。\n分析要点：${parsed.rawSample || ""}`,
+            fingerprint: parsed.fingerprint
+          };
         } catch (apiErr) {
           console.warn(`[Trend Convert API] AI 提炼失败，触发高仿真沙箱降级: ${apiErr.message}`);
         }

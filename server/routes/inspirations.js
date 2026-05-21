@@ -1,11 +1,7 @@
 import { randomUUID } from "crypto";
 import { saveInspiration, getInspirations, deleteInspiration, clearInspirations } from "../utils/db.js";
-
-const getChatUrl = (baseUrl) => {
-  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
-  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
-};
-
+import { normalizeAiConfig, requestChatCompletion } from "../utils/ai-client.js";
+import { parseAiJsonObject } from "../utils/ai-json.js";
 
 const AD_LINE_PATTERNS = [
   /公\s*[|/\\.[\]（）()【】]*\s*(?:众|主)\s*[|/\\.[\]（）()【】]*\s*号/i,
@@ -174,13 +170,9 @@ function localMockDissect(rawText, genre) {
 // ─── 合并版 AI 拆解：同时返回 theme/hook/outline + 指纹参数 ───
 async function callOpenAIDissect({ rawText, genre, modelConfig }) {
   const cleanedRawText = cleanImportedRawText(rawText);
-  const cfg = modelConfig || {};
-  const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-  const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-  const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
+  const aiConfig = normalizeAiConfig(modelConfig);
 
-  const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
-  if (isPlaceholder) {
+  if (!aiConfig.hasApiKey) {
     throw new Error("检测到 AI 密钥未配置或使用的是默认 Placeholder 密钥。请先在系统设置中配置有效的 API Key，本地模板已被禁用。");
   }
 
@@ -224,46 +216,25 @@ ${genreFocus}
   const userPrompt = `【文章题材】${genre}\n【爆款原文】\n${cleanedRawText.slice(0, 6000)}`;
 
   try {
-    const apiResponse = await fetch(getChatUrl(baseUrl), {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 1800,
-        temperature: 0.4,
-        response_format: { type: "json_object" }
-      }),
-      signal: AbortSignal.timeout(60000)
+    const { text } = await requestChatCompletion({
+      modelConfig,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      maxTokens: 1800,
+      temperature: 0.4,
+      responseFormat: { type: "json_object" },
+      timeoutMs: 60000
     });
-
-    const data = await apiResponse.json();
-    if (!apiResponse.ok) {
-      const message = data?.error?.message || `AI 拆解失败（${apiResponse.status}）`;
-      const error = new Error(message);
-      error.statusCode = apiResponse.status;
-      throw error;
-    }
-
-    const text = (data?.choices?.[0]?.message?.content || "").trim();
-    if (!text) throw new Error("AI 拆解返回内容为空");
-
-    let cleanText = text;
-    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) cleanText = jsonMatch[0];
-    else cleanText = cleanText.replace(/^```[a-z]*\s*/i, "").replace(/```\s*$/, "").trim();
-
-    const parsed = JSON.parse(cleanText);
+    const parsed = parseAiJsonObject(text);
     if (!isValidDissection(parsed)) {
       throw new Error("AI 拆解结果未通过内容合规校验（可能包含广告噪音、空白字段或格式异常）");
     }
     return parsed;
   } catch (err) {
     console.warn(`[DB Dissect] AI 失败: ${err.message}`);
-    throw new Error(`AI模型链接或调用失败！请检查 API 密钥、接口地址（Base URL: ${baseUrl}）是否正确，或网络是否通畅。错误详情: ${err.message}`);
+    throw new Error(`AI模型链接或调用失败！请检查 API 密钥、接口地址（Base URL: ${aiConfig.baseUrl}）是否正确，或网络是否通畅。错误详情: ${err.message}`);
   }
 }
 

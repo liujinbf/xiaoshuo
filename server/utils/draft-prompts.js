@@ -3,14 +3,8 @@
 // ============================================================
 
 import { assessDraftQuality } from "./draft-quality.js";
-import { extractChatText } from "./vector.js";
 import { formatKnowledgeForPrompt } from "./knowledge-retrieval-service.js";
-
-
-const getChatUrl = (baseUrl) => {
-  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
-  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
-};
+import { normalizeAiConfig, requestChatCompletion } from "./ai-client.js";
 
 
 
@@ -521,33 +515,24 @@ export function localMockGenerate(payload) {
   ].join("\n");
 }
 
-async function polishGeneratedDraft({ baseUrl, apiKey, modelName, payload, text }) {
+async function polishGeneratedDraft({ modelConfig, payload, text }) {
   if (payload.mode === "polish" || payload.mode === "audit" || payload.mode === "plan" || payload.mode === "apply_audit" || (payload.mode && payload.mode.startsWith("world_"))) return text;
   const quality = assessDraftQuality(text, payload.input);
   const qualityInstruction = quality.ok
     ? ""
     : `\n【必须修复的问题】\n${quality.issues.map((item, index) => `${index + 1}. ${item}`).join("\n")}`;
   try {
-    const polishResponse = await fetch(getChatUrl(baseUrl), {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: buildDraftPolishSystemPrompt(payload.input) },
-          { role: "user", content: buildDraftPolishUserPrompt(payload.input, text) + qualityInstruction }
-        ],
-        max_tokens: payload.mode === "rewrite" ? 1300 : 2800,
-        temperature: 0.42
-      }),
-      signal: AbortSignal.timeout(30000)
+    const { text: polishedText } = await requestChatCompletion({
+      modelConfig,
+      messages: [
+        { role: "system", content: buildDraftPolishSystemPrompt(payload.input) },
+        { role: "user", content: buildDraftPolishUserPrompt(payload.input, text) + qualityInstruction }
+      ],
+      maxTokens: payload.mode === "rewrite" ? 1300 : 2800,
+      temperature: 0.42,
+      timeoutMs: 30000
     });
-    const data = await polishResponse.json();
-    if (!polishResponse.ok) return text;
-    return extractChatText(data) || text;
+    return polishedText || text;
   } catch {
     return text;
   }
@@ -770,41 +755,23 @@ export function buildUserPrompt(payload) {
 }
 
 export async function callOpenAI(payload) {
-  const cfg = payload.modelConfig || {};
-  const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
-  const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-  const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
-  const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
-  if (isPlaceholder) return localMockGenerate(payload);
+  const aiConfig = normalizeAiConfig(payload.modelConfig);
+  if (!aiConfig.hasApiKey) return localMockGenerate(payload);
 
-  const apiResponse = await fetch(getChatUrl(baseUrl), {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: modelName,
-      messages: [
-        { role: "system", content: buildSystemPrompt(payload.genreStats || null, payload.mode) },
-        { role: "user", content: buildUserPrompt(payload) }
-      ],
-      max_tokens: payload.mode === "plan" ? 4000 : (payload.mode === "rewrite" ? 1200 : 2600),
-      temperature: payload.mode === "plan" ? 0.88 : (payload.mode === "polish" ? 0.72 : 0.88),
+  const { text } = await requestChatCompletion({
+    modelConfig: payload.modelConfig,
+    messages: [
+      { role: "system", content: buildSystemPrompt(payload.genreStats || null, payload.mode) },
+      { role: "user", content: buildUserPrompt(payload) }
+    ],
+    maxTokens: payload.mode === "plan" ? 4000 : (payload.mode === "rewrite" ? 1200 : 2600),
+    temperature: payload.mode === "plan" ? 0.88 : (payload.mode === "polish" ? 0.72 : 0.88),
+    extraBody: {
       frequency_penalty: 0.35,
-      presence_penalty: 0.2,
-    }),
-    signal: AbortSignal.timeout(120000)
+      presence_penalty: 0.2
+    },
+    timeoutMs: 120000
   });
-
-  const data = await apiResponse.json();
-  if (!apiResponse.ok) {
-    const message = data?.error?.message || `AI 请求失败（${apiResponse.status}）`;
-    const error = new Error(message);
-    error.statusCode = apiResponse.status;
-    throw error;
-  }
-  const text = extractChatText(data);
   if (!text) throw new Error("AI 返回内容为空，请检查模型配置。");
-  return polishGeneratedDraft({ baseUrl, apiKey, modelName, payload, text });
+  return polishGeneratedDraft({ modelConfig: payload.modelConfig, payload, text });
 }

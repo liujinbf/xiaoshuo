@@ -9,8 +9,9 @@ import {
 } from "../utils/db.js";
 
 import { clientIp, throttle, clearThrottle } from "../utils/security.js";
+import { getJwtSecret } from "../utils/auth-config.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "yanxuan-secret-key-123";
+const JWT_SECRET = getJwtSecret();
 
 const SCRYPT_PREFIX = "scrypt";
 const SCRYPT_KEY_LENGTH = 64;
