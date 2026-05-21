@@ -63,9 +63,10 @@
     <textarea id="storyNotes" name="storyNotes" rows="5" maxlength="500" placeholder="老街、雨夜、旧书店、手写信、木质台灯。"></textarea>
     <small class="note-counter">0/500</small>
   </div>
-  <div class="button-row">
-    <button class="primary-action" type="submit">生成方案</button>
-    <button class="icon-action" type="button" title="刷新">⟳</button>
+  <div class="button-row" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px;">
+    <button class="primary-action" type="submit" style="flex: 1; min-width: 80px;">极速方案</button>
+    <button id="aiPlanBtn" class="primary-action" type="button" style="flex: 2; min-width: 140px; background: linear-gradient(135deg, #6366f1, #a855f7); border: none; color: #fff; cursor: pointer; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(168, 85, 247, 0.5)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 12px rgba(168, 85, 247, 0.35)';">✨ AI 深度方案</button>
+    <button class="icon-action" type="button" title="刷新" style="flex-shrink: 0; width: 36px; display: flex; align-items: center; justify-content: center;">⟳</button>
   </div>
 </form>
 

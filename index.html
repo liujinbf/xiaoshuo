@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>盐选短篇故事工作台</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <link rel="stylesheet" href="css/font-system.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
@@ -12,12 +15,13 @@
   <link rel="stylesheet" href="css/serial.css">
   <link rel="stylesheet" href="css/desktop-ui-shell.css">
   <link rel="stylesheet" href="css/desktop-ui-panels.css">
-  <link rel="stylesheet" href="css/desktop-ui-editor.css">
+  <link rel="stylesheet" href="css/desktop-ui-editor.css?v=20260521-mode-grid">
   <link rel="stylesheet" href="css/desktop-ui-cards.css">
   <link rel="stylesheet" href="css/desktop-ui-widgets.css">
-  <link rel="stylesheet" href="css/desktop-restoration.css">
+  <link rel="stylesheet" href="css/desktop-restoration.css?v=20260521-mode-grid">
   <link rel="stylesheet" href="css/model-config-panel.css">
-  <link rel="stylesheet" href="css/learn-panel.css">
+  <link rel="stylesheet" href="css/learn-panel.css?v=20260521-cache-rebuild">
+  <link rel="stylesheet" href="css/learning-trends.css?v=20260521-cache-rebuild">
 </head>
 <body class="layout-short">
   <!-- 1. 窗口标题栏 -->
@@ -90,31 +94,32 @@
         <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
         <strong>世界设定</strong>
       </button>
-      <button class="desktop-rail-item" data-click-target="#tabShort" type="button">
+      <button class="desktop-rail-item" data-click-target="#tabShort" data-view-mode="card" type="button">
         <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
         <strong>记忆卡片</strong>
       </button>
-      <button class="desktop-rail-item" data-click-target="#tabShort" type="button">
+      <button class="desktop-rail-item" data-click-target="#tabShort" data-view-mode="check" type="button">
         <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
         <strong>一致检查</strong>
       </button>
-      <button class="desktop-rail-item" data-click-target="#tabLearn" type="button">
+      <button class="desktop-rail-item" data-click-target="#tabLearn" data-view-mode="learn" type="button">
         <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
         <strong>爆款拆解</strong>
       </button>
-      <button class="desktop-rail-item" data-click-target="#tabLearn" type="button">
+      <button class="desktop-rail-item" data-click-target="#tabLearn" data-view-mode="trends" type="button">
+        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+        <strong>趋势看板</strong>
+      </button>
+      <button class="desktop-rail-item" data-click-target="#tabLearn" data-view-mode="db" type="button">
         <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg></span>
         <strong>本地数据库</strong>
       </button>
       <div class="rail-sep"></div>
-      <button class="desktop-rail-item" data-click-target="#tabShort" type="button">
+      <button class="desktop-rail-item" data-click-target="#tabShort" data-view-mode="quota" type="button">
         <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
         <strong>今日配额</strong>
       </button>
-      <button class="desktop-rail-item" data-click-target="#settingsBtn" type="button">
-        <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-        <strong>设置</strong>
-      </button>
+
       <button class="desktop-rail-item" id="railAdminBtn" data-click-target="#tabAdmin" type="button" style="display:none;">
         <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
         <strong>系统后台</strong>
@@ -208,7 +213,7 @@
 
       await Promise.all(templates.map(async (tpl) => {
         try {
-          const res = await fetch(tpl.url);
+          const res = await fetch(tpl.url + '?v=20260521-cache-rebuild');
           if (res.ok) {
             const html = await res.text();
             document.getElementById(tpl.id).innerHTML = html;
@@ -236,8 +241,11 @@
         "js/projects.js",
         "js/serial-render.js",
         "js/serial.js",
+        "js/learning-db.js",
         "js/learning.js",
-        "js/desktop-ui.js",
+        "js/learning-subject.js",
+        "js/learning-trends.js",
+        "js/desktop-ui.js?v=20260521-focus-mode",
         "js/task-world.js",
         "js/admin-panel.js",
         "app.js?v=20260521-modular-rebuild"
@@ -246,7 +254,8 @@
       for (const src of scripts) {
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
-          script.src = src;
+          const separator = src.includes('?') ? '&' : '?';
+          script.src = src + separator + 'v=20260521-cache-rebuild';
           script.onload = resolve;
           script.onerror = reject;
           document.body.appendChild(script);

@@ -27,8 +27,42 @@
         <p class="lp-empty-hint">粘贴爆款原文并点击「让 AI 开始拆解学习」</p>
       </div>
 
+      <!-- 智能拆解实时分析流 (AI网文基因反编译终端) -->
+      <div id="learnLoadingState" class="lp-loading-panel lp-hide">
+        <div class="lp-loading-header">
+          <div class="lp-loading-spinner-wrapper">
+            <div class="lp-loading-ring"></div>
+            <div class="lp-loading-core">🧬</div>
+          </div>
+          <div class="lp-loading-titles">
+            <h3 class="lp-loading-title">AI 网文基因反编译终端</h3>
+            <p class="lp-loading-subtitle">正在进行高维拆解与基因指纹图谱逆向工程...</p>
+          </div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="lp-loading-progress-container">
+          <div class="lp-loading-progress-track">
+            <div class="lp-loading-progress-bar" id="learnLoadingProgressBar" style="width: 0%;"></div>
+          </div>
+          <span class="lp-loading-progress-text" id="learnLoadingProgressVal">0%</span>
+        </div>
+
+        <!-- 终端日志/步骤流 -->
+        <div class="lp-loading-steps" id="learnLoadingSteps">
+          <!-- 由 JS 动态装载 4 大反编译步骤项 -->
+        </div>
+      </div>
+
+
       <!-- 结果卡片 -->
       <div id="learnResultArea" class="lp-result-cards">
+        <!-- 🤖 智能检测归档标签 -->
+        <div class="lp-detected-badge-container" id="learnResultGenreBadgeContainer" style="display:none; align-items:center; gap:8px; margin-bottom:4px;">
+          <span class="lp-detected-label">🤖 智能题材识别：</span>
+          <span class="lp-detected-badge" id="learnResultGenreBadge">分析中...</span>
+        </div>
+
         <!-- 主题 -->
         <div class="lp-result-card lp-result-theme">
           <div class="lp-result-card-label">
@@ -53,8 +87,93 @@
           <pre id="learnResultOutline" class="lp-result-outline"></pre>
         </div>
 
+        <!-- 🧬 写作基因与指纹诊断 -->
+        <div class="lp-result-card lp-fingerprint-card" id="learnResultFpCard" style="display:none;">
+          <div class="lp-result-card-label">
+            <span class="lp-result-dot lp-dot-purple"></span>🧬 写作基因与指纹诊断
+          </div>
+          <div class="lp-fingerprint-grid">
+            <!-- 节奏与语言列 -->
+            <div class="lp-fg-column">
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">⚡ 开篇切入节奏</span>
+                <span class="lp-fg-value lp-star-rating" id="learnResultFpSpeed">★★★★★</span>
+              </div>
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">💬 核心对话占比</span>
+                <div class="lp-progress-wrapper">
+                  <div class="lp-progress-track">
+                    <div class="lp-progress-bar" id="learnResultFpDialogueBar" style="width: 45%;"></div>
+                  </div>
+                  <span class="lp-progress-text" id="learnResultFpDialogueVal">45%</span>
+                </div>
+              </div>
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">✍️ 核心句式风格</span>
+                <span class="lp-fg-value lp-badge-outline" id="learnResultFpSentence">短长混合</span>
+              </div>
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">💥 首个冲突位置</span>
+                <span class="lp-fg-value" id="learnResultFpConflict">第 3 句</span>
+              </div>
+            </div>
+            
+            <!-- 视角与张力列 -->
+            <div class="lp-fg-column">
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">👁️ 叙事视角风格</span>
+                <span class="lp-fg-value lp-badge-purple" id="learnResultFpVoice">第一人称沉浸</span>
+              </div>
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">🎭 情绪冲突基调</span>
+                <span class="lp-fg-value lp-badge-amber" id="learnResultFpTone">克制冷静</span>
+              </div>
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">⚖️ 核心冲突压力</span>
+                <span class="lp-fg-value lp-badge-red" id="learnResultFpPressure">生命威胁+情感</span>
+              </div>
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">🚪 常见场景类型</span>
+                <span class="lp-fg-value" id="learnResultFpScene">密闭居所</span>
+              </div>
+              <div class="lp-fg-indicator">
+                <span class="lp-fg-label">✂️ 常用断章技巧</span>
+                <span class="lp-fg-value lp-badge-blue" id="learnResultFpEnding">悬念留白</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✍️ 原文金句与高光提取 -->
+        <div class="lp-result-card lp-quotes-card" id="learnResultQuotesCard" style="display:none;">
+          <div class="lp-result-card-label">
+            <span class="lp-result-dot lp-dot-teal"></span>✍️ 原文金句与高光提取
+          </div>
+          
+          <div class="lp-vocab-section">
+            <span class="lp-vocab-title">🏷️ 高频核心特征词：</span>
+            <div class="lp-vocab-list" id="learnResultFpVocab">
+              <!-- 词汇气泡 -->
+            </div>
+          </div>
+
+          <div class="lp-quotes-section" style="margin-top:14px;">
+            <span class="lp-quotes-title">💡 冲击力金句摘抄：</span>
+            <div id="learnResultFpPhrases" class="lp-phrases-list">
+              <!-- 金句卡片 -->
+            </div>
+          </div>
+
+          <div class="lp-sample-section" style="margin-top:14px;">
+            <span class="lp-sample-title">📖 原文精彩高光片段：</span>
+            <div class="lp-raw-sample-box" id="learnResultFpSample">
+              <!-- 复古信纸高光节选 -->
+            </div>
+          </div>
+        </div>
+
         <!-- 保存按钮 -->
-        <button id="saveInspirationBtn" class="lp-btn-save" type="button">
+        <button id="saveInspirationBtn" class="lp-btn-save" type="button" style="margin-top:8px;" onclick="if(typeof window.handleSaveInspiration==='function'){window.handleSaveInspiration()}else{alert('保存模块未就绪，请稍后')}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           存入专属灵感库
         </button>
@@ -93,4 +212,60 @@
     <div id="subjectKnowledgeEmptyState" class="lp-library-empty">暂无常识约束。</div>
     <div id="subjectKnowledgeFullList" class="lp-knowledge-grid lp-subject-grid"></div>
   </div>
+
+  <!-- ══ 全网小说题材趋势智能看板 ══ -->
+  <div class="lp-library lp-trends-library">
+    <div class="lp-library-header">
+      <div class="lp-library-title">
+        <span class="lp-icon-sm">📈</span>
+        全网小说题材趋势智能看板
+      </div>
+      <button id="collectTrendsBtn" class="lp-btn-expand" style="width: auto; padding: 0 16px; margin: 0;" onclick="if(typeof window.collectTrends==='function'){window.collectTrends()}else{alert('采集模块未就绪，请稍后')}">⚡ 一键智能采集与归档</button>
+    </div>
+
+    <!-- 筛选过滤控制栏 -->
+    <div class="lp-trends-filter-bar">
+      <div class="lp-filter-group">
+        <span class="lp-filter-label">来源平台：</span>
+        <div class="lp-chips" id="trendsSourceChips">
+          <span class="lp-chip active" data-source="all">全部平台</span>
+          <span class="lp-chip" data-source="zhihu">知乎盐选</span>
+          <span class="lp-chip" data-source="fanqie">番茄小说</span>
+        </div>
+      </div>
+      <div class="lp-filter-group">
+        <span class="lp-filter-label">映射题材：</span>
+        <select id="trendsGenreSelect" class="lp-trends-select">
+          <option value="all">全部映射分类</option>
+          <option value="rules">规则怪谈 (rules)</option>
+          <option value="revenge">复仇爽文 (revenge)</option>
+          <option value="suspense">悬疑烧脑 (suspense)</option>
+          <option value="system">系统爽文 (system)</option>
+          <option value="urban">都市异能 (urban)</option>
+          <option value="romance">甜宠言情 (romance)</option>
+          <option value="infinite">无限流 (infinite)</option>
+          <option value="scifi">科幻脑洞 (scifi)</option>
+          <option value="other">其它题材 (other)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 黑客命令行终端 -->
+    <div id="trendsTerminal" class="trends-terminal trends-hide">
+      <div class="terminal-header">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">AI TRENDS COGNITIVE ENGINE V1.0</span>
+      </div>
+      <div class="terminal-body" id="trendsTerminalLogs">
+        <!-- 动态打字机输出日志 -->
+      </div>
+    </div>
+
+    <!-- 趋势卡片网格 -->
+    <div id="trendsEmptyState" class="lp-library-empty">点击「一键智能采集与归档」获取全网题材趋势。</div>
+    <div id="trendsGrid" class="lp-knowledge-grid lp-trends-grid"></div>
+  </div>
 </div>
+

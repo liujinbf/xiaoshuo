@@ -61,6 +61,8 @@ function buildOutline(input, profile) {
 }
 
 function buildDraft(input, profile) {
+  // 短篇方案只生成文章大纲框架，不要生成正文
+  return [];
   const person = input.viewpoint === "first" ? "我" : "她";
   const source = `${input.title || ""} ${input.theme || ""} ${input.notes || ""}`;
   const sceneMap = {

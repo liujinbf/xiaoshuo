@@ -762,14 +762,14 @@
 
 /* 结果区 */
 #learnResultArea {
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 /* 空状态覆盖旧版中心居中 flex */
 #learnEmptyState {
-  display: flex !important;
+  display: flex;
   min-height: 360px !important;
   background: #fff !important;
   border: 1.5px dashed rgba(139, 130, 112, 0.2) !important;
@@ -777,3 +777,649 @@
   color: #b0a898 !important;
   gap: 0 !important;
 }
+
+/* ════════════════════════════════════════════════════
+   🆕 新增: Premium 写作基因与指纹诊断及智能检测归档样式
+   ════════════════════════════════════════════════════ */
+
+/* 1. 智能归档检测胶囊标签 */
+.lp-detected-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(23, 107, 84, 0.05);
+  border: 1px solid rgba(23, 107, 84, 0.12);
+  padding: 8px 14px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  animation: lpFadeSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lp-detected-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a5d53;
+}
+
+.lp-detected-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+}
+
+/* 各题材归档的专属渐变配色 */
+.lp-badge-suspense { background: linear-gradient(135deg, #4f46e5, #3b82f6); color: #fff; }  /* 蓝色系 */
+.lp-badge-revenge  { background: linear-gradient(135deg, #dc2626, #f43f5e); color: #fff; }  /* 红色系 */
+.lp-badge-heroine  { background: linear-gradient(135deg, #db2777, #ec4899); color: #fff; }  /* 粉色系 */
+.lp-badge-history  { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; }  /* 橙黄系 */
+.lp-badge-rules    { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; }  /* 紫色系 */
+.lp-badge-folklore { background: linear-gradient(135deg, #059669, #10b981); color: #fff; }  /* 翠绿系 */
+.lp-badge-family   { background: linear-gradient(135deg, #0891b2, #06b6d4); color: #fff; }  /* 青色系 */
+.lp-badge-workplace{ background: linear-gradient(135deg, #1e293b, #475569); color: #fff; }  /* 灰黑系 */
+
+/* 2. 写作基因指纹网格 */
+.lp-fingerprint-card {
+  border-color: rgba(124, 58, 237, 0.18) !important;
+  background: linear-gradient(180deg, #ffffff 0%, rgba(124, 58, 237, 0.01) 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-fingerprint-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+@media (max-width: 768px) {
+  .lp-fingerprint-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.lp-fg-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 指标胶囊卡片 */
+.lp-fg-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(244, 242, 238, 0.45);
+  border: 1px solid rgba(139, 130, 112, 0.12);
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lp-fg-indicator:hover {
+  background: #ffffff;
+  border-color: rgba(124, 58, 237, 0.25);
+  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.05);
+  transform: translateY(-1px);
+}
+
+.lp-fg-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7a726a;
+}
+
+.lp-fg-value {
+  font-size: 12px;
+  font-weight: 800;
+  color: #2e2a1e;
+}
+
+/* 开篇节奏星级 */
+.lp-star-rating {
+  color: #eab308;
+  letter-spacing: 2px;
+  text-shadow: 0 0 5px rgba(234, 179, 8, 0.35);
+  font-size: 13px;
+}
+
+/* 对话占比动感条 */
+.lp-progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 140px;
+}
+
+.lp-progress-track {
+  flex: 1;
+  height: 7px;
+  background: rgba(139, 130, 112, 0.16);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.lp-progress-bar {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+  position: relative;
+}
+
+/* 进度条扫光动画效果 */
+.lp-progress-bar::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  animation: lpBarScan 2.5s infinite linear;
+}
+
+.lp-progress-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: #059669;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* 胶囊子标签样式 */
+.lp-badge-outline {
+  padding: 2px 8px;
+  border: 1px solid rgba(139, 130, 112, 0.3);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  background: transparent;
+  color: #6a6258;
+}
+
+.lp-badge-purple {
+  padding: 2px 8px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #7c3aed;
+}
+
+.lp-badge-amber {
+  padding: 2px 8px;
+  background: rgba(217, 119, 6, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #d97706;
+}
+
+.lp-badge-red {
+  padding: 2px 8px;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #dc2626;
+}
+
+.lp-badge-blue {
+  padding: 2px 8px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #2563eb;
+}
+
+/* 3. 原文金句与高光提取卡 */
+.lp-quotes-card {
+  border-color: rgba(13, 148, 136, 0.18) !important;
+  background: linear-gradient(180deg, #ffffff 0%, rgba(13, 148, 136, 0.01) 100%) !important;
+}
+
+.lp-dot-purple { background: #7c3aed; }
+.lp-dot-teal   { background: #0d9488; }
+
+.lp-vocab-title, .lp-quotes-title, .lp-sample-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: #5c7268;
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+/* 特征词胶囊列表 */
+.lp-vocab-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lp-vocab-badge {
+  padding: 4px 10px;
+  background: rgba(13, 148, 136, 0.06);
+  border: 1px solid rgba(13, 148, 136, 0.18);
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0d9488;
+  transition: all 0.2s;
+  cursor: default;
+}
+
+.lp-vocab-badge:hover {
+  background: rgba(13, 148, 136, 0.12);
+  transform: scale(1.05) translateY(-1px);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.12);
+}
+
+/* 金句卡片列表 */
+.lp-phrases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lp-phrase-card {
+  position: relative;
+  background: rgba(250, 248, 244, 0.8);
+  border: 1px solid rgba(139, 130, 112, 0.15);
+  border-left: 4px solid #0d9488;
+  border-radius: 4px 10px 10px 4px;
+  padding: 12px 16px 12px 28px;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.lp-phrase-card:hover {
+  transform: translateX(2px);
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.lp-phrase-quote-mark {
+  position: absolute;
+  top: -12px;
+  left: 6px;
+  font-size: 48px;
+  font-family: Georgia, serif;
+  color: rgba(13, 148, 136, 0.12);
+  line-height: 1;
+  user-select: none;
+}
+
+.lp-phrase-text {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2e2a1e;
+  line-height: 1.6;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+/* 复古高光片段信纸盒 */
+.lp-raw-sample-box {
+  background-color: #faf6eb;
+  background-image: radial-gradient(#dfd7c2 0.75px, transparent 0.75px), radial-gradient(#dfd7c2 0.75px, #faf6eb 0.75px);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+  border: 1px solid rgba(223, 215, 194, 0.7);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: #4a3e2b;
+  font-family: "Georgia", "STKaiti", "华文楷体", serif;
+  font-style: italic;
+  max-height: 150px;
+  overflow-y: auto;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* 动画定义 */
+@keyframes lpBarScan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes lpFadeSlideIn {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* 隐藏类，彻底覆盖 flex 污染 */
+.lp-hide {
+  display: none !important;
+}
+
+/* DNA 旋转动效 */
+@keyframes lp-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.lp-spin {
+  animation: lp-spin 2s linear infinite;
+  display: inline-block;
+}
+
+/* ══ 精美 Toast 消息提醒 ══ */
+.lp-toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.lp-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(139, 130, 112, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(46, 42, 34, 0.1), 0 10px 10px -5px rgba(46, 42, 34, 0.04);
+  color: #2e2a1e;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(-20px) scale(0.9);
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: auto;
+}
+
+.lp-toast-show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.lp-toast-fade {
+  opacity: 0;
+  transform: translateY(-15px) scale(0.95);
+  transition: all 0.3s ease;
+}
+
+.lp-toast-success {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  background: rgba(240, 253, 250, 0.95) !important;
+  color: #065f46 !important;
+}
+.lp-toast-success .lp-toast-icon {
+  background: #10b981 !important;
+  color: #fff !important;
+}
+
+.lp-toast-error {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  background: rgba(254, 242, 242, 0.95) !important;
+  color: #991b1b !important;
+}
+.lp-toast-error .lp-toast-icon {
+  background: #ef4444 !important;
+  color: #fff !important;
+}
+
+.lp-toast-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════════
+   🆕 新增: AI 网文基因反编译终端 (高科技 Loading 控制台)
+   ════════════════════════════════════════════════════ */
+
+.lp-loading-panel {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid rgba(23, 107, 84, 0.15);
+  border-radius: 14px;
+  padding: 28px 30px;
+  box-shadow: 0 10px 30px rgba(23, 107, 84, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+  animation: lpFadeSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 顶部标题与 Spinner 组合 */
+.lp-loading-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.lp-loading-spinner-wrapper {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.lp-loading-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px solid rgba(23, 107, 84, 0.08);
+  border-top-color: #176b54;
+  border-radius: 50%;
+  animation: lp-spin 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+}
+
+.lp-loading-core {
+  font-size: 22px;
+  animation: lpPulseScale 2s ease-in-out infinite;
+  user-select: none;
+}
+
+.lp-loading-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lp-loading-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #176b54;
+  letter-spacing: 0.02em;
+}
+
+.lp-loading-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #8a7e72;
+}
+
+/* 进度条样式 */
+.lp-loading-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(244, 242, 238, 0.5);
+  border: 1px solid rgba(139, 130, 112, 0.1);
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.lp-loading-progress-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(139, 130, 112, 0.15);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lp-loading-progress-bar {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #10b981, #176b54);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.25);
+  transition: width 0.25s cubic-bezier(0.1, 0.8, 0.2, 1);
+  position: relative;
+}
+
+/* 进度条扫光特效 */
+.lp-loading-progress-bar::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: lpBarScan 1.8s infinite linear;
+}
+
+.lp-loading-progress-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: #176b54;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* 实时反编译步骤列表 */
+.lp-loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px dashed rgba(139, 130, 112, 0.15);
+  padding-top: 16px;
+}
+
+.lp-step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+/* 步骤图标容器 */
+.lp-step-icon-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: bold;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+/* 1. 未开始状态 */
+.lp-step-item.status-pending {
+  color: #b0a898;
+  background: rgba(244, 242, 238, 0.2);
+}
+.lp-step-item.status-pending .lp-step-icon-box {
+  border: 1.5px solid #dcd7cd;
+  color: #c0b8ae;
+  background: transparent;
+}
+
+/* 2. 进行中状态 */
+.lp-step-item.status-active {
+  color: #176b54;
+  background: rgba(23, 107, 84, 0.04);
+  border-color: rgba(23, 107, 84, 0.12);
+  box-shadow: 0 2px 8px rgba(23, 107, 84, 0.03);
+}
+.lp-step-item.status-active .lp-step-icon-box {
+  background: rgba(23, 107, 84, 0.1);
+  color: #176b54;
+  border: 1.5px solid rgba(23, 107, 84, 0.3);
+  position: relative;
+}
+/* 呼吸点动效 */
+.lp-step-item.status-active .lp-step-icon-box::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+  top: -2px;
+  right: -2px;
+  box-shadow: 0 0 6px #10b981;
+  animation: lpPulseDot 1.4s infinite ease-in-out;
+}
+
+/* 3. 已完成状态 */
+.lp-step-item.status-success {
+  color: #275e46;
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+.lp-step-item.status-success .lp-step-icon-box {
+  background: #10b981;
+  color: #ffffff;
+  border: 1.5px solid #10b981;
+  font-size: 10px;
+  animation: lpPopScale 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 关键帧动效扩展 */
+@keyframes lpPulseScale {
+  0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(23, 107, 84, 0.2)); }
+  50% { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(23, 107, 84, 0.45)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(23, 107, 84, 0.2)); }
+}
+
+@keyframes lpPulseDot {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+@keyframes lpPopScale {
+  0% { transform: scale(0.6); }
+  100% { transform: scale(1); }
+}
+
+
+
+

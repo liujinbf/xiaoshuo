@@ -31,6 +31,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // AI 深度故事方案生成
+  safeListen("#aiPlanBtn", "click", async () => {
+    if (typeof window.requestAiPlan === "function") {
+      await window.requestAiPlan();
+    }
+  });
+
   // 2. 滑块联动
   const lIn = document.querySelector("#length");
   const lOut = document.querySelector("#lengthOutput");
@@ -152,6 +159,123 @@ document.addEventListener("DOMContentLoaded", () => {
       const items = checkDraftConsistency(window.currentPlan);
       renderConsistency(items);
       document.querySelector("#consistencyList")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  });
+
+  // 8.5 AI 深度审计
+  safeListen("#aiAuditConsistencyBtn", "click", async () => {
+    if (!window.currentPlan) {
+      alert("请先生成故事方案，再运行 AI 深度审计");
+      return;
+    }
+    const draftEl = document.querySelector("#draftEditor");
+    if (!draftEl || !draftEl.value.trim()) {
+      alert("正文为空，请先输入或生成正文再进行语义审计");
+      return;
+    }
+
+    const btn = document.querySelector("#aiAuditConsistencyBtn");
+    const container = document.querySelector("#aiAuditReportContainer");
+    if (!btn || btn.classList.contains("loading")) return;
+
+    // 校验并消耗配额
+    if (typeof consumeQuota === "function" && !consumeQuota("generations")) return;
+
+    const originalText = btn.innerHTML;
+    btn.classList.add("loading");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="display:inline-block;width:10px;height:10px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:4px;"></span> 审计中...`;
+    
+    if (container) {
+      container.innerHTML = `
+        <div class="ai-audit-report-card" style="opacity: 0.8;">
+          <h4 style="color:var(--text-muted);">✨ 智能语义审计中...</h4>
+          <div class="ai-audit-report-content" style="color:var(--text-muted);font-style:italic;padding:8px 0;display:flex;align-items:center;gap:6px;">
+            <span class="spinner" style="display:inline-block;width:12px;height:12px;border:2px solid var(--text-muted);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span>
+            正在深度审计故事的伏笔、开篇与动机合理性，请稍候...
+          </div>
+        </div>
+      `;
+      container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    try {
+      const report = await requestAiGeneration("audit");
+      if (container && report) {
+        // 过滤转义并高亮加粗样式
+        let formattedReport = report
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+        container.innerHTML = `
+          <div class="ai-audit-report-card">
+            <h4>✨ AI 智能深度审计意见</h4>
+            <div class="ai-audit-report-content">${formattedReport}</div>
+          </div>
+        `;
+        container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+        // 审计成功后，将一键应用按钮显示出来
+        const applyBtn = document.querySelector("#applyAiAuditBtn");
+        if (applyBtn) {
+          applyBtn.style.display = "block";
+        }
+      }
+    } catch (e) {
+      alert(e.message || "AI 深度审计失败，请检查模型配置");
+      if (container) container.innerHTML = "";
+    } finally {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
+
+  // 8.6 一键应用 AI 审计优化 (诊断-自愈闭环)
+  safeListen("#applyAiAuditBtn", "click", async () => {
+    if (!window.currentPlan) {
+      alert("请先生成故事方案");
+      return;
+    }
+    const draftEl = document.querySelector("#draftEditor");
+    if (!draftEl || !draftEl.value.trim()) {
+      alert("正文为空，无法进行审计优化");
+      return;
+    }
+    const container = document.querySelector("#aiAuditReportContainer");
+    const auditText = container ? container.textContent : "";
+
+    const btn = document.querySelector("#applyAiAuditBtn");
+    if (!btn || btn.classList.contains("loading")) return;
+
+    // 校验并消耗配额
+    if (typeof consumeQuota === "function" && !consumeQuota("generations")) return;
+
+    const originalText = btn.innerHTML;
+    btn.classList.add("loading");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="display:inline-block;width:10px;height:10px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:4px;"></span> 深度重构优化中...`;
+
+    try {
+      const text = await requestAiGeneration("apply_audit", auditText);
+      if (text && draftEl) {
+        draftEl.value = text;
+        draftEl.dispatchEvent(new Event("input"));
+        btn.style.display = "none"; // 成功后隐藏自身
+
+        // 自动触发一致性检查
+        setTimeout(() => {
+          document.querySelector("#checkConsistencyBtn")?.click();
+        }, 300);
+      }
+    } catch (e) {
+      alert(e.message || "AI 审计优化应用失败，请检查模型配置");
+    } finally {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+      btn.innerHTML = originalText;
     }
   });
 

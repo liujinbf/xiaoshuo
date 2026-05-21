@@ -2,30 +2,8 @@
    视图模式：编辑主视图 vs 规划视图
    ═══════════════════════════════ */
 
-/* 默认：编辑器主视图，仅显示编辑器 + 记忆卡片 */
-.result-grid .result-panel:not(.desktop-editor-panel):not(.desktop-memory-panel) {
-  display: none;
-}
-.result-grid .score-panel,
-.result-grid .desktop-episode-panel,
-.result-grid .desktop-proposal-panel {
-  display: none;
-}
+/* 视图模式的显隐与立体分析网格由 desktop-restoration-components.css 统一且精准接管 */
 
-/* 规划视图：显示所有面板 */
-.result-grid.show-plan .result-panel {
-  display: block;
-}
-.result-grid.show-plan .score-panel {
-  display: block;
-}
-.result-grid.show-plan .desktop-editor-panel {
-  grid-row: auto !important;
-  min-height: 320px;
-}
-.result-grid.show-plan .desktop-memory-panel {
-  grid-row: auto !important;
-}
 
 /* 记忆卡片内部样式增强 */
 .desktop-memory-panel .panel-title {

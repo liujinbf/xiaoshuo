@@ -1,6 +1,6 @@
 # 盐选故事工作台 — 开发规则
 
-> **版本**: 1.2.0 | **生效日期**: 2026-05-20  
+> **版本**: 1.2.1 | **生效日期**: 2026-05-21  
 > 所有新功能开发、bug 修复、AI 辅助开发，均须遵守本文档。
 
 
@@ -45,7 +45,8 @@ js/
 ├── projects.js      ← 项目存储 / 历史 / 同步 / 文件 IO
 ├── serial-render.js  ← [已拆分] 连载模块 UI 渲染
 ├── serial.js        ← 连载铸造模块（章节生成 / 记忆机制 / 阅读器）
-├── learning.js      ← 爆款拆解学习器（RAG 知识库管理）
+├── learning-db.js   ← 爆款拆解专属数据库管理（RAG 检索、打分、CRUD）
+├── learning.js      ← 爆款拆解学习器（文件智能解码与反编译终端核心交互）
 ├── desktop-ui.js    ← 桌面版 UI 交互（导航、状态条、配额圆弧）——必须在 app.js 前加载
 ├── admin.js         ← 管理后台页面逻辑
 └── [future].js      ← 新功能模块，遵循命名规范
@@ -74,6 +75,7 @@ app.js              ← 主入口（DOM 引用 + 事件监听 + 初始化）
 <script src="./js/projects.js"></script>
 <script src="./js/serial-render.js"></script>
 <script src="./js/serial.js"></script>
+<script src="./js/learning-db.js"></script>
 <script src="./js/learning.js"></script>
 <script src="./js/desktop-ui.js"></script>   <!-- 必须在 app.js 前加载 -->
 <script src="./app.js?v=YYYYMMDD-feature-name"></script>

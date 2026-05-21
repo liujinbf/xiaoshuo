@@ -20,17 +20,28 @@ function buildTitles(input, profile) {
   const objectPattern = /(遗嘱|协议|报告|账本|录音|照片|视频|监控|合同|房产证|鉴定|电话|短信|名单|证据|保险柜|签名|APP|规则|直播|史书|系统|弹幕|时间线|手机|通知|死亡通知|皇帝|太子|将军)/;
   const peoplePattern = /(丈夫|妻子|闺蜜|婆婆|母亲|妈妈|父亲|爸爸|妹妹|姐姐|哥哥|弟弟|男友|女友|老板|同事|未婚夫|前夫|情人|继承人|律师|秦始皇|李世民|刘禅|朱元璋|皇帝|太子|公主|女主)/;
   const historicalName = (theme.match(/秦始皇|李世民|刘禅|朱元璋|嬴政|汉武帝|武则天|曹操|刘备|诸葛亮|亡国太子|皇帝|公主/) || [])[0];
+  // 1. 提取角色名 (限制长度不能超过6个字符，防止长句被误认作人名)
+  const matchedPerson = tokens.find((item) => item.length <= 6 && peoplePattern.test(item));
   const primary = input.genre === "history"
     ? historicalName || "古人"
-    : tokens.find((item) => peoplePattern.test(item)) || tokens[0] || "那个人";
-  const secondary = tokens.find((item) => item !== primary && peoplePattern.test(item)) || "";
+    : matchedPerson || tokens.find((item) => item.length <= 4) || "那个人";
+
+  // 2. 提取第二角色 (同样限制长度 <= 6)
+  const secondaryToken = tokens.find((item) => item !== primary && item.length <= 6 && peoplePattern.test(item));
+  const secondary = secondaryToken || "";
   const witness = secondary || "关键证人";
-  const objectToken = tokens.find((item) => objectPattern.test(item)) || pick(profile.titleWords || ["证据"]);
+
+  // 3. 提取物证道具名 (限制长度不能超过8个字符，防止长句被误认作证物名)
+  const matchedObject = tokens.find((item) => item.length <= 8 && objectPattern.test(item));
+  const objectToken = matchedObject || pick(profile.titleWords || ["证据"]);
   const historyObject = ["近代史", "工业图纸", "现代地图", "国运系统", "短视频", "弹幕", "史书", "时间线", "直播"]
     .find((item) => theme.includes(item));
-  const objectName = input.genre === "history"
+  const rawObjectName = input.genre === "history"
     ? historyObject || "未来"
     : (objectToken.match(objectPattern) || [objectToken])[0];
+
+  // 4. 再次确保最终使用的物证名合理（不超过8字），否则退回到安全默认值
+  const objectName = rawObjectName.length <= 8 ? rawObjectName : pick(profile.titleWords || ["证据"]);
   const pair = secondary ? `${primary}和${secondary}` : primary;
   const event = objectToken.includes("被")
     ? `${objectName}${objectToken.includes("调包") ? "被调包" : objectToken.includes("篡改") ? "被篡改" : "出了问题"}`

@@ -1,5 +1,10 @@
 import { extractChatText } from "./vector.js";
 
+const getChatUrl = (baseUrl) => {
+  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
+  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
+};
+
 /**
  * 自动扩充学科常识卡片
  * @param {object} params
@@ -37,7 +42,7 @@ export async function expandKnowledge({ entity, modelConfig }) {
   const userPrompt = `要扩充的实体: ${cleanEntity}`;
 
   try {
-    const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+    const response = await fetch(getChatUrl(baseUrl), {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,

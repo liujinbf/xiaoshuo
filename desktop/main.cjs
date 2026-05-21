@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, shell } = require("electron");
+const { app, BrowserWindow, dialog, shell, session } = require("electron");
 const http = require("node:http");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -74,7 +74,19 @@ function createMainWindow() {
     return { action: "deny" };
   });
 
-  mainWindow.loadURL(appUrl);
+  // 在窗口载入前强制清理物理缓存，防止旧版静态页面（如 index.html）被强缓存死锁
+  session.defaultSession.clearCache()
+    .then(() => {
+      console.log("[Electron] 默认 Session 缓存物理清理成功。");
+    })
+    .catch((err) => {
+      console.error("[Electron] 清理 Session 缓存失败:", err);
+    });
+
+  // 载入 URL 时额外附加无缓存 Request Headers，双重熔断 Chromium 缓存
+  mainWindow.loadURL(appUrl, {
+    extraHeaders: "pragma: no-cache\nCache-Control: no-cache\n"
+  });
 }
 
 app.whenReady().then(async () => {

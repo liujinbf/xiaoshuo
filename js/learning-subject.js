@@ -1,6 +1,15 @@
-// ============================================================
-// 模块: learning-subject.js — 学科常识规范库列表与扩充交互
-// ============================================================
+// 使用 window 全局的 HTML 转义方法，以保证多面板作用域防崩溃且避免 const 重名语法冲突
+const safeEscape = window.escapeHtml || ((str) => {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+});
+if (!window.escapeHtml) {
+  window.escapeHtml = safeEscape;
+}
 
 const categoryLabels = {
   history: "历史常识",
@@ -41,7 +50,10 @@ async function loadSubjectKnowledgeFullList() {
     const list = data.list;
     if (list.length === 0) {
       if (countEl) countEl.textContent = "暂无常识约束";
-      if (emptyEl) emptyEl.style.display = "block";
+      if (emptyEl) {
+        emptyEl.style.display = "block";
+        emptyEl.textContent = `暂无常识约束。[诊断：接口返回原始条数=${list ? list.length : 'null'}]`;
+      }
       listEl.style.display = "none";
       listEl.innerHTML = "";
       return;
@@ -57,18 +69,24 @@ async function loadSubjectKnowledgeFullList() {
         <div class="knowledge-card">
           <div class="knowledge-card-head">
             <span class="knowledge-card-tag" style="background:${color.bg};color:${color.text};border-color:${color.border};">
-              ${escapeHtml(categoryLabels[item.category] || item.category || "未分类")}
+              ${safeEscape(categoryLabels[item.category] || item.category || "未分类")}
             </span>
-            <span class="knowledge-card-id">ID: ${escapeHtml(idText)}</span>
+            <span class="knowledge-card-id">ID: ${safeEscape(idText)}</span>
           </div>
-          <h4>${escapeHtml(item.entity || "未命名实体")}</h4>
-          <p>${escapeHtml(item.content || "暂无内容")}</p>
+          <h4>${safeEscape(item.entity || "未命名实体")}</h4>
+          <p>${safeEscape(item.content || "暂无内容")}</p>
         </div>
       `;
     }).join("");
   } catch (error) {
     console.error("加载学科常识库失败：", error);
     if (countEl) countEl.textContent = "网络异常";
+    const errorMsg = `加载学科常识库异常:\n${error.message}\n${error.stack || ""}`;
+    if (typeof window.showToast === "function") {
+      window.showToast(errorMsg, "error");
+    } else {
+      alert(errorMsg);
+    }
   }
 }
 
@@ -86,15 +104,17 @@ async function expandSubjectKnowledge(entity, triggerButton) {
   }
 
   try {
-    const hasClient = typeof hasClientModelConfig === "function" && hasClientModelConfig();
-    const clientCfg = typeof readModelConfig === "function" ? readModelConfig() : {};
-    const modelConfig = hasClient
-      ? { apiKey: clientCfg.apiKey, baseUrl: clientCfg.baseUrl || undefined, model: clientCfg.model }
-      : null;
+    const hasClient = typeof ModelConfigManager !== "undefined" && ModelConfigManager.hasValidKey();
+    const clientCfg = typeof ModelConfigManager !== "undefined" ? ModelConfigManager.get() : {};
+    const modelConfig = hasClient ? clientCfg : null;
 
+    const token = localStorage.getItem("token") || "mock-token";
     const res = await fetch(`/api/knowledge/auto-expand${getKnowledgeUserQuery()}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify({ entity: normalizedEntity, modelConfig })
     });
     const data = await res.json();

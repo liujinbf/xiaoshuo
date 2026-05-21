@@ -48,13 +48,32 @@
     <!-- 右侧：主要内容操作区 (1fr) -->
     <main class="world-main-content">
 
+      <!-- 大纲与世界设定一键联动推演面板 -->
+      <div id="worldOutlineSyncArea" style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px; padding: 14px 18px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 12px; justify-content: space-between; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.04);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 20px; filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.4));">✨</span>
+          <div>
+            <strong style="font-size: 13.5px; color: var(--du-ink); display: block; font-family: 'Noto Serif SC', serif;">大纲与设定智能联动体系</strong>
+            <span style="font-size: 11px; color: var(--du-muted);">一键呼叫 AI 深度解析当前大纲与主线，智能提取并反向推演注入全部角色、时代舞台、核心规则和时间线。</span>
+          </div>
+        </div>
+        <button id="inferWorldFromOutlineBtn" type="button" class="ai-world-btn" style="padding: 8px 16px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: #fff; border: none; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); border-radius: 8px; display: flex; align-items: center; gap: 6px; font-size: 12px; transition: all 0.2s;">
+          ✨ 从当前大纲一键推演设定
+        </button>
+      </div>
+
       <!-- 1. 人物设定 PANEL -->
       <div id="worldTabCharacters" class="world-tab-panel">
         <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start;">
           
           <!-- 左侧：添加人物表单卡 -->
           <div class="world-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 20px; position: sticky; top: 80px;">
-            <strong style="font-size: 14px; color: var(--du-ink); display: block; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 8px;">+ 登场人物入籍</strong>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--du-line); padding-bottom: 8px;">
+              <strong style="font-size: 14px; color: var(--du-ink); margin: 0;">+ 登场人物入籍</strong>
+              <button id="aiGenCharactersBtn" type="button" class="ai-world-btn">
+                ✨ AI 一键设定
+              </button>
+            </div>
             <div style="display: flex; flex-direction: column; gap: 14px;">
               <div>
                 <label style="font-size: 11px; font-weight: 700; color: var(--du-muted); display: block; margin-bottom: 5px;">姓名</label>
@@ -105,7 +124,12 @@
       <!-- 2. 世界观 PANEL -->
       <div id="worldTabWorldview" class="world-tab-panel" hidden>
         <div class="world-card-glow" style="background: var(--du-panel-solid); border: 1px solid var(--du-line); border-radius: 14px; padding: 24px;">
-          <strong style="font-size: 15px; color: var(--du-ink); display: block; margin-bottom: 20px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">宏大背景世界观设定</strong>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--du-line); padding-bottom: 10px;">
+            <strong style="font-size: 15px; color: var(--du-ink); margin: 0;">宏大背景世界观设定</strong>
+            <button id="aiGenWorldviewBtn" type="button" class="ai-world-btn">
+              ✨ AI 一键推演
+            </button>
+          </div>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             <div>
@@ -147,9 +171,14 @@
               <strong style="font-size: 15px; color: var(--du-ink); display: block;">逻辑约束铁律</strong>
               <p style="font-size: 12px; color: var(--du-muted); margin: 3px 0 0;">硬性规定故事中"必须发生"或"严禁出现"的行为，从逻辑层面杜绝 AI 写崩或 OOC</p>
             </div>
-            <button id="addRuleBtn" type="button" style="padding: 6px 14px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 6px; font-size: 12px; font-weight: 700; color: #3b82f6; cursor: pointer; transition: all 0.2s;">
-              + 新增规则条目
-            </button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button id="aiGenRulesBtn" type="button" class="ai-world-btn" style="padding: 6px 12px; font-size: 11px;">
+                ✨ AI 智能设计
+              </button>
+              <button id="addRuleBtn" type="button" style="padding: 6px 14px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 6px; font-size: 12px; font-weight: 700; color: #3b82f6; cursor: pointer; transition: all 0.2s;">
+                + 新增规则条目
+              </button>
+            </div>
           </div>
 
           <div id="rulesContainer" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
@@ -183,9 +212,14 @@
               <strong style="font-size: 15px; color: var(--du-ink); display: block;">故事时间大纪元脉络</strong>
               <p style="font-size: 12px; color: var(--du-muted); margin: 3px 0 0;">锁定关键剧情节点顺序，理清多线叙事的时空关联（本面板数据已关联自动存盘）</p>
             </div>
-            <button id="addTimelineBtn" type="button" style="padding: 6px 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 6px; font-size: 12px; font-weight: 700; color: #10b981; cursor: pointer; transition: all 0.2s;">
-              + 添加时间节点
-            </button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button id="aiGenTimelineBtn" type="button" class="ai-world-btn" style="padding: 6px 12px; font-size: 11px;">
+                ✨ AI 自动编织
+              </button>
+              <button id="addTimelineBtn" type="button" style="padding: 6px 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 6px; font-size: 12px; font-weight: 700; color: #10b981; cursor: pointer; transition: all 0.2s;">
+                + 添加时间节点
+              </button>
+            </div>
           </div>
 
           <div class="timeline-visual-track">
@@ -362,5 +396,35 @@
     flex-direction: row;
     overflow-x: auto;
   }
+}
+.ai-world-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ai-world-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.55);
+  filter: brightness(1.1);
+}
+.ai-world-btn:active {
+  transform: translateY(0);
+}
+.ai-world-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
 }
 </style>

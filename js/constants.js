@@ -5,12 +5,13 @@ const BILLING_KEY = "yanxuan-story-billing";
 const MODEL_CONFIG_KEY = "yanxuan-story-model-config";
 
 const QUOTA_LIMITS = {
-  free: { ideas: 20, saves: 8, ai: 3 },
-  pro: { ideas: 50000, saves: 50000, ai: 50000 }
+  free: { ideas: 20, saves: 8, ai: 3, generations: 5 },
+  pro: { ideas: 50000, saves: 50000, ai: 50000, generations: 50000 }
 };
 
 const QUOTA_LABELS = {
   ideas: "方案生成",
   saves: "项目保存",
-  ai: "AI 正文"
+  ai: "AI 正文",
+  generations: "深度审计"
 };

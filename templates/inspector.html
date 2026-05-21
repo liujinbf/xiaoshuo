@@ -103,10 +103,18 @@
 <section class="desktop-inspector-card desktop-consistency-card">
   <h3>一致性检查</h3>
   <div id="consistencyList" class="consistency-list"></div>
-  <button id="checkConsistencyBtn" class="inspector-run-check-btn" type="button">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-    运行检查
-  </button>
+  <div id="aiAuditReportContainer"></div>
+  <button id="applyAiAuditBtn" class="primary-action" type="button" style="display: none; width: 100%; margin-top: 12px; background: linear-gradient(135deg, #a855f7, #ec4899); border: none; color: #fff; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3); border-radius: 4px; font-weight: bold; min-height: 36px;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='none';">✨ 一键应用 AI 审计优化</button>
+  <div class="consistency-actions-group" style="display: flex; gap: 8px; margin-top: 12px; width: 100%;">
+    <button id="checkConsistencyBtn" class="inspector-run-check-btn" type="button" style="flex: 1; margin-top: 0; min-height: 30px; font-size: 11px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      基础检测
+    </button>
+    <button id="aiAuditConsistencyBtn" class="ai-audit-run-btn" type="button" title="消耗 AI 额度，进行小说一致性深度智能语义审计" style="flex: 1.2;">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+      <span>AI 深度审计</span>
+    </button>
+  </div>
 </section>
 
 <section class="desktop-inspector-card desktop-subject-knowledge-card">

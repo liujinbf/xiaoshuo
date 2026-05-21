@@ -17,8 +17,8 @@ function setApiStatus(nextState) {
     return;
   }
 
-  const hasClient = hasClientModelConfig();
-  const clientCfg = readModelConfig();
+  const hasClient = ModelConfigManager.hasValidKey();
+  const clientCfg = ModelConfigManager.get();
 
   if (apiState.ready) {
     apiStatus.textContent = `服务端 AI：${apiState.model}`;
@@ -41,7 +41,7 @@ function renderAiStatusButtonState() {
   if (!aiDraftBtn) return;
   // 不再物理禁用按钮，让用户能点，点开后如果没配置再提示
   aiDraftBtn.disabled = false;
-  aiDraftBtn.style.opacity = (apiState.ready || hasClientModelConfig()) ? "1" : "0.5";
+  aiDraftBtn.style.opacity = (apiState.ready || ModelConfigManager.hasValidKey()) ? "1" : "0.5";
 }
 
 // 启动检测
@@ -75,7 +75,7 @@ function setAiLoading(isLoading, label = "AI 生成正文") {
   const fill = document.querySelector("#draftProgressFill");
   
   if (aiDraftBtn) {
-    aiDraftBtn.disabled = isLoading || (!apiState.ready && !hasClientModelConfig());
+    aiDraftBtn.disabled = isLoading || (!apiState.ready && !ModelConfigManager.hasValidKey());
     aiDraftBtn.textContent = isLoading ? "正在思考中..." : label;
   }
 
@@ -117,13 +117,9 @@ async function requestAiGeneration(mode, direction = "") {
   // 关键：直接引用全局方案
   const plan = window.currentPlan;
   if (!plan) return;
-  const hasClient = hasClientModelConfig();
-  if (!apiState.ready && !hasClient) return;
-
-  const clientCfg = readModelConfig();
-  const modelConfig = hasClient
-    ? { apiKey: clientCfg.apiKey, baseUrl: clientCfg.baseUrl || undefined, model: clientCfg.model }
-    : null;
+  const hasClient = ModelConfigManager.hasValidKey();
+  const clientCfg = ModelConfigManager.get();
+  const modelConfig = hasClient ? clientCfg : null;
 
   const response = await fetch("/api/generate", {
     method: "POST",
@@ -152,6 +148,9 @@ async function requestAiGeneration(mode, direction = "") {
         : "未召回";
       knowledgeEl.title = data.knowledgeUsed.map((item) => item.theme).join("\n");
     }
+  }
+  if (data.text && typeof window.refreshSubjectKnowledgeDebounced === "function") {
+    window.refreshSubjectKnowledgeDebounced(data.text);
   }
   return data.text;
 }
@@ -249,13 +248,22 @@ function checkDraftConsistency(plan) {
 }
 
 function renderConsistency(items) {
-  document.querySelector("#consistencyList").innerHTML = items
-    .map((item) => `
-      <div class="desktop-check-row ${escapeHtml(item.level === "ok" ? "pass" : item.level === "warn" ? "warn" : "risk")}" title="${escapeHtml(item.detail)}">
-        <span>${escapeHtml(item.title)}</span>
-        <strong>${escapeHtml(item.level === "ok" ? "通过" : item.level === "warn" ? "待加强" : "风险")}</strong>
-      </div>
-    `)
+  const container = document.querySelector("#consistencyList");
+  if (!container) return;
+  container.innerHTML = items
+    .map((item) => {
+      const levelClass = item.level === "ok" ? "pass" : item.level === "warn" ? "warn" : "risk";
+      const statusText = item.level === "ok" ? "通过" : item.level === "warn" ? "待加强" : "风险";
+      return `
+        <div class="desktop-check-item ${escapeHtml(levelClass)}">
+          <div class="desktop-check-row">
+            <span>${escapeHtml(item.title)}</span>
+            <strong>${escapeHtml(statusText)}</strong>
+          </div>
+          <div class="desktop-check-detail">${escapeHtml(item.detail)}</div>
+        </div>
+      `;
+    })
     .join("");
 }
 

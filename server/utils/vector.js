@@ -6,6 +6,11 @@
 // 单文件行数上限: 100 行
 // ============================================================
 
+const getEmbeddingsUrl = (baseUrl) => {
+  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
+  return clean.endsWith("/v1") ? `${clean}/embeddings` : `${clean}/v1/embeddings`;
+};
+
 /**
  * 从 OpenAI 兼容接口获取文本嵌入向量
  * @param {string} text - 待嵌入的文本
@@ -15,7 +20,7 @@
  */
 export async function fetchEmbedding(text, baseUrl, apiKey) {
   try {
-    const res = await fetch(`${baseUrl}/v1/embeddings`, {
+    const res = await fetch(getEmbeddingsUrl(baseUrl), {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -346,6 +346,172 @@ function refreshSubjectKnowledgeDebounced(text) {
   }, 400);
 }
 
+function smartParseJson(str) {
+  if (!str) return null;
+  let clean = str.trim();
+
+  // 1. 智能提取最外层大括号 {...} 或者是中括号 [...] 的核心，瞬间撕除所有前后缀前言后语
+  const startBrace = clean.indexOf("{");
+  const startBracket = clean.indexOf("[");
+  if (startBrace !== -1 && (startBracket === -1 || startBrace < startBracket)) {
+    const endBrace = clean.lastIndexOf("}");
+    if (endBrace !== -1) {
+      clean = clean.substring(startBrace, endBrace + 1);
+    }
+  } else if (startBracket !== -1) {
+    const endBracket = clean.lastIndexOf("]");
+    if (endBracket !== -1) {
+      clean = clean.substring(startBracket, endBracket + 1);
+    }
+  }
+
+  // 2. 剥离可能残存的 markdown 块语法
+  clean = clean.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+
+  // 3. 第一阶段：标准原生 JSON.parse 尝试
+  try {
+    return JSON.parse(clean);
+  } catch (err) {
+    console.warn("[smartParseJson] 标准 JSON 解析失败，启动高级清洗自愈...", err);
+  }
+
+  // 4. 第二阶段：高级语法清洗（修复尾随逗号、清除非法物理控制换行符等常见大模型病灶）
+  try {
+    let healed = clean;
+    // 4.1 修复对象/数组内部的“尾随逗号” (Trailing Commas)
+    healed = healed.replace(/,\s*([}\]])/g, '$1');
+    // 4.2 清除并转义非法的物理控制换行符 (大模型偶发直接按 Enter 换行而不是输出 \n)
+    healed = healed.replace(/[\u0000-\u001F\u007F-\u009F]/g, function (match) {
+      if (match === '\n') return '\\n';
+      if (match === '\r') return '\\r';
+      if (match === '\t') return '\\t';
+      return '';
+    });
+    return JSON.parse(healed);
+  } catch (err2) {
+    console.warn("[smartParseJson] 高级自愈解析失败，启动终极 Function 降级解构...", err2);
+  }
+
+  // 5. 第三阶段：终极 Function 降级解构（绝对解困底牌，能完美兼容单引号、无引号键名等所有 JS 对象字面量语法）
+  try {
+    const obj = (new Function(`return (${clean})`))();
+    if (obj && typeof obj === "object") {
+      console.log("[smartParseJson] 恭喜！通过终极 Function 评测器成功自愈解析 JSON 数据！");
+      return obj;
+    }
+  } catch (err3) {
+    console.error("[smartParseJson] 所有 JSON 解析自愈阶段均宣告失败！", err3);
+  }
+
+  throw new Error("模型返回的内容结构损坏，且系统无法自动纠错");
+}
+
+async function requestAiPlan() {
+  if (typeof ModelConfigManager !== "undefined" && !ModelConfigManager.hasValidKey()) {
+    alert("请先在设置中填写 API Key");
+    return;
+  }
+
+  const btn = document.getElementById("aiPlanBtn");
+  if (!btn || btn.classList.contains("loading")) return;
+
+  // 1. 检查配额
+  if (typeof consumeQuota === "function" && !consumeQuota("ideas")) return;
+
+  const originalText = btn.innerHTML;
+  btn.classList.add("loading");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner" style="display:inline-block;width:10px;height:10px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:4px;"></span> 生成中...`;
+
+  // 收集输入
+  const input = typeof collectInput === "function" ? collectInput() : {};
+  
+  // 匹配知识库
+  if (typeof window.matchKnowledgeForInput === "function") {
+    input.matchedInspirations = await window.matchKnowledgeForInput(input);
+  }
+
+  // 组装 payload
+  const modelConfig = typeof ModelConfigManager !== "undefined" ? ModelConfigManager.get() : {};
+  const payload = {
+    mode: "plan",
+    input,
+    modelConfig
+  };
+
+  let rawAiText = ""; // 记录 AI 吐出的原始内容，用于错误追踪
+
+  try {
+    const token = localStorage.getItem("token") || "mock-token";
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error(`AI 服务请求物理失败 (HTTP ${res.status})`);
+    }
+
+    const data = await res.json();
+    if (!data.ok || !data.text) {
+      throw new Error(data.message || "大模型返回的方案内容为空");
+    }
+
+    rawAiText = data.text; // 备份原始内容
+
+    // 使用防弹级 smartParseJson 引擎解析
+    let plan = smartParseJson(rawAiText);
+
+    // 标准化数据 (补充 UUID 和各种字段确保结构万无一失)
+    plan.id = plan.id || (crypto.randomUUID ? crypto.randomUUID() : "ai-" + Date.now());
+    plan.schemaVersion = plan.schemaVersion || 6;
+    plan.createdAt = plan.createdAt || new Date().toISOString();
+    plan.input = input;
+    plan.profile = plan.profile || { label: "✨ AI 深度方案" };
+
+    // 完美渲染
+    if (typeof renderPlanData === "function") {
+      renderPlanData(plan);
+      // 自动保存
+      if (typeof saveCurrentProject === "function") {
+        saveCurrentProject();
+      }
+      // 触发学科常识联动刷新
+      const planTextContent = `${plan.titles ? plan.titles.join(" ") : ""} ${plan.hook || ""} ${plan.outline ? plan.outline.join(" ") : ""}`;
+      if (typeof window.refreshSubjectKnowledge === "function") {
+        window.refreshSubjectKnowledge(planTextContent);
+      }
+    }
+  } catch (error) {
+    console.error("[AI Plan Generation Error] Detailed diagnostics:", error);
+    if (rawAiText) {
+      console.error("[AI Plan Generation Error] Original text from LLM:\n", rawAiText);
+    }
+    
+    // 区分真实的 API 失败与自愈解析失败，让错误透明化，并为用户提供无缝沙盘降级保障
+    const isParseErr = error.message.includes("JSON") || error.message.includes("结构损坏") || error.message.includes("自愈");
+    const errMsg = isParseErr 
+      ? `AI方案推演成功，但数据格式存在微小疵点解析失败。\n系统已无缝启动本地沙盒为您快速生成大纲，请放心使用！\n（详情: ${error.message}）`
+      : `AI服务网络连接或模型请求失败。\n系统已无缝启动本地沙盒为您快速生成大纲，请放心使用！\n（详情: ${error.message}）`;
+      
+    alert(errMsg);
+
+    // 平滑本地极速兜底
+    if (typeof renderPlan === "function") {
+      renderPlan(input);
+    }
+  } finally {
+    btn.classList.remove("loading");
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+}
+
 window.refreshSubjectKnowledge = refreshSubjectKnowledge;
 window.refreshSubjectKnowledgeDebounced = refreshSubjectKnowledgeDebounced;
+window.requestAiPlan = requestAiPlan;
 

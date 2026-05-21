@@ -11,8 +11,10 @@ import { handlePayRoutes } from "./server/routes/pay.js";
 import { handleAdminRoutes } from "./server/routes/admin.js";
 import { handleInspirationsRoutes } from "./server/routes/inspirations.js";
 import { handleKnowledgeRoutes } from "./server/routes/knowledge.js";
+import { handleTrendsRoutes } from "./server/routes/trends.js";
 import { callOpenAI } from "./server/utils/prompts.js";
-import { retrieveKnowledgeForDraft } from "./server/utils/knowledge-retrieval.js";
+import { retrieveKnowledgeForDraft, retrieveHotTrendsForDraft } from "./server/utils/knowledge-retrieval.js";
+import { retrieveSubjectKnowledge } from "./server/utils/knowledge-retrieval-service.js";
 import { clientIp, throttle } from "./server/utils/security.js";
 
 const rootDir = resolve(".");
@@ -144,10 +146,15 @@ async function readJson(request) {
   return JSON.parse(raw);
 }
 
+const getEmbeddingsUrl = (baseUrl) => {
+  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
+  return clean.endsWith("/v1") ? `${clean}/embeddings` : `${clean}/v1/embeddings`;
+};
+
 // === 向量记忆（Vector Memory）工具 ===
 async function fetchEmbedding(text, baseUrl, apiKey) {
   try {
-    const res = await fetch(`${baseUrl}/v1/embeddings`, {
+    const res = await fetch(getEmbeddingsUrl(baseUrl), {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -351,7 +358,40 @@ async function handleApi(request, response, url) {
         });
       }
 
+      // 🆕 召回同品类的最新全网爆款趋势，供大纲方案起名及故事板设计参考
+      if (payload.input?.genre) {
+        payload.matchedTrends = await retrieveHotTrendsForDraft({
+          genre: payload.input.genre,
+          limit: 3
+        });
+      }
+
+      // 🆕 召回学科百科常识，并执行缺席常识自动检测与联网/AI智能扩增
+      const searchSubjectText = `${payload.input?.title || ""} ${payload.input?.theme || ""} ${payload.input?.notes || ""}`;
+      payload.matchedSubjectKnowledge = await retrieveSubjectKnowledge({
+        text: searchSubjectText,
+        limit: 3,
+        modelConfig: payload.modelConfig
+      });
+
       const text = await callOpenAI(payload);
+
+      // 🔍 实时诊断：如果生成的是大纲方案，将 AI 返回的原始文本写入本地排查日志，并在控制台两端打印以供定位
+      if (payload.mode === "plan") {
+        console.log(`[AI Plan Response Debug] Received text. Length: ${text ? text.length : 0}`);
+        if (text) {
+          console.log(`[AI Plan Response Start]: ${text.slice(0, 300)}`);
+          console.log(`[AI Plan Response End]: ${text.slice(-300)}`);
+          try {
+            const fs = await import("node:fs/promises");
+            await fs.writeFile("scripts/last_ai_response.txt", text, "utf-8");
+            console.log(`[AI Plan Response Debug] Successfully logged full AI text to scripts/last_ai_response.txt`);
+          } catch (logErr) {
+            console.error("[AI Plan Response Debug] Failed to write scripts/last_ai_response.txt:", logErr);
+          }
+        }
+      }
+
       sendJson(response, 200, {
         ok: true,
         text,
@@ -363,6 +403,7 @@ async function handleApi(request, response, url) {
         }))
       });
     } catch (error) {
+      console.error("[API Generate Error] Detailed stack trace:", error);
       sendJson(response, error.statusCode || 500, {
         ok: false,
         message: error.message || "生成失败"
@@ -401,6 +442,10 @@ async function handleApi(request, response, url) {
   }
 
   if (await handleKnowledgeRoutes(request, response, url, { sendJson, readJson, getUserId })) {
+    return;
+  }
+
+  if (await handleTrendsRoutes(request, response, url, { sendJson, readJson, getUserId })) {
     return;
   }
 

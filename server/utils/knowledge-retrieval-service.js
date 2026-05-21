@@ -1,5 +1,12 @@
-import { getAllKnowledge } from "./db.js";
-import { fetchEmbedding, cosineSimilarity } from "./vector.js";
+import { getAllKnowledge, saveKnowledge } from "./db.js";
+import { fetchEmbedding, cosineSimilarity, extractChatText } from "./vector.js";
+import { expandKnowledge } from "./knowledge-expansion-service.js";
+
+
+const getChatUrl = (baseUrl) => {
+  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
+  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
+};
 
 // 全局内存常识索引缓存
 let cachedKnowledgeList = null;
@@ -41,6 +48,47 @@ async function getOrUpdateKnowledgeCache() {
 }
 
 /**
+ * 辅助函数：智能从文本中检测出潜在的历史人物、历史真实事件或科学物理化学专有常识词
+ */
+async function detectEntitiesInText(text, apiKey, baseUrl, modelName) {
+  if (!text || text.trim().length < 5) return [];
+  try {
+    const systemPrompt = `你是一个网络小说常识实体提取专家。请从给定的文本（可能是小说题材、大纲或生成的段落）中，提取出【最核心的 1-2 个真实发生的历史朝代、历史著名人物、历史真实事件、或者核心科学/物理/化学客观常识概念】。
+例如，如果文本涉及唐朝朱雀街、李世民、玄武门之变、秦始皇、砒霜测毒、真空重力等，请精准把它们作为实体词提取出来。
+请直接输出一个合法的 JSON 数组，例如：["李世民", "玄武门之变"]。禁止使用 markdown 代码块包裹，也不要有任何前言后语。如果没有提取到，输出空数组：[]。`;
+    const res = await fetch(getChatUrl(baseUrl), {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: text.slice(0, 1200) } // 取前 1200 字以防超出限制并保障速度
+        ],
+        temperature: 0.0,
+        max_tokens: 60
+      }),
+      signal: AbortSignal.timeout(8000)
+    });
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    let responseText = extractChatText(data);
+    if (!responseText) return [];
+    
+    responseText = responseText.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(responseText);
+    return Array.isArray(parsed) ? parsed.map(s => String(s).trim()).filter(Boolean) : [];
+  } catch (e) {
+    console.error("[Subject Knowledge Entity Detection] Error detecting entities:", e);
+    return [];
+  }
+}
+
+/**
  * 根据作者的输入信息（大纲主题、流派、人设定向等），智能匹配并召回学科百科常识库
  * @param {object} params
  * @param {string} params.text - 需要提取实体的文本（通常是主题 theme、notes、或大纲）
@@ -54,9 +102,8 @@ export async function retrieveSubjectKnowledge({ text = "", limit = 3, modelConf
 
   try {
     // 1. 获取全局内存储备，免去每次请求查 SQLite 的开销
-    const allKnowledge = await getOrUpdateKnowledgeCache();
-    if (!allKnowledge || allKnowledge.length === 0) return [];
-
+    let allKnowledge = await getOrUpdateKnowledgeCache();
+    
     // 2. 第一阶段：关键词和别名匹配（Rule-based Keyword Search）
     const matched = [];
     const matchedIds = new Set();
@@ -85,14 +132,75 @@ export async function retrieveSubjectKnowledge({ text = "", limit = 3, modelConf
       }
     }
 
-    // 3. 第二阶段：如果匹配数量不足，且配置了有效的 API 密钥，使用语义向量相似度进行补充匹配
-    const needMore = limit - matched.length;
+    // 3. 核心机制升级（🆕）：自动检测并联网获取缺席的相关历史/科学常识
     const cfg = modelConfig || {};
     const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "";
     const baseUrl = (cfg.baseUrl || process.env.AI_BASE_URL || "https://api.openai.com").replace(/\/+$/, "");
-
+    const modelName = cfg.model || process.env.OPENAI_MODEL || process.env.AI_MODEL || "gpt-4o-mini";
     const hasApiKey = apiKey && apiKey !== "sk-your-api-key" && !apiKey.includes("your-api-key");
 
+    if (hasApiKey && cleanText.length >= 6) {
+      console.log(`[RAG Auto Expand] Analyzing text for potential history/science entities...`);
+      const detected = await detectEntitiesInText(cleanText, apiKey, baseUrl, modelName);
+      
+      if (detected.length > 0) {
+        console.log(`[RAG Auto Expand] Detected entities: ${JSON.stringify(detected)}`);
+        let cacheInvalidated = false;
+
+        for (const entity of detected) {
+          // 检查该实体是否已存在本地常识库中
+          const isExisting = allKnowledge.some(item => {
+            const nameMatch = item.entity && item.entity.toLowerCase() === entity.toLowerCase();
+            const aliasMatch = item.processedAliases && item.processedAliases.some(a => a.toLowerCase() === entity.toLowerCase());
+            return nameMatch || aliasMatch;
+          });
+
+          if (!isExisting) {
+            console.log(`[RAG Auto Expand] Entity "${entity}" is missing from database. Automatically pulling knowledge...`);
+            try {
+              // 自动联网并使用 AI 强力扩充生成具有硬逻辑约束的百科词条
+              const generated = await expandKnowledge({ entity, modelConfig });
+              if (generated && generated.entity && generated.content) {
+                await saveKnowledge(generated.category, generated.entity, generated.content, generated.alias || "");
+                cacheInvalidated = true;
+                console.log(`[RAG Auto Expand] Successfully expanded and saved: ${generated.entity}`);
+              }
+            } catch (err) {
+              console.error(`[RAG Auto Expand] Failed to expand entity "${entity}":`, err);
+            }
+          }
+        }
+
+        if (cacheInvalidated) {
+          invalidateKnowledgeCache();
+          allKnowledge = await getOrUpdateKnowledgeCache();
+          
+          // 重新根据最新加载的缓存，跑一遍精准关键词匹配追加
+          for (const item of allKnowledge) {
+            if (matchedIds.has(item.id)) continue;
+            let isHit = false;
+            if (item.entity && cleanText.includes(item.entity)) {
+              isHit = true;
+            }
+            if (!isHit && item.processedAliases && item.processedAliases.length > 0) {
+              for (const alias of item.processedAliases) {
+                if (cleanText.includes(alias)) {
+                  isHit = true;
+                  break;
+                }
+              }
+            }
+            if (isHit) {
+              matched.push(item);
+              matchedIds.add(item.id);
+            }
+          }
+        }
+      }
+    }
+
+    // 4. 第二阶段：如果匹配数量不足，且配置了有效的 API 密钥，使用语义向量相似度进行补充匹配
+    const needMore = limit - matched.length;
     if (needMore > 0 && hasApiKey && cleanText.length >= 8) {
       console.log(`[RAG Hybrid Search] Rule-based matched ${matched.length}/${limit}. Performing vector query for remaining slots...`);
       
@@ -150,7 +258,7 @@ export async function retrieveSubjectKnowledge({ text = "", limit = 3, modelConf
       }
     }
 
-    // 4. 返回最终合并的最相关常识实体
+    // 5. 返回最终合并的最相关常识实体
     return matched.slice(0, limit);
   } catch (error) {
     console.error("[Knowledge Retrieval Service] Error retrieving subject knowledge:", error);

@@ -200,27 +200,30 @@ button {
   justify-content: center;
   gap: 6px;
   padding: 0 14px;
-  color: #8a6525 !important;
-  background: rgba(181, 138, 67, 0.08) !important;
-  border: 1px solid rgba(181, 138, 67, 0.35) !important;
+  color: #4a3106 !important;
+  background: linear-gradient(135deg, #ffe5ab 0%, #e8be6f 50%, #d4a34b 100%) !important;
+  background-size: 200% auto !important;
+  border: 1px solid #d4a34b !important;
   border-radius: var(--du-radius);
   font-size: 12px;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: none;
-  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  box-shadow: 0 2px 6px rgba(181, 138, 67, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transition: background 300ms ease, border-color 300ms ease, transform 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 300ms ease;
   white-space: nowrap;
+  animation: luxury-gold-shimmer 6s ease infinite alternate;
 }
 
 .desktop-upgrade-button:hover {
-  background: rgba(181, 138, 67, 0.16) !important;
-  border-color: rgba(181, 138, 67, 0.6) !important;
-  transform: translateY(-1px);
+  background-position: right center !important;
+  border-color: #b5862b !important;
+  transform: translateY(-1.5px) scale(1.02);
+  box-shadow: 0 5px 14px rgba(181, 138, 67, 0.32), 0 0 6px rgba(255, 224, 163, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 .desktop-upgrade-button:active {
-  background: rgba(181, 138, 67, 0.04) !important;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  box-shadow: 0 1px 3px rgba(181, 138, 67, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
 
 .premium-upgrade-action {
@@ -231,27 +234,30 @@ button {
   justify-content: center;
   gap: 6px;
   padding: 0 12px;
-  color: #8a6525 !important;
-  background: rgba(181, 138, 67, 0.08) !important;
-  border: 1px solid rgba(181, 138, 67, 0.35) !important;
+  color: #4a3106 !important;
+  background: linear-gradient(135deg, #ffe5ab 0%, #e8be6f 50%, #d4a34b 100%) !important;
+  background-size: 200% auto !important;
+  border: 1px solid #d4a34b !important;
   border-radius: var(--du-radius);
   font-size: 11px;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: none;
-  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  box-shadow: 0 3px 8px rgba(181, 138, 67, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transition: background 300ms ease, border-color 300ms ease, transform 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 300ms ease;
   white-space: nowrap;
+  animation: luxury-gold-shimmer 6s ease infinite alternate;
 }
 
 .premium-upgrade-action:hover {
-  background: rgba(181, 138, 67, 0.16) !important;
-  border-color: rgba(181, 138, 67, 0.6) !important;
-  transform: translateY(-1px);
+  background-position: right center !important;
+  border-color: #b5862b !important;
+  transform: translateY(-2px) scale(1.025);
+  box-shadow: 0 6px 16px rgba(181, 138, 67, 0.35), 0 0 8px rgba(255, 224, 163, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 .premium-upgrade-action:active {
-  background: rgba(181, 138, 67, 0.04) !important;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 4px rgba(181, 138, 67, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
 
 /* 升级按钮的内联皇冠 SVG 专属样式，强力防止巨型 SVG 的全局污染，并且让色彩与文字呼应 */
@@ -259,12 +265,28 @@ button {
 .premium-upgrade-action svg {
   width: 13px !important;
   height: 13px !important;
-  stroke: #8a6525 !important;
-  fill: rgba(181, 138, 67, 0.25) !important;
+  stroke: #4a3106 !important;
+  fill: rgba(74, 49, 6, 0.18) !important;
   display: inline-block !important;
   flex-shrink: 0 !important;
   vertical-align: middle !important;
   margin: 0 !important;
+  transition: transform 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.desktop-upgrade-button:hover svg,
+.premium-upgrade-action:hover svg {
+  transform: rotate(12deg) scale(1.15) !important;
+}
+
+/* 统一的奢华流光渐变帧动画 */
+@keyframes luxury-gold-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
 
 

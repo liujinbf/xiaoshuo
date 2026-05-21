@@ -11,7 +11,7 @@ function defaultBillingState() {
   return {
     tier: "free",
     day: todayKey(),
-    usage: { ideas: 0, saves: 0, ai: 0 },
+    usage: { ideas: 0, saves: 0, ai: 0, generations: 0 },
     trialEndsAt: "",
     orders: []
   };
@@ -25,11 +25,11 @@ function readBilling() {
     state = defaultBillingState();
   }
 
-  state.usage = { ideas: 0, saves: 0, ai: 0, ...(state.usage || {}) };
+  state.usage = { ideas: 0, saves: 0, ai: 0, generations: 0, ...(state.usage || {}) };
   state.orders = Array.isArray(state.orders) ? state.orders : [];
   if (state.day !== todayKey()) {
     state.day = todayKey();
-    state.usage = { ideas: 0, saves: 0, ai: 0 };
+    state.usage = { ideas: 0, saves: 0, ai: 0, generations: 0 };
   }
   if (state.tier === "trial" && state.trialEndsAt && new Date(state.trialEndsAt) < new Date()) {
     state.tier = "free";

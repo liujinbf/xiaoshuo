@@ -8,11 +8,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. 工具栏代理点击 (data-click-target)
   document.querySelectorAll('[data-click-target]').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (btn.dataset.viewMode) {
-        window.currentShortViewMode = btn.dataset.viewMode;
+      const mode = btn.dataset.viewMode;
+      const clickTarget = btn.dataset.clickTarget || '';
+      const targetName = clickTarget.replace('#tab', '').toLowerCase();
+
+      if (mode) {
+        window.currentViewModes = window.currentViewModes || {};
+        window.currentViewModes[targetName] = mode;
+        if (targetName === 'short') {
+          window.currentShortViewMode = mode;
+        }
       }
-      const target = document.querySelector(btn.dataset.clickTarget);
+
+      const target = document.querySelector(clickTarget);
       if (target) target.click();
+
+      // 平滑滚动与高亮闪烁增强
+      if (mode) {
+        let selector = '';
+        if (mode === 'card') selector = '.desktop-memory-panel';
+        else if (mode === 'check') selector = '.desktop-consistency-card';
+        else if (mode === 'quota') selector = '.billing-panel';
+
+        if (selector) {
+          setTimeout(() => {
+            const panel = document.querySelector(selector);
+            if (panel) {
+              panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              panel.classList.add('pulse-focus');
+              setTimeout(() => panel.classList.remove('pulse-focus'), 1200);
+            }
+          }, 150);
+        }
+      }
     });
   });
 
@@ -40,10 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function setEditMode() {
-    if (resultGrid) resultGrid.classList.remove('show-plan');
+    const grid = document.querySelector('.result-grid');
+    if (grid) grid.classList.remove('show-plan');
   }
   function setPlanMode() {
-    if (resultGrid) resultGrid.classList.add('show-plan');
+    const grid = document.querySelector('.result-grid');
+    if (grid) grid.classList.add('show-plan');
   }
 
   function switchWorkspaceTab(targetName) {
@@ -52,9 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const controlSerial = document.getElementById('controlSerialContainer');
     const controlLearn = document.getElementById('controlLearnContainer');
     
+    const activeLearnMode = (window.currentViewModes && window.currentViewModes['learn']) || 'learn';
+    
     if (controlShort) controlShort.hidden = (targetName !== 'short');
     if (controlSerial) controlSerial.hidden = (targetName !== 'serial');
-    if (controlLearn) controlLearn.hidden = (targetName !== 'learn');
+    if (controlLearn) controlLearn.hidden = (targetName !== 'learn' || activeLearnMode === 'db' || activeLearnMode === 'trends');
 
     // 0.5 动态更新 body 类名实现网格自适应锁屏自锁
     document.body.classList.remove('layout-short', 'layout-serial', 'layout-learn', 'layout-task', 'layout-world', 'layout-admin');
@@ -64,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const appShell = document.querySelector('.app-shell');
     const controlPanel = document.querySelector('.control-panel');
     if (appShell && controlPanel) {
-      if (targetName === 'task' || targetName === 'world' || targetName === 'admin') {
+      if (targetName === 'task' || targetName === 'world' || targetName === 'admin' || (targetName === 'learn' && (activeLearnMode === 'db' || activeLearnMode === 'trends'))) {
         controlPanel.style.setProperty('display', 'none', 'important');
         appShell.style.setProperty('grid-template-columns', '196px minmax(760px, 1fr) 350px', 'important');
       } else {
@@ -87,25 +119,70 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.desktop-rail-item').forEach(item => {
       const clickTarget = item.dataset.clickTarget || '';
       const matchName = clickTarget.replace('#tab', '').toLowerCase();
-      if (matchName === 'short') {
-        const itemMode = item.dataset.viewMode || 'edit';
-        const activeMode = window.currentShortViewMode || 'edit';
-        item.classList.toggle('active', itemMode === activeMode && targetName === 'short');
+
+      if (matchName === targetName) {
+        if (item.dataset.viewMode) {
+          const activeMode = (window.currentViewModes && window.currentViewModes[matchName]) || 
+                             (matchName === 'short' ? (window.currentShortViewMode || 'edit') : '');
+          item.classList.toggle('active', item.dataset.viewMode === activeMode);
+        } else {
+          // 检查同 clickTarget 下是否有其他导航项配置了 viewMode
+          const siblingModes = Array.from(document.querySelectorAll(`.desktop-rail-item[data-click-target="${clickTarget}"]`))
+                                    .map(el => el.dataset.viewMode)
+                                    .filter(Boolean);
+          if (siblingModes.length > 0) {
+            item.classList.remove('active');
+          } else {
+            item.classList.add('active');
+          }
+        }
       } else {
-        item.classList.toggle('active', matchName === targetName);
+        item.classList.remove('active');
       }
     });
 
     // 3. 规划/编辑模式切换
     if (targetName === 'short') {
       const activeMode = window.currentShortViewMode || 'edit';
-      if (activeMode === 'edit') {
-        setEditMode();
-      } else {
+      if (activeMode === 'plan') {
         setPlanMode();
+      } else {
+        setEditMode();
       }
     } else {
       setEditMode();
+    }
+
+    // 3.5 爆款拆解与本地数据库/题材趋势分流控制
+    if (targetName === 'learn') {
+      const lpHeader = document.querySelector('.lp-header');
+      const lpMain = document.querySelector('.lp-main');
+      const libInspiration = document.querySelector('.lp-shell .lp-library:not(.lp-subject-library):not(.lp-trends-library)');
+      const libSubject = document.querySelector('.lp-shell .lp-subject-library');
+      const libTrends = document.querySelector('.lp-shell .lp-trends-library');
+
+      if (activeLearnMode === 'learn') {
+        if (lpHeader) lpHeader.style.removeProperty('display');
+        if (lpMain) lpMain.style.removeProperty('display');
+        if (libInspiration) libInspiration.style.setProperty('display', 'none', 'important');
+        if (libSubject) libSubject.style.setProperty('display', 'none', 'important');
+        if (libTrends) libTrends.style.setProperty('display', 'none', 'important');
+      } else if (activeLearnMode === 'db') {
+        if (lpHeader) lpHeader.style.setProperty('display', 'none', 'important');
+        if (lpMain) lpMain.style.setProperty('display', 'none', 'important');
+        if (libInspiration) libInspiration.style.removeProperty('display');
+        if (libSubject) libSubject.style.removeProperty('display');
+        if (libTrends) libTrends.style.setProperty('display', 'none', 'important');
+      } else if (activeLearnMode === 'trends') {
+        if (lpHeader) lpHeader.style.setProperty('display', 'none', 'important');
+        if (lpMain) lpMain.style.setProperty('display', 'none', 'important');
+        if (libInspiration) libInspiration.style.setProperty('display', 'none', 'important');
+        if (libSubject) libSubject.style.setProperty('display', 'none', 'important');
+        if (libTrends) {
+          libTrends.style.removeProperty('display');
+          libTrends.style.setProperty('margin-top', '0', 'important'); // 独立全宽看板去掉多余的顶间距
+        }
+      }
     }
 
     // 4. 触发各个面板的生命周期数据加载
@@ -114,11 +191,17 @@ document.addEventListener('DOMContentLoaded', () => {
         window.loadNovels();
       }
     } else if (targetName === 'learn') {
-      if (typeof window.loadKnowledgeList === 'function') {
-        window.loadKnowledgeList();
-      }
-      if (typeof window.loadSubjectKnowledgeFullList === 'function') {
-        window.loadSubjectKnowledgeFullList();
+      if (activeLearnMode === 'trends') {
+        if (typeof window.loadTrendsList === 'function') {
+          window.loadTrendsList(true);
+        }
+      } else {
+        if (typeof window.loadKnowledgeList === 'function') {
+          window.loadKnowledgeList();
+        }
+        if (typeof window.loadSubjectKnowledgeFullList === 'function') {
+          window.loadSubjectKnowledgeFullList();
+        }
       }
     } else if (targetName === 'admin') {
       if (typeof window.initAdminPanel === 'function') {
@@ -139,13 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 默认编辑主视图（不加 show-plan）
 
-  // 3. 导航栏点击切换高亮
-  document.querySelectorAll('.desktop-rail-item').forEach(item => {
-    item.addEventListener('click', () => {
-      document.querySelectorAll('.desktop-rail-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    });
-  });
+  // 3. 导航栏高亮已在 switchWorkspaceTab 联动管理器中 100% 精确控制，在此无需重复暴力绑定。
 
   // 4. 编辑器实时状态栏更新
   const editor = document.getElementById('draftEditor');
@@ -195,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bs = readBilling();
     const tier = typeof effectiveTier === 'function' ? effectiveTier(bs) : (bs.tier || 'free');
-    const limits = typeof QUOTA_LIMITS !== 'undefined' ? (QUOTA_LIMITS[tier] || QUOTA_LIMITS.free) : { ideas: 20, saves: 8, ai: 3 };
+    const limits = typeof QUOTA_LIMITS !== 'undefined' ? (QUOTA_LIMITS[tier] || QUOTA_LIMITS.free) : { ideas: 20, saves: 8, ai: 3, generations: 5 };
     const total = Object.values(limits).reduce((sum, value) => sum + Number(value || 0), 0);
     const used = Object.keys(limits).reduce((sum, key) => sum + Number(bs.usage?.[key] || 0), 0);
     const remain = Math.max(0, total - used);

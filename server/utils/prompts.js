@@ -8,6 +8,12 @@ import { extractChatText } from "./vector.js";
 import { formatKnowledgeForPrompt } from "./knowledge-retrieval-service.js";
 
 
+const getChatUrl = (baseUrl) => {
+  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
+  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
+};
+
+
 // ─── System Prompt ──────────────────────────────────────────
 export function buildChapterSystemPrompt() {
   return [
@@ -101,7 +107,7 @@ export function buildChapterUserPrompt(novel, relevantMemory = "", matchedInspir
     `【故事类型】${novel.genre}`,
     `【核心大纲】${novel.outline}`,
     knowledgeSection.join("\n"),
-    `【人物志】${novel.characters}`,
+    `【人物设定与世界观规则设定】\n${novel.characters || "暂无世界设定，请自主发挥合理的人物与规则。"}`,
     `【前情提要】${lastSummary}${memorySection}`,
     slidingWindow ? `\n【前文衔接段落（直接续写，不要重复）】\n${slidingWindow}` : "",
     inspirationSection.join("\n"),
@@ -114,7 +120,11 @@ export function buildChapterUserPrompt(novel, relevantMemory = "", matchedInspir
     `3. 字数控制在 ${novel.chapterLength || 2000} 字左右。`,
     "4. 中段必须出现一次信息变化：新证据、新证词、人物立场反转或规则代价升级。",
     "5. 【强制断章】结尾必须是以下之一：①一个具体动作停住 ②出乎意料的一句台词 ③发现异常信息的瞬间。绝对禁止总结性结尾！",
-    "6. 直接输出正文，不带任何提示语。"
+    "6. 【灵魂人设白描】角色登场或行动时，必须写实、具象地白描其设定中描述的「外貌指纹细节」（如女主的琥珀色瞳孔、常年扎成的低马尾、左手腕的老式机械表；男主的灰白浅色双眼、天然下垂的嘴角、三颗黑耳钉；反派的温润儒雅笑容、摸刻字银戒的动作等）以及动作神态，将设定深深地刻画在情节骨血里，绝对禁止凭空套用无个性的描写。",
+    "7. 【口头禅与性格自洽】角色的台词、心理活动和举手投足必须 100% 契合人设卡的性格特质描述（如女主的极致理性与对任何人的防备、男主的阴沉戾气与偏执等）。当剧烈情绪冲突爆发时，必须极度自然、合理地吐露出设定卡池中的「专属口头禅」，形成标志性听觉印象。",
+    "8. 【世界规则强力死锁（绝对红线）】必须 100% 忠实并严格遵守【人物设定与世界观规则设定】中定义的「逻辑铁律与红线」和「底线规则怪谈」。如果在设定里有任何不可逾越的红线（例如：绝对禁止顾衍暴露杀害苏明远的事实、第4条规则空白且绝对无法被遵守、苏晚萤是唯一的规则免疫者等），AI 在剧情生成中绝不能做出任何打破或违背这套底层因果的逻辑硬伤！",
+    "9. 【物件与场景道具的物理咬合】剧情的解谜、对峙或重要转折，必须与女主的“机械表”、男主的“三颗耳钉”、反派的“银戒”或“空白第4条规则”等专属「标志道具」产生物理互动或深刻关联，让道具物证成为推动剧情和回收伏笔的灵魂媒介。",
+    "10. 直接输出正文，不带任何提示语。"
   ].filter(Boolean).join("\n");
 }
 
@@ -225,8 +235,28 @@ export function buildCharacterGenPrompt(params) {
  * 第一步：生成核心设定（人物 + 三幕结构 + 爽点清单）
  */
 export function buildOutlineStep1Prompt(params) {
-  const { title, genre, targetChapters, chapterLength, brainstorm, characters } = params;
+  const { title, genre, targetChapters, chapterLength, brainstorm, characters, matchedTrends = [] } = params;
   const totalWords = targetChapters * chapterLength;
+
+  const trendsSection = [];
+  if (Array.isArray(matchedTrends) && matchedTrends.length > 0) {
+    trendsSection.push("\n【当下全网同品类最热门爆款小说起名与大纲三要素参考（必须深度借鉴其起名张力和起承转合结构）】");
+    matchedTrends.forEach((trend, i) => {
+      trendsSection.push(`参考案例 ${i + 1}：《${trend.novel_title}》[原平台分类:${trend.raw_genre}] (全网热度值:${trend.heat_score})`);
+      if (trend.introduction) trendsSection.push(`  - 爆款简介：${trend.introduction}`);
+      if (trend.analysis?.hook) trendsSection.push(`  - 情绪钩子：${trend.analysis.hook}`);
+      if (trend.analysis?.pain_point) trendsSection.push(`  - 痛点抓手：${trend.analysis.pain_point}`);
+      if (trend.analysis?.selling_point) trendsSection.push(`  - 付费看点：${trend.analysis.selling_point}`);
+    });
+    trendsSection.push("※ 写作参考：深入学习并借鉴上述爆款的“起名指纹”和“悬念设置技巧”，将它们的情绪撕扯和悬念后置法则融入到本小说的核心创意、爽点清单中，但绝不抄袭具体设定。");
+  }
+
+  const knowledgeSection = [];
+  if (Array.isArray(params.matchedSubjectKnowledge) && params.matchedSubjectKnowledge.length > 0) {
+    const constraint = formatKnowledgeForPrompt(params.matchedSubjectKnowledge);
+    if (constraint) knowledgeSection.push(constraint);
+  }
+
   return `你是一位顶级网文策划编辑，精通商业化爽文结构。
 
 【任务】为一部网络小说生成核心设定和整体框架。
@@ -237,13 +267,21 @@ export function buildOutlineStep1Prompt(params) {
 预计章节：${targetChapters} 章，每章约 ${chapterLength} 字（共约 ${totalWords} 字）
 初步想法：${brainstorm || "暂时没有，请你大胆创意"}
 ${characters ? `
-【已有人物设定（请基于此创作，不要改动姓名和弧线）】
+【已有人物设定与世界规则设定（必须作为核心根基，严禁改动）】
 ${characters}` : ""}
+${knowledgeSection.join("\n")}
+${trendsSection.join("\n")}
+
+【世界设定与人设深度缝合指令（灵魂级要求，必须严格遵守）】
+1. 人设矛盾驱动剧情：大纲的“核心冲突”与“三幕结构”绝不能凭空捏造，必须完全由上方【已有人物设定与世界规则设定】中角色的核心动机、童年创伤、不可告人的核心秘密或致命弱点（例如女主对某个创伤的偏执、男主的防备多疑、反派的虚伪执念）驱动。人物的痛苦挣扎与纠葛，必须是剧情爆发的直接引擎。
+2. 世界规则与剧情硬锚定：如果设定中包含“逻辑铁律与红线”、“世界观底层法则”或“规则怪谈链”，大纲中所有的悬念、爽点和解密，必须以这些规则为核心支柱（如“第4条规则是空白”的致命逻辑），不得脱离这些规则自行胡乱设计。
+3. 物件与线索穿插：爽点清单和伏笔设计中，必须深度嵌入人物卡池里所包含的关键标志性物件、物证或道具（如老式机械表、带刻字的银戒、无字笔记本等），作为贯穿情节的灵魂线索。
+4. 杜绝 OOC：大纲的每一步剧情中，所有角色的行为抉择必须 100% 符合其性格特质和人设卡描述，禁止出现为了推剧情而强行让角色降智或做出违背人设逻辑的事情。
 
 【要求】请用 Markdown 格式输出以下内容：
 
 ## 一、核心创意
-一句话概括小说核心卖点（爽点 + 冲突 + 身份设定）
+一句话概括小说核心卖点（爽点 + 冲突 + 身份设定，必须极富上方参考爆款的起名与悬念神韵，拒绝干瘪）
 
 ## 二、故事简介
 300字以内，含开场困境、核心矛盾、结局走向
@@ -265,18 +303,30 @@ ${characters}` : ""}
 语言专业清晰，避免废话，直接输出。`;
 }
 
-/**
- * 第二步：基于第一步设定，生成每章详细大纲（含强制结尾钩子）
- */
 export function buildOutlineStep2Prompt(params, step1Result) {
-  const { targetChapters, chapterLength, characters } = params;
+  const { targetChapters, chapterLength, characters, matchedTrends = [] } = params;
+
+  const trendsSection = [];
+  if (Array.isArray(matchedTrends) && matchedTrends.length > 0) {
+    trendsSection.push("\n【爆款小说章节标题起名风格参考（拒绝平铺直叙，学习其情绪撕扯和反常态式起名）】");
+    trendsSection.push(`  - 参考爆款：《${matchedTrends[0].novel_title}》的戏剧张力。学习其如何通过极度吸睛的名词或反差场景来为章节命名（例如：‘不速之客的婚礼账单’或‘一家人的吃人算盘’，而不是‘李小歌的调查’这样淡出鸟来的叙述）。`);
+  }
+
+  const knowledgeSection = [];
+  if (Array.isArray(params.matchedSubjectKnowledge) && params.matchedSubjectKnowledge.length > 0) {
+    const constraint = formatKnowledgeForPrompt(params.matchedSubjectKnowledge);
+    if (constraint) knowledgeSection.push(constraint);
+  }
+
   return `你是一位网文章节规划师。基于以下核心设定，生成 ${targetChapters} 章的详细章节大纲。
 
 【核心设定】
 ${step1Result}
 ${characters ? `
-【人物设定（写章节时人物行为须与此一致）】
-${characters.slice(0, 800)}` : ""}
+【人物设定与世界规则设定（写章节时人物行为与剧情推演必须严格与此一致，严禁改动）】
+${characters}` : ""}
+${knowledgeSection.join("\n")}
+${trendsSection.join("\n")}
 
 【章节规划要求】
 - 每章约 ${chapterLength} 字
@@ -284,14 +334,19 @@ ${characters.slice(0, 800)}` : ""}
 - 伏笔在前 1/3 埋下，后 2/3 回收
 - 感情线和主线并行推进，人物要有成长弧线
 - 每章结尾必须有强钩子，不能平淡收尾
+- 【重要起名指令】每章的 [章节标题] 必须富有悬念和情绪张力，多采用极具画面感或情绪对峙的名词与动作组合（如《第1章：不速之客的婚礼账单》、《第2章：一家人的吃人算盘》），绝对禁止平铺直叙！
+- 【人设与世界设定灵魂缝合指令（核心必遵）】：
+  1. 出场人物与行动锁死：在每章的 [出场人物] 字段中，必须精准罗列人物志中的角色，并指明该人物在本章的具体行动。该行动必须 100% 遵循其性格特质（如极致理性、多疑冷酷等），体现其创伤与动机，绝不允许降智、沦为剧情推进的无脑工具人或出现任何不符人设（OOC）的行为。
+  2. 规则与剧情的物理咬合：在设计各章节的 [核心事件] 与 [本章爽点] 时，必须主动让人物的意志、矛盾冲突同“世界规则/逻辑红线”发生剧烈碰撞（如：主角遇到怪谈红线、通过漏洞规则翻盘等），展现底层世界观的魅力。
+  3. 物件道具灵魂交互：在各章的 [本章伏笔] 中，必须巧妙穿插并联动人物设定中描述的标志性物件、物证或特殊线索（如老式机械表、刻字银戒、无名指疤痕等），绝不写脱离人设的空泛线索。
 
 【输出格式（严格遵守，每章6行要素）】
 
 ## 第1章：[章节标题]
 - 核心事件：1.[事件1] 2.[事件2] 3.[事件3]
-- 出场人物：[人物列表及各自的行动]
-- 本章爽点：[具体的情绪爆发点]
-- 本章伏笔：[埋下什么伏笔，或回收哪条伏笔]
+- 出场人物：[人物列表及各自的具体核心行动，体现人设特质]
+- 本章爽点：[具体的情绪爆发点，与人设/规则联动]
+- 本章伏笔：[埋下或回收人物志里特定道具/规则线索的伏笔]
 - 结尾钩子：[用一句具体台词或动作断章，禁止写'留下悬念'这种废话]
 
 ## 第2章：[章节标题]
@@ -355,7 +410,7 @@ export async function callOpenAIForScript(payload) {
   const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
   if (isPlaceholder) return localMockScript(payload);
 
-  const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+  const response = await fetch(getChatUrl(baseUrl), {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({

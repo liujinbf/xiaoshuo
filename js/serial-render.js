@@ -41,6 +41,8 @@ function renderNovelList() {
 
 function selectNovel(novel) {
   window.currentNovel = novel;
+  window.dispatchEvent(new CustomEvent("currentNovelChanged", { detail: novel })); // 触发广播事件
+
   document.querySelector("#serialEmptyState").hidden = true;
   document.querySelector("#serialWorkspace").hidden = false;
   document.querySelector("#chapterReader").hidden = true;

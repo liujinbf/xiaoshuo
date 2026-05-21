@@ -125,6 +125,14 @@ function readModelConfig() {
       }
     }
     
+    // 🌟 强力兼容：确保外层扁平属性与当前激活子供应商的数据完全对齐同步！🌟
+    const activeProvider = cfg.provider || "deepseek";
+    if (cfg.providers && cfg.providers[activeProvider]) {
+      cfg.baseUrl = cfg.providers[activeProvider].baseUrl || cfg.baseUrl || "";
+      cfg.apiKey = cfg.providers[activeProvider].apiKey || cfg.apiKey || "";
+      cfg.model = cfg.providers[activeProvider].model || cfg.model || "";
+    }
+    
     return cfg;
   } catch {
     // 降级构建一个全新的带预设供应商结构的配置
@@ -638,4 +646,39 @@ function initModelConfigUi() {
   });
 }
 
+const ModelConfigManager = {
+  get() {
+    const cfg = readModelConfig();
+    const activeProvider = cfg.provider || "deepseek";
+    const pData = (cfg.providers && cfg.providers[activeProvider]) ? cfg.providers[activeProvider] : {};
+    return {
+      provider: activeProvider,
+      apiKey: pData.apiKey || cfg.apiKey || "",
+      baseUrl: pData.baseUrl || cfg.baseUrl || "",
+      model: pData.model || cfg.model || ""
+    };
+  },
+  hasValidKey() {
+    const cfg = readModelConfig();
+    const currentProvider = cfg.provider || "deepseek";
+    if (currentProvider === "ollama") return true;
+    const pData = cfg.providers[currentProvider] || {};
+    const key = pData.apiKey || "";
+    return Boolean(key && !key.startsWith("sk-your") && !key.includes("your-api-key"));
+  },
+  read() {
+    return readModelConfig();
+  },
+  write(cfg) {
+    writeModelConfig(cfg);
+  }
+};
+window.ModelConfigManager = ModelConfigManager;
+
+function getActiveModelConfig() {
+  return ModelConfigManager.get();
+}
+window.getActiveModelConfig = getActiveModelConfig;
+
 document.addEventListener("DOMContentLoaded", initModelConfigUi);
+

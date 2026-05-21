@@ -11,6 +11,7 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+window.escapeHtml = escapeHtml;
 
 function pick(list, offset = 0) {
   const index = Math.abs(Date.now() + offset + Math.floor(Math.random() * 1000)) % list.length;

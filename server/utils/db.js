@@ -285,3 +285,66 @@ export async function saveKnowledge(category, entity, content, alias = "", embed
     [id, category, entity, content, alias || "", embVal, new Date().toISOString()]
   );
 }
+
+// ===== genre_trends — 小说题材趋势库独占接口 =====
+
+/**
+ * 保存或更新热门题材趋势
+ */
+export async function saveGenreTrend({ id, source, novel_title, raw_genre, mapped_genre, heat_score, analysis, introduction }) {
+  const db = await getDb();
+  await db.run(
+    `INSERT INTO genre_trends (id, source, novel_title, raw_genre, mapped_genre, heat_score, analysis, introduction, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET source=excluded.source, novel_title=excluded.novel_title, raw_genre=excluded.raw_genre, mapped_genre=excluded.mapped_genre, heat_score=excluded.heat_score, analysis=excluded.analysis, introduction=excluded.introduction`,
+    [
+      id,
+      source,
+      novel_title,
+      raw_genre || "",
+      mapped_genre || "",
+      heat_score || 0,
+      typeof analysis === "object" ? JSON.stringify(analysis) : (analysis || ""),
+      introduction || "",
+      new Date().toISOString()
+    ]
+  );
+}
+
+/**
+ * 获取题材趋势列表，支持按 source 与 mapped_genre 双维度过滤
+ */
+export async function getGenreTrends(source, mappedGenre) {
+  const db = await getDb();
+  let query = "SELECT * FROM genre_trends WHERE 1=1";
+  const params = [];
+
+  if (source && source !== "all") {
+    query += " AND source = ?";
+    params.push(source);
+  }
+  if (mappedGenre && mappedGenre !== "all") {
+    query += " AND mapped_genre = ?";
+    params.push(mappedGenre);
+  }
+
+  query += " ORDER BY heat_score DESC, created_at DESC";
+  return await db.all(query, params);
+}
+
+/**
+ * 获取单条题材趋势记录
+ */
+export async function getGenreTrendById(id) {
+  const db = await getDb();
+  return await db.get("SELECT * FROM genre_trends WHERE id = ?", [id]);
+}
+
+/**
+ * 清空题材趋势库中的所有数据
+ */
+export async function clearGenreTrends() {
+  const db = await getDb();
+  await db.run("DELETE FROM genre_trends");
+}
+

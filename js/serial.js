@@ -87,6 +87,8 @@ async function deleteNovel(novelId) {
     window.serialNovels = window.serialNovels.filter((n) => n.id !== novelId);
     if (window.currentNovel?.id === novelId) {
       window.currentNovel = null;
+      window.currentNovel = null; // 归一化当前选中小说变量，打通“任务与世界设定”
+      window.dispatchEvent(new CustomEvent("currentNovelChanged", { detail: null })); // 触发全局广播事件使任务/世界设定联动回到空状态
       document.querySelector("#serialEmptyState").hidden = false;
       document.querySelector("#serialWorkspace").hidden = true;
       document.querySelector("#chapterReader").hidden = true;
@@ -100,12 +102,12 @@ let isBatchGenerating = false;
 async function generateChapterLogic(showReader = false) {
   if (!window.currentNovel) return false;
   const uid = localStorage.getItem(USER_KEY) || "";
-  const modelConfig = readModelConfig();
   
-  if (!modelConfig.apiKey) {
-    alert("请先配置 API Key");
+  if (!ModelConfigManager.hasValidKey()) {
+    alert("请先在设置中填写 API Key");
     return false;
   }
+  const modelConfig = ModelConfigManager.get();
 
   try {
     const res = await fetch(`/api/novels/${window.currentNovel.id}/chapters/generate`, {
@@ -119,6 +121,9 @@ async function generateChapterLogic(showReader = false) {
       window.serialNovels = window.serialNovels.map(n => n.id === window.currentNovel.id ? window.currentNovel : n);
       selectNovel(window.currentNovel);
       if (showReader && data.chapter) openChapterReader(data.chapter);
+      if (data.chapter && typeof window.refreshSubjectKnowledge === "function") {
+        window.refreshSubjectKnowledge(data.chapter.content);
+      }
       return true;
     } else {
       alert(data.message);
@@ -145,7 +150,7 @@ async function convertChapterToScript(chapter) {
         novelTitle: window.currentNovel.title,
         chapterIndex: chapter.index,
         content: chapter.content,
-        modelConfig: readModelConfig()
+        modelConfig: ModelConfigManager.get()
       })
     });
     const data = await res.json();

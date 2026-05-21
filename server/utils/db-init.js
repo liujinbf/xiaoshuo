@@ -89,15 +89,35 @@ export async function initializeDatabase() {
           created_at TEXT
         );
 
+        CREATE TABLE IF NOT EXISTS genre_trends (
+          id TEXT PRIMARY KEY,
+          source TEXT NOT NULL,
+          novel_title TEXT NOT NULL,
+          raw_genre TEXT,
+          mapped_genre TEXT,
+          heat_score INTEGER,
+          analysis TEXT,
+          introduction TEXT,
+          created_at TEXT
+        );
+
         CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
         CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
         CREATE INDEX IF NOT EXISTS idx_novels_user_id ON novels(user_id);
         CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
         CREATE INDEX IF NOT EXISTS idx_chapter_embeddings_novel ON chapter_embeddings(novel_id);
         CREATE INDEX IF NOT EXISTS idx_knowledge_base_entity ON knowledge_base(entity);
+        CREATE INDEX IF NOT EXISTS idx_genre_trends_mapped ON genre_trends(mapped_genre);
       `);
 
       // === 数据库结构迁移 ===
+
+      // 迁移: genre_trends 补充 introduction 字段
+      const trendCols = await db.all("PRAGMA table_info(genre_trends)");
+      if (!trendCols.some(c => c.name === "introduction")) {
+        await db.run("ALTER TABLE genre_trends ADD COLUMN introduction TEXT");
+        console.log("[DB Migration] Added 'introduction' to genre_trends");
+      }
       
       // 迁移: accounts 补充结构化字段
       const accountCols = await db.all("PRAGMA table_info(accounts)");
@@ -164,20 +184,27 @@ export async function initializeDatabase() {
             hook TEXT,
             outline TEXT,
             raw_text TEXT,
+            fingerprint TEXT,
             created_at TEXT
           );
           CREATE INDEX IF NOT EXISTS idx_inspirations_user_id ON inspirations(user_id);
         `);
-        console.log("[DB Migration] Created 'inspirations' table");
+        console.log("[DB Migration] Created 'inspirations' table with fingerprint column");
 
         // 默认灌入爆款小说知识库数据 (以 admin 身份)
         for (const seed of DEFAULT_INSPIRATIONS) {
           await db.run(
-            "INSERT OR IGNORE INTO inspirations (id, user_id, genre, theme, hook, outline, raw_text, created_at) VALUES (?, 'admin', ?, ?, ?, ?, ?, ?)",
-            [seed.id, seed.genre, seed.theme, seed.hook, seed.outline, seed.raw_text, new Date().toISOString()]
+            "INSERT OR IGNORE INTO inspirations (id, user_id, genre, theme, hook, outline, raw_text, fingerprint, created_at) VALUES (?, 'admin', ?, ?, ?, ?, ?, ?, ?)",
+            [seed.id, seed.genre, seed.theme, seed.hook, seed.outline, seed.raw_text, seed.fingerprint || null, new Date().toISOString()]
           );
         }
         console.log("[DB Migration] Seeded default hit stories into inspirations table");
+      } else {
+        // 增量表迁移：为已存在的 inspirations 表补齐 fingerprint 列
+        if (!inspirationCols.some(c => c.name === "fingerprint")) {
+          await db.run("ALTER TABLE inspirations ADD COLUMN fingerprint TEXT");
+          console.log("[DB Migration] Added 'fingerprint' column to inspirations table");
+        }
       }
 
       // Migration from store.json
@@ -288,8 +315,8 @@ export async function initializeDatabase() {
         // 确保新加入的题材（如大女主爽文、中式志异等）能在启动时自动完成冷启动同步，且不破坏已有数据。
         for (const seed of DEFAULT_INSPIRATIONS) {
           await db.run(
-            "INSERT OR IGNORE INTO inspirations (id, user_id, genre, theme, hook, outline, raw_text, created_at) VALUES (?, 'admin', ?, ?, ?, ?, ?, ?)",
-            [seed.id, seed.genre, seed.theme, seed.hook, seed.outline, seed.raw_text, new Date().toISOString()]
+            "INSERT OR IGNORE INTO inspirations (id, user_id, genre, theme, hook, outline, raw_text, fingerprint, created_at) VALUES (?, 'admin', ?, ?, ?, ?, ?, ?, ?)",
+            [seed.id, seed.genre, seed.theme, seed.hook, seed.outline, seed.raw_text, seed.fingerprint || null, new Date().toISOString()]
           );
         }
         console.log("[DB] Synchronized default admin hit story inspirations.");

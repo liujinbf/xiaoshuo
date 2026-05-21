@@ -1,6 +1,11 @@
 import { randomUUID } from "crypto";
 import { saveInspiration, getInspirations, deleteInspiration, clearInspirations } from "../utils/db.js";
 
+const getChatUrl = (baseUrl) => {
+  const clean = String(baseUrl || "").trim().replace(/\/+$/, "");
+  return clean.endsWith("/v1") ? `${clean}/chat/completions` : `${clean}/v1/chat/completions`;
+};
+
 
 const AD_LINE_PATTERNS = [
   /公\s*[|/\\.[\]（）()【】]*\s*(?:众|主)\s*[|/\\.[\]（）()【】]*\s*号/i,
@@ -92,28 +97,75 @@ function fallbackDissection(cleanText = "", genre = "suspense") {
 
 function localMockDissect(rawText, genre) {
   const text = cleanImportedRawText(rawText || "");
+  let detected = genre;
+
   if (text.includes("周明瑞") || text.includes("红月") || text.includes("绯红")) {
+    detected = (genre === "auto" || !genre) ? "rules" : genre;
     return {
-      theme: "克苏鲁神秘学穿梭：我靠左轮手枪与绯红满月开启序列之神",
-      hook: "当【周明瑞】在剧痛中醒来并发现【镜子中开孔的自己】时，【窗外的红月】已经宣告了他回不去的地球。",
-      outline: "周明瑞离奇穿越并承受头部重创剧痛；周明瑞观察房间陈设发现书桌上的左轮手枪与镜中凹陷枪眼；周明瑞目睹异域赤红满月并发现日记本上的死亡遗言；主角接受新身份并开启奇幻诡秘的超凡序列晋升之路",
-      fingerprint: null
+      theme: "克苏鲁神秘学穿梭：诡秘之主超凡序列与灰雾之王",
+      hook: "当【周明瑞】在剧痛中醒来并看见【太阳穴上的焦黑弹孔】时，【窗外高悬的绯红满月】已悄然拉开诡秘超凡的帷幕。",
+      outline: "起：周明瑞离奇穿越并在头部枪伤的剧痛中惊醒；承：冷静观察旧书桌上的左轮手枪与斑驳镜中的弹孔，惊觉原主死于离奇自杀；转：翻开带有血手印的日记本，目睹‘所有人都会死，包括我’的绝望遗言；合：接纳全新身份，利用跨越红月的塔罗灰雾空间开启超凡序列的晋升谱系。",
+      detectedGenre: detected,
+      fingerprint: {
+        openingSpeed: 5,
+        voiceStyle: "第三人称近视角",
+        dialogueRatio: 30,
+        sentenceStyle: "短长混合",
+        firstConflictAt: 1,
+        pressureType: "规则代价+生命威胁",
+        emotionTone: "悲凉沉郁",
+        sceneType: "维多利亚式单人房",
+        endingHook: "动作断章",
+        powerPhrases: ["“绯红的月光穿透窗棂，犹如一只巨大的神灵巨眼。”", "“桌上的左轮手枪还带着温热，暗示着刚才发生的惨烈自裁。”"],
+        uniqueVocab: ["绯红", "满月", "左轮", "枪眼", "穿越"],
+        rawSample: "剧痛，无与伦比的剧痛。周明瑞从混沌中苏醒，额头冰凉，伸手一摸竟是个致命的凹陷弹孔，而窗外正悬挂着一轮诡异庞大的赤色满月…"
+      }
     };
   }
   if (text.includes("萧炎") || text.includes("斗之力") || text.includes("测验魔石碑")) {
+    detected = (genre === "auto" || !genre) ? "revenge" : genre;
     return {
-      theme: "斗气世界至尊：从被家族嘲笑的天才沦落，到三十年河东崛起",
-      hook: "当【测验魔石碑】冰冷宣布【萧炎】只有斗之力三段时，【周围族人的嘲讽】已将昔日天才少年的尊严彻底撕碎。",
-      outline: "萧炎在测验石碑前被公布斗之力仅三段；周围同龄人及族人群起嘲讽落井下石；萧炎内心凄凉自嘲并回忆三年前的风光；主角隐忍咬牙退到队伍边缘，暗中开启绝地反击的逆袭序幕",
-      fingerprint: null
+      theme: "斗破苍穹：三十年河东的陨落天才与三年之约",
+      hook: "当【测验魔石碑】冰冷宣布【萧炎】只有斗之力三段时，【周围族人的冷眼与嘲讽】已将昔日天才少年的尊严彻底踩碎。",
+      outline: "起：萧炎在测验石碑前被公布斗之力仅三段，惨遭冷落；承：周围同龄人及族人群起嘲讽落井下石，回忆三年来的痛苦落差；转：未婚妻纳兰嫣然突然带队登门高调退婚，将家族尊严践踏至谷底；合：萧炎铮铮铁骨立下三年之约，誓言三十年河东三十年河西，隐忍咬牙开启绝地反击的崛起逆袭。",
+      detectedGenre: detected,
+      fingerprint: {
+        openingSpeed: 5,
+        voiceStyle: "第三人称全知",
+        dialogueRatio: 50,
+        sentenceStyle: "短长混合",
+        firstConflictAt: 2,
+        pressureType: "名声+情感",
+        emotionTone: "张扬浓烈",
+        sceneType: "家族测验广场",
+        endingHook: "动作断章",
+        powerPhrases: ["“三十年河东，三十年河西，莫欺少年穷！”", "“斗之力，三段！魔石碑上的五个大字犹如耳光抽在众人脸上。”"],
+        uniqueVocab: ["斗之力", "嘲讽", "少年", "天赋", "退婚"],
+        rawSample: "“萧炎，斗之力，三段！级别：低级！”望着测验魔石碑上闪亮的字迹，黑衣少年自嘲一笑，紧握的双拳指甲深深掐入了掌心肉中…"
+      }
     };
   }
   if (text.includes("韩立") || text.includes("二愣子") || text.includes("韩铸")) {
+    detected = (genre === "auto" || !genre) ? "history" : genre;
     return {
-      theme: "凡人长生仙路：资质平平的农家二愣子如何走出山村修仙",
-      hook: "当【农家少年韩立】躺在漏雨的土屋里向往【外面的世界】时，他绝想不到【未来的他】会成为震慑三界的仙道至尊。",
-      outline: "韩立在穷苦农村漏雨土屋中清晨醒来；交代他质朴绰号二愣子以及农家少年黑皮肤不起眼的外表；描写全家七口人在温饱线挣扎的艰辛；主角心怀走出山村的远大抱负，因缘际会开启凡人逆袭仙途",
-      fingerprint: null
+      theme: "凡人修仙传：凡骨逆天与稳字当头的修仙之路",
+      hook: "当【农家少年韩立】因资质平平只被收为记名弟子时，【七玄门中残酷的弱肉强食】已逼迫他踏上如履薄冰的修仙之旅。",
+      outline: "起：韩立因肤黑质朴被称二愣子，为谋出路离家参加七玄门考核；承：考核落选却意外因体质被墨大夫收为记名弟子，学习长春功；转：发现墨大夫背后包藏祸心，甚至意图对自己进行‘夺舍’；合：凭借超出常人的稳健与神秘绿瓶加速催熟药草，反杀强敌，正式走出山门踏入凡骨逆天修仙界。",
+      detectedGenre: detected,
+      fingerprint: {
+        openingSpeed: 2,
+        voiceStyle: "第三人称近视角",
+        dialogueRatio: 15,
+        sentenceStyle: "长句为主",
+        firstConflictAt: 6,
+        pressureType: "生命威胁+规则代价",
+        emotionTone: "克制冷静",
+        sceneType: "偏远山村土屋",
+        endingHook: "情感余韵",
+        powerPhrases: ["“修仙之途，凡骨逆天，唯稳字当头。”", "“既然出了大山，那这辈子就没打算再窝窝囊囊地回去。”"],
+        uniqueVocab: ["二愣子", "修仙", "出路", "灵根", "苟道"],
+        rawSample: "韩立虽然被称为二愣子，但脑瓜却比一般同龄人灵活得多。韩立躺在土炕上，看着房梁漏下的水滴，暗暗发誓要混出个人样来…"
+      }
     };
   }
   return fallbackDissection(text, genre);
@@ -129,7 +181,7 @@ async function callOpenAIDissect({ rawText, genre, modelConfig }) {
 
   const isPlaceholder = !apiKey || apiKey === "sk-your-api-key" || apiKey.includes("your-api-key");
   if (isPlaceholder) {
-    return { ...localMockDissect(cleanedRawText, genre), fingerprint: null };
+    throw new Error("检测到 AI 密钥未配置或使用的是默认 Placeholder 密钥。请先在系统设置中配置有效的 API Key，本地模板已被禁用。");
   }
 
   const genreFocusMap = {
@@ -172,7 +224,7 @@ ${genreFocus}
   const userPrompt = `【文章题材】${genre}\n【爆款原文】\n${cleanedRawText.slice(0, 6000)}`;
 
   try {
-    const apiResponse = await fetch(`${baseUrl}/v1/chat/completions`, {
+    const apiResponse = await fetch(getChatUrl(baseUrl), {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -205,10 +257,13 @@ ${genreFocus}
     else cleanText = cleanText.replace(/^```[a-z]*\s*/i, "").replace(/```\s*$/, "").trim();
 
     const parsed = JSON.parse(cleanText);
-    return isValidDissection(parsed) ? parsed : { ...fallbackDissection(cleanedRawText, genre), fingerprint: null };
+    if (!isValidDissection(parsed)) {
+      throw new Error("AI 拆解结果未通过内容合规校验（可能包含广告噪音、空白字段或格式异常）");
+    }
+    return parsed;
   } catch (err) {
-    console.warn(`[DB Dissect] AI 失败: ${err.message}，降级到本地引擎`);
-    return { ...localMockDissect(cleanedRawText, genre), fingerprint: null };
+    console.warn(`[DB Dissect] AI 失败: ${err.message}`);
+    throw new Error(`AI模型链接或调用失败！请检查 API 密钥、接口地址（Base URL: ${baseUrl}）是否正确，或网络是否通畅。错误详情: ${err.message}`);
   }
 }
 

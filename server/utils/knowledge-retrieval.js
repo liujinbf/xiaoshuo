@@ -3,7 +3,7 @@
 // 升级：集成 genre_statistics 统计规律 + 指纹降维注入
 // ============================================================
 
-import { getInspirations } from "./db.js";
+import { getInspirations, getGenreTrends } from "./db.js";
 
 const NOISE_PATTERN = /[━─=＿_—\-]{3,}|未知设定|精彩故事|公\s*[|/\\.[\]（）()【】]*\s*(?:众|主)\s*[|/\\.[\]（）()【】]*\s*号|闲\s*[|/\\.[\]（）()【】*＊·\s-]*\s*书|书荒|推文|后续|完整版|网盘|加群|关注|菜单栏|阅读全文|番外|来源来自网络/;
 const COMPACT_NOISE_PATTERN = /公众号|公主号|闲闲书|闲书|书坊|书荒|推文|后续|完整版|网盘|加群|关注|菜单栏|阅读全文|番外|西图澜娅|来源来自网络/;
@@ -264,3 +264,60 @@ function topKey(obj = {}) {
 function topN(obj = {}, n = 3) {
   return Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, n).map(e => e[0]);
 }
+
+/**
+ * 🆕 召回当前品类（如悬疑、世情等）全网最新且最火的爆款趋势，供大纲或起名字参考
+ * @param {object} params
+ * @param {string} params.genre - 题材类别（兼容中英文）
+ * @param {number} params.limit - 最大拉取条数
+ */
+export async function retrieveHotTrendsForDraft({ genre, limit = 3 }) {
+  if (!genre) return [];
+
+  const genreZhMap = {
+    "suspense": "悬疑反转",
+    "revenge": "婚恋复仇",
+    "heroine": "大女主爽文",
+    "family": "世情家庭",
+    "folklore": "中式志怪",
+    "history": "历史错位爽文",
+    "rules": "规则怪谈脑洞",
+    "workplace": "职场内幕"
+  };
+
+  // 标准化为 mapped_genre 对应的英文键
+  let mappedGenre = genre;
+  if (Object.values(genreZhMap).includes(genre)) {
+    mappedGenre = Object.keys(genreZhMap).find(key => genreZhMap[key] === genre);
+  }
+
+  try {
+    const allTrends = await getGenreTrends("all", mappedGenre);
+    return allTrends.slice(0, limit).map(item => {
+      let analysisObj = {};
+      try {
+        analysisObj = typeof item.analysis === "string" ? JSON.parse(item.analysis) : (item.analysis || {});
+      } catch (e) {
+        analysisObj = {};
+      }
+      return {
+        id: item.id,
+        source: item.source,
+        novel_title: item.novel_title,
+        raw_genre: item.raw_genre,
+        mapped_genre: item.mapped_genre,
+        heat_score: item.heat_score,
+        introduction: item.introduction || "",
+        analysis: {
+          hook: analysisObj.hook || "",
+          pain_point: analysisObj.pain_point || "",
+          selling_point: analysisObj.selling_point || ""
+        }
+      };
+    });
+  } catch (err) {
+    console.error("[Trend Retrieval RAG Error] Failed to retrieve genre trends:", err);
+    return [];
+  }
+}
+
